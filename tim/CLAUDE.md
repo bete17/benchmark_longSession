@@ -20,7 +20,6 @@ colons, or separate sentences.
 tim/
   DESIGN.md                    the experiment design (hypotheses A, C, D, E, CTRL; conditions; metrics)
   CLAUDE.md                    this file
-  HANDOFF_PROMPT.md            the prompt Tim pasted to start you
   gen/generate.py              seeded session generator (stdlib only)
   grade/grade.py               grader (stdlib only)
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
@@ -47,9 +46,13 @@ reads `<run_dir>/deliverables/`.
 - Harnesses: `ag/cli/harnesses.toml` lists claude, codex, pi, opencode, antigravity. We use **pi**
   (`ag pi ...`). Pi gets AG as an extension (`ag/integrations/harnesses/pi/setup/setup.ts`).
 - Gatherer model: any `provider/model` through LiteLLM, e.g. `gemini/<model>`, with `GEMINI_API_KEY`.
+- **One Gatherer per run.** Each AG run uses exactly one gatherer, and the whole session (all clients,
+  all tasks) goes through one pi session, which is one channel in that gatherer. AG splits the history
+  into tasks internally; that is not multiple gatherers. Create a fresh gatherer for each new run so
+  runs never share state.
 - Policy: `proactive_context_manager`, options in `ag/ag_policies/proactive_context_manager/config.py`,
   overridden per gatherer under `[options]` in `~/.ag/gatherers/<name>/gatherer.toml`. A gatherer's
-  policy cannot change once used, so make a new gatherer per condition and per run.
+  policy cannot change once used.
 - Knobs that matter here: `max_context_tokens` (set 100000), `min_context_tokens` (15000),
   `keep_previous_task_tokens`, `keep_temporal_relevant_tokens`, `keep_task_relevant_tokens` (15000 each),
   `all_task_tokens` (30000), `summarize` (true), `boundary_cooldown` (2), `check_boundaries` (true).
