@@ -1,0 +1,130 @@
+# Instructions for Claude Code working in tim/
+
+You are continuing Tim's experiment on long agent sessions. The design and steps 0 and 1 were done
+in a separate Claude session (claude.ai); you run steps 2 to 4 on Tim's laptop. Read this file and
+`DESIGN.md` fully before doing anything.
+
+## Who and why
+
+Tim is an undergraduate research assistant in Asim Biswal's lab at UC Berkeley (with Sepanta
+Zeighami, author of Actor-Gatherer). The lab question: in which scenarios does Actor-Gatherer (AG) beat
+a regular agent? This experiment targets one long session where a user gives related prompts that drift
+across several workstreams, and measures accuracy, degradation over the session, and cost.
+
+Writing rule from Tim: no em dashes in any prose you write (docs, logs, reports). Use commas,
+colons, or separate sentences.
+
+## What exists already
+
+```
+tim/
+  DESIGN.md                    the experiment design (hypotheses A, C, D, E, CTRL; conditions; metrics)
+  CLAUDE.md                    this file
+  HANDOFF_PROMPT.md            the prompt Tim pasted to start you
+  gen/generate.py              seeded session generator (stdlib only)
+  grade/grade.py               grader (stdlib only)
+  grade/make_oracle.py         synthetic deliverables to sanity-check the grader
+  sessions/pilot_seed0/        the generated pilot session
+    session.jsonl              152 user messages, in order: {"turn","visit","client","visit_kind","text"}
+    checks.jsonl               143 checks over 32 deliverables, each tagged A / C / D / CTRL / NEAR
+    facts.json, visits.json    ground truth and the intended visit boundaries
+    readable.md                the session as a readable script with planted facts listed per visit
+    meta.json                  counts and a character-based size estimate (~60k user tokens)
+```
+
+Verified before handoff: `make_oracle.py --mode perfect` grades 100%, `--mode stale` fails exactly
+the 13 D checks as "stale", `--mode empty` grades 0%.
+
+The agent under test sees only each message's `text`, sent in order. Deliverables are files the agent
+writes to `deliverables/<id>.md` in its working directory, starting with a ```json header. The grader
+reads `<run_dir>/deliverables/`.
+
+## Actor-Gatherer facts you need (repo github.com/ucbepic/actor-gatherer, read at commit 59ca484)
+
+- Install AG pinned (`pip install git+https://github.com/ucbepic/actor-gatherer@59ca484` or a clone
+  checked out at that commit). Do not copy AG source into this repo. If you must patch AG, do it in a
+  separate clone and record the diff in RUNLOG.md.
+- Harnesses: `ag/cli/harnesses.toml` lists claude, codex, pi, opencode, antigravity. We use **pi**
+  (`ag pi ...`). Pi gets AG as an extension (`ag/integrations/harnesses/pi/setup/setup.ts`).
+- Gatherer model: any `provider/model` through LiteLLM, e.g. `gemini/<model>`, with `GEMINI_API_KEY`.
+- Policy: `proactive_context_manager`, options in `ag/ag_policies/proactive_context_manager/config.py`,
+  overridden per gatherer under `[options]` in `~/.ag/gatherers/<name>/gatherer.toml`. A gatherer's
+  policy cannot change once used, so make a new gatherer per condition and per run.
+- Knobs that matter here: `max_context_tokens` (set 100000), `min_context_tokens` (15000),
+  `keep_previous_task_tokens`, `keep_temporal_relevant_tokens`, `keep_task_relevant_tokens` (15000 each),
+  `all_task_tokens` (30000), `summarize` (true), `boundary_cooldown` (2), `check_boundaries` (true).
+- When AG builds context: under `min_context_tokens` never; above it, after `boundary_cooldown` user
+  messages into the open task, one model call asks whether the new message starts a new task
+  (`ag/ag_policies/tools/boundary.py`, biased to "same task"); over `max_context_tokens` a build is forced.
+- Pi compaction: pi compacts past `contextWindow - compaction.reserveTokens` (pi settings.json,
+  default reserve 16384). Under AG, pi's compaction is cancelled while AG answers
+  (`AG_PI_COMPACTION=allow` overrides). AG infers pi's limit as window minus 16384 times 0.9 unless
+  `max_context_tokens` is set, so **set `max_context_tokens = 100000` explicitly** for AG runs.
+- Logs: AG's own model calls (purposes like boundary, segment, rank, summarize) go through
+  `ag/ag_tools/llm/calllog.py` with usage; per-call context sizes go to the gatherer's `server.log`.
+  Pi records usage on each assistant message in its session file.
+
+## Your steps (from DESIGN.md section 8)
+
+Keep an append-only log at `tim/RUNLOG.md`: date, what you ran, what happened, decisions. Commit and
+push after each step (`git push origin main`; small commits). Stop at every gate marked ASK TIM.
+
+### Step 2: smoke test
+1. Install pi (`@mariozechner/pi-coding-agent`) and AG. Confirm pi runs on Gemini with Tim's key.
+2. Find how to drive pi non-interactively for many turns in ONE session (check `pi --help`: an RPC or
+   print mode with session continuation). The driver must send message N only after the agent finishes
+   message N-1, including its tool calls.
+3. Confirm pi compaction can be forced at a 100k ceiling via `compaction.reserveTokens`
+   (reserve = contextWindow - 100000 for the chosen model) and that compaction events are visible in
+   the session file.
+4. Confirm `ag pi` works on Gemini for both Actor and Gatherer, and that you can collect: Actor usage
+   per call, Gatherer usage per call (by purpose), and context size per call.
+5. Write `tim/run/run_session.py`: given a session dir, a condition config, and an output dir, run the
+   session and save into `tim/results/<condition>_seed<k>_rep<r>/`:
+   `deliverables/`, `turns.jsonl` (per user turn: wall time, actor input/output/cache tokens,
+   context tokens, compaction or AG-build events), `gatherer_calls.jsonl` (AG conditions),
+   the raw pi session file, AG's server.log and call log, and `cost.json` with three numbers:
+   `actor_usd`, `gatherer_usd`, `total_usd` (prices in `tim/run/prices.json`, cite the source page).
+6. Measure the real token size of the pilot session after a short run. If a full run would not pass
+   100k of actor context at least twice under pi compaction, regenerate with a larger
+   `--report-rows` (main size lever) and note it. Do not change other generator semantics without
+   asking.
+ASK TIM: report model choice, measured cost of the smoke run, and projected pilot cost, before step 3.
+
+### Step 3: granularity check
+Check that AG's task segmentation and boundary check cut the session where `visits.json` intends.
+Preferred: a script `tim/run/granularity.py` that feeds the scripted user messages (with short
+placeholder assistant replies) through AG's own segmentation and boundary tools
+(`ag/ag_policies/tools/segmentation.py`, `boundary.py`) with the Gatherer model, and reports where it
+cuts vs visit boundaries (precision and recall of boundaries, and which visits got merged).
+Fallback: one AG run on the first ~40 turns, reading boundary verdicts from AG's logs.
+ASK TIM if fewer than about 80% of visit switches are detected, with examples, before changing the
+generator.
+
+### Step 4: pilot runs
+Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
+- `pi_compact`: pi alone, compaction at 100k.
+- `pi_per_client`: one pi session per client (route each visit's messages to that client's session),
+  compaction at 100k. Models the "separate threads" workaround. Embedded facts land in whichever
+  client's thread the message belongs to, as they would for a real user.
+- `ag_default`: `ag pi`, defaults plus `max_context_tokens = 100000`.
+- `ag_tight`: as ag_default with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 7500.
+  (One knob variant for the spend curve; more later.)
+Optional if budget allows: `pi_full` (no compaction) on a truncated session as a context-rot reference.
+Grade each run: `python grade/grade.py --session sessions/pilot_seed0 --run results/<run>`.
+ASK TIM before any spend beyond the cap he gives you.
+
+## What to hand back
+
+`tim/results/PILOT.md`: a table of pass rate overall and by tag (A, C, D, CTRL, NEAR), by placement
+(home, embedded) and by age bin, per condition, with the three cost numbers and latency; notes on
+anything odd (missing files, format failures, crashes); and for AG runs, 3 to 5 failed checks traced
+to what AG did or did not page in. Tim or the claude.ai session will do plots and the write-up.
+
+## Ground rules
+
+- Never put API keys in the repo or in logs you commit. Add `.env` and raw secrets paths to `.gitignore`.
+- Raw pi session files and AG databases can be large: commit them only if under ~20 MB per run,
+  otherwise commit a manifest and keep them local.
+- If something in this file turns out to be wrong (a flag name, a path), fix this file and say so in
+  RUNLOG.md.

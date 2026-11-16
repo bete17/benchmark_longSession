@@ -1,0 +1,22 @@
+{
+ "seed": 0,
+ "clients": 4,
+ "visits": 48,
+ "notes_scale": 1.0,
+ "user_messages": 152,
+ "deliverables": 32,
+ "checks": 143,
+ "checks_by_tag": {
+  "C": 80,
+  "CTRL": 3,
+  "NEAR": 9,
+  "A": 96,
+  "D": 13
+ },
+ "checks_by_placement": {
+  "home": 108,
+  "embedded": 35
+ },
+ "user_text_chars": 239380,
+ "user_text_tokens_est": 59845
+}

@@ -1,0 +1,352 @@
+{
+ "Acme Robotics": {
+  "cc_name": [
+   {
+    "value": "Felix Alvarez",
+    "turn": 1,
+    "visit": 0,
+    "placement": "home"
+   },
+   {
+    "value": "Diego Osei",
+    "turn": 61,
+    "visit": 19,
+    "placement": "home"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-05-14",
+    "turn": 1,
+    "visit": 0,
+    "placement": "home"
+   }
+  ],
+  "style_rule": [
+   {
+    "value": [
+     "add-on",
+     "module"
+    ],
+    "turn": 1,
+    "visit": 0,
+    "placement": "home"
+   }
+  ],
+  "currency": [
+   {
+    "value": "CAD",
+    "turn": 17,
+    "visit": 5,
+    "placement": "home"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 11,
+    "turn": 17,
+    "visit": 5,
+    "placement": "home"
+   }
+  ],
+  "seats": [
+   {
+    "value": 265,
+    "turn": 21,
+    "visit": 6,
+    "placement": "embedded"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 36,
+    "turn": 46,
+    "visit": 13,
+    "placement": "embedded"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Aaron Ito",
+    "turn": 61,
+    "visit": 19,
+    "placement": "home"
+   },
+   {
+    "value": "Chloe Okafor",
+    "turn": 124,
+    "visit": 39,
+    "placement": "home"
+   }
+  ],
+  "concession_ref": [
+   {
+    "value": "CX-5617",
+    "turn": 124,
+    "visit": 39,
+    "placement": "home"
+   }
+  ]
+ },
+ "Beta Health": {
+  "currency": [
+   {
+    "value": "AUD",
+    "turn": 9,
+    "visit": 2,
+    "placement": "home"
+   }
+  ],
+  "style_rule": [
+   {
+    "value": [
+     "deadline",
+     "target date"
+    ],
+    "turn": 9,
+    "visit": 2,
+    "placement": "home"
+   }
+  ],
+  "concession_ref": [
+   {
+    "value": "CX-6409",
+    "turn": 9,
+    "visit": 2,
+    "placement": "home"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 24,
+    "turn": 25,
+    "visit": 7,
+    "placement": "home"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-06-12",
+    "turn": 25,
+    "visit": 7,
+    "placement": "home"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Tomas Moreau",
+    "turn": 52,
+    "visit": 15,
+    "placement": "home"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 8,
+    "turn": 89,
+    "visit": 29,
+    "placement": "embedded"
+   }
+  ],
+  "cc_name": [
+   {
+    "value": "Hana Brennan",
+    "turn": 114,
+    "visit": 36,
+    "placement": "embedded"
+   },
+   {
+    "value": "Ravi Kowalski",
+    "turn": 142,
+    "visit": 45,
+    "placement": "embedded"
+   }
+  ],
+  "seats": [
+   {
+    "value": 130,
+    "turn": 137,
+    "visit": 43,
+    "placement": "embedded"
+   }
+  ]
+ },
+ "Cobalt Freight": {
+  "concession_ref": [
+   {
+    "value": "CX-5267",
+    "turn": 15,
+    "visit": 4,
+    "placement": "home"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-04-26",
+    "turn": 15,
+    "visit": 4,
+    "placement": "home"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 36,
+    "turn": 15,
+    "visit": 4,
+    "placement": "home"
+   }
+  ],
+  "style_rule": [
+   {
+    "value": [
+     "price increase",
+     "plan adjustment"
+    ],
+    "turn": 21,
+    "visit": 6,
+    "placement": "home"
+   }
+  ],
+  "currency": [
+   {
+    "value": "GBP",
+    "turn": 21,
+    "visit": 6,
+    "placement": "home"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 20,
+    "turn": 37,
+    "visit": 11,
+    "placement": "embedded"
+   }
+  ],
+  "cc_name": [
+   {
+    "value": "Nadia Osei",
+    "turn": 41,
+    "visit": 12,
+    "placement": "embedded"
+   },
+   {
+    "value": "Omar Lindqvist",
+    "turn": 56,
+    "visit": 17,
+    "placement": "home"
+   }
+  ],
+  "seats": [
+   {
+    "value": 170,
+    "turn": 56,
+    "visit": 17,
+    "placement": "home"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Mei Moreau",
+    "turn": 80,
+    "visit": 26,
+    "placement": "embedded"
+   },
+   {
+    "value": "Elena Kowalski",
+    "turn": 110,
+    "visit": 35,
+    "placement": "embedded"
+   }
+  ]
+ },
+ "Delta Learning": {
+  "concession_ref": [
+   {
+    "value": "CX-2031",
+    "turn": 5,
+    "visit": 1,
+    "placement": "home"
+   }
+  ],
+  "cc_name": [
+   {
+    "value": "Priya Fischer",
+    "turn": 5,
+    "visit": 1,
+    "placement": "home"
+   }
+  ],
+  "currency": [
+   {
+    "value": "USD",
+    "turn": 5,
+    "visit": 1,
+    "placement": "home"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 12,
+    "turn": 12,
+    "visit": 3,
+    "placement": "home"
+   },
+   {
+    "value": 15,
+    "turn": 66,
+    "visit": 21,
+    "placement": "home"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Marcus Okafor",
+    "turn": 12,
+    "visit": 3,
+    "placement": "home"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-06-20",
+    "turn": 25,
+    "visit": 7,
+    "placement": "embedded"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 24,
+    "turn": 66,
+    "visit": 21,
+    "placement": "home"
+   }
+  ],
+  "seats": [
+   {
+    "value": 355,
+    "turn": 69,
+    "visit": 22,
+    "placement": "embedded"
+   },
+   {
+    "value": 315,
+    "turn": 82,
+    "visit": 27,
+    "placement": "home"
+   }
+  ],
+  "style_rule": [
+   {
+    "value": [
+     "discount",
+     "loyalty credit"
+    ],
+    "turn": 82,
+    "visit": 27,
+    "placement": "home"
+   }
+  ]
+ }
+}

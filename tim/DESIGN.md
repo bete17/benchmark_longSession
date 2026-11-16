@@ -1,6 +1,6 @@
 # Long-session benchmark: does Actor-Gatherer beat a regular agent?
 
-Status: design, pilot not yet run. Owner: Tim.
+Status: step 1 done (generator, grader, pilot session). Steps 2 to 4 handed to Claude Code, see CLAUDE.md. Owner: Tim.
 
 ## 1. Question
 
@@ -59,9 +59,15 @@ Two fact placements, tagged separately:
 
 ### Pilot size
 
-4 clients, about 40 visits (about 110 user messages), about 5 checks per deliverable, roughly
-300k to 400k total tokens of history, so that a 100k ceiling forces about 3 compactions.
-Pasted call notes and documents supply realistic bulk.
+Generated (`sessions/pilot_seed0`, seed 0): 4 clients, 48 visits, 152 user messages, 32 deliverables,
+143 checks (A 96, C 80, D 13, NEAR 9, CTRL 3; home 108, embedded 35). User text is about 240k
+characters (roughly 60k to 70k tokens, mostly pasted usage exports and email threads); with the agent's
+replies and tool calls the actor history should pass 100k at least twice. Claude Code measures the
+real size in the smoke test and regenerates with a larger `--report-rows` if needed.
+
+Known limits of v0 text: fact sentences are crisp and templated, filler repeats across call notes.
+An LLM paraphrase pass is a later improvement. CTRL has few checks; contrast comes mostly from the
+age curve (8 checks under 10 turns old, 29 over 100).
 
 ## 4. Generation
 
@@ -90,9 +96,9 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 |---|---|---|
 | 1 | Pi, full context, no compaction | Context-rot reference. Only valid while the session fits, so run on a truncated session |
 | 2 | Pi with native compaction at 100k | The main baseline |
-| 3 | Pi, fresh session per client with a handoff note | What people actually do |
+| 3 | Pi, one session per client (`pi_per_client`) | The "separate threads" workaround people use. Embedded facts land in the wrong client's thread, as they would for a real user |
 | 4 | AG + Pi, defaults except `max_context_tokens = 100000` | Main treatment |
-| 5 | AG + Pi, 2 to 3 knob settings | For the accuracy-vs-spend curve: `min_context_tokens`, `keep_*_relevant_tokens`, `summarize` |
+| 5 | AG + Pi, knob variants (`ag_tight` first: relevance budgets at 7500) | For the accuracy-vs-spend curve: `min_context_tokens`, `keep_*_relevant_tokens`, `summarize` |
 
 2 runs per condition for the pilot.
 

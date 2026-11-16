@@ -1,0 +1,147 @@
+"""Grade one run's deliverables against a generated session's checks.
+
+Usage:
+  python grade.py --session ../sessions/pilot_seed0 --run ../results/<run_dir> [--label NAME]
+
+<run_dir>/deliverables/<id>.md is what the agent wrote. Each file must start with a ```json block
+(the header), followed by the body. Writes <run_dir>/grades.jsonl (one row per check) and
+<run_dir>/summary.json, and prints a summary table.
+
+Outcomes per check:
+  pass          header value (or body, for style checks) matches the current fact
+  stale         header value equals a superseded value of the fact (a D failure mode)
+  wrong         present but neither current nor superseded
+  missing_key   header lacks the key
+  no_header     file exists but has no parsable ```json block
+  missing_file  deliverable never written
+Style checks pass only if the body includes the client's preferred word and excludes the banned
+one (case-insensitive). The header is not scanned, since keys like discount_pct contain banned words.
+"""
+
+import argparse
+import json
+import os
+import re
+from collections import defaultdict
+
+FENCE = re.compile(r"```(?:json|JSON)?\s*\n(.*?)\n```", re.S)
+
+
+def parse(path):
+    """(header dict | None, body str | None, error | None)"""
+    if not os.path.exists(path):
+        return None, None, "missing_file"
+    text = open(path, encoding="utf-8", errors="replace").read()
+    m = FENCE.search(text)
+    if not m:
+        return None, text, "no_header"
+    try:
+        hdr = json.loads(m.group(1))
+        if not isinstance(hdr, dict):
+            raise ValueError
+    except Exception:
+        return None, text[m.end():], "no_header"
+    return hdr, text[m.end():], None
+
+
+def norm(field, v):
+    if v is None:
+        return None
+    if field in ("seats", "term_months", "discount_pct"):
+        s = str(v).strip().rstrip("%").replace(",", "")
+        s = re.sub(r"[^\d.\-]", "", s.split()[0]) if s else s
+        try:
+            return int(round(float(s)))
+        except ValueError:
+            return str(v).strip().casefold()
+    s = str(v).strip().casefold()
+    s = re.sub(r"^(mr|ms|mrs|dr)\.?\s+", "", s)
+    return re.sub(r"\s+", " ", s)
+
+
+def grade_check(chk, hdr, body, err):
+    if chk["kind"] == "style":
+        if err == "missing_file":
+            return "missing_file"
+        b = (body or "").casefold()
+        inc, exc = chk["expected"]["include"].casefold(), chk["expected"]["exclude"].casefold()
+        if exc in b:
+            return "wrong"
+        return "pass" if inc in b else "wrong"
+    if err:
+        return err
+    f = chk["field"]
+    if f not in hdr:
+        return "missing_key"
+    got = norm(f, hdr[f])
+    if got == norm(f, chk["expected"]):
+        return "pass"
+    if any(got == norm(f, s) for s in chk.get("superseded_values", [])):
+        return "stale"
+    return "wrong"
+
+
+def age_bin(a):
+    for lo, hi in [(0, 10), (10, 30), (30, 60), (60, 100), (100, 10**9)]:
+        if lo <= a < hi:
+            return f"{lo}-{hi - 1 if hi < 10**9 else ''}"
+
+
+def summarize(rows):
+    def rate(rs):
+        n = len(rs)
+        return {"n": n, "pass": sum(r["outcome"] == "pass" for r in rs) / n if n else None}
+    out = {"overall": rate(rows)}
+    groups = {"by_tag": lambda r: r["tags"], "by_placement": lambda r: [r["placement"]],
+              "by_field": lambda r: [r["field"]], "by_age_turns": lambda r: [age_bin(r["age_turns"])],
+              "by_outcome": None}
+    for g, key in groups.items():
+        if key is None:
+            c = defaultdict(int)
+            for r in rows:
+                c[r["outcome"]] += 1
+            out[g] = dict(c)
+            continue
+        buckets = defaultdict(list)
+        for r in rows:
+            for k in key(r):
+                buckets[k].append(r)
+        out[g] = {k: rate(v) for k, v in sorted(buckets.items())}
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--session", required=True)
+    ap.add_argument("--run", required=True)
+    ap.add_argument("--label", default=None)
+    a = ap.parse_args()
+    checks = [json.loads(l) for l in open(os.path.join(a.session, "checks.jsonl"))]
+    cache = {}
+    rows = []
+    for chk in checks:
+        did = chk["deliverable_id"]
+        if did not in cache:
+            cache[did] = parse(os.path.join(a.run, "deliverables", f"{did}.md"))
+        hdr, body, err = cache[did]
+        rows.append({**{k: chk[k] for k in ("check_id", "deliverable_id", "client", "field", "kind",
+                                              "turn", "age_turns", "placement", "tags",
+                                              "visits_since_client_last_seen")},
+                     "expected": chk["expected"],
+                     "got": (hdr or {}).get(chk["field"]) if chk["kind"] == "field" else None,
+                     "outcome": grade_check(chk, hdr, body, err)})
+    with open(os.path.join(a.run, "grades.jsonl"), "w") as f:
+        for r in rows:
+            f.write(json.dumps(r) + "\n")
+    s = summarize(rows)
+    s["label"] = a.label or os.path.basename(os.path.normpath(a.run))
+    with open(os.path.join(a.run, "summary.json"), "w") as f:
+        json.dump(s, f, indent=1)
+    print(f"{s['label']}: overall {s['overall']['pass']:.3f} (n={s['overall']['n']})")
+    for g in ("by_tag", "by_placement", "by_age_turns"):
+        print(f"  {g}: " + ", ".join(f"{k}={v['pass']:.2f}({v['n']})" for k, v in s[g].items()))
+    print(f"  outcomes: {s['by_outcome']}")
+
+
+if __name__ == "__main__":
+    main()
