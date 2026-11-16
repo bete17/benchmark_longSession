@@ -59,15 +59,15 @@ Two fact placements, tagged separately:
 
 ### Pilot size
 
-Generated (`sessions/pilot_seed0`, seed 0): 4 clients, 48 visits, 152 user messages, 32 deliverables,
-143 checks (A 96, C 80, D 13, NEAR 9, CTRL 3; home 108, embedded 35). User text is about 240k
+Generated (`sessions/pilot_seed0`, seed 0): 4 clients, 48 visits (balanced across clients), 145 user messages, 32 deliverables,
+129 checks (A 86, C 80, D 14, CTRL 6, NEAR 5; home 102, embedded 27). User text is about 240k
 characters (roughly 60k to 70k tokens, mostly pasted usage exports and email threads); with the agent's
 replies and tool calls the actor history should pass 100k at least twice. Claude Code measures the
 real size in the smoke test and regenerates with a larger `--report-rows` if needed.
 
 Known limits of v0 text: fact sentences are crisp and templated, filler repeats across call notes.
 An LLM paraphrase pass is a later improvement. CTRL has few checks; contrast comes mostly from the
-age curve (8 checks under 10 turns old, 29 over 100).
+age curve .
 
 ## 4. Generation
 

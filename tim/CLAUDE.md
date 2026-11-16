@@ -24,15 +24,15 @@ tim/
   grade/grade.py               grader (stdlib only)
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
   sessions/pilot_seed0/        the generated pilot session
-    session.jsonl              152 user messages, in order: {"turn","visit","client","visit_kind","text"}
-    checks.jsonl               143 checks over 32 deliverables, each tagged A / C / D / CTRL / NEAR
+    session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
+    checks.jsonl               129 checks over 32 deliverables, each tagged A / C / D / CTRL / NEAR
     facts.json, visits.json    ground truth and the intended visit boundaries
     readable.md                the session as a readable script with planted facts listed per visit
     meta.json                  counts and a character-based size estimate (~60k user tokens)
 ```
 
 Verified before handoff: `make_oracle.py --mode perfect` grades 100%, `--mode stale` fails exactly
-the 13 D checks as "stale", `--mode empty` grades 0%.
+the 14 D checks as "stale", `--mode empty` grades 0%.
 
 The agent under test sees only each message's `text`, sent in order. Deliverables are files the agent
 writes to `deliverables/<id>.md` in its working directory, starting with a ```json header. The grader

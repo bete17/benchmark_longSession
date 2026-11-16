@@ -5,28 +5,31 @@ Planted facts are listed under each visit. The agent sees only the message text.
 
 ## Visit 0: Acme Robotics (debrief)
 
-Planted: Acme Robotics cc_name [home]; Acme Robotics renewal_deadline [home]; Acme Robotics style_rule [home]
+Planted: Acme Robotics contact_name [home]; Acme Robotics currency [home]; Acme Robotics renewal_deadline [home]
 
 
 **Turn 1**
 
 Pasting my notes from the QBR with Acme Robotics, they're messy:
 
-- Their legal team is slow, plan for extra time on any paperwork.
-- They're happy with support response times overall.
-- Data retention came up, I pointed them to the trust page.
-- Acme Robotics' renewal has to close by 2027-05-14.
-- Felix Alvarez runs procurement at Acme Robotics, so they need to be cc'd on pricing emails.
-- We agreed to share usage reports monthly instead of quarterly.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- There was a question about sandbox environments for testing.
-- Usage is up a bit quarter over quarter, mostly from the ops team.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- Acme Robotics' comms team is particular: never say "add-on" to them, always say "module" instead.
-- I walked them through the new permissions model, they liked it.
-- Their admin wants a refresher training session sometime next month.
-- Brief tangent about their annual offsite, not relevant for us.
 - Small complaint about dashboard load times, nothing urgent.
+- We talked through the API rate limits, they're well under them.
+- Aaron Ito is our main contact at Acme Robotics and owns the renewal on their side.
+- Their security questionnaire is due back to them by end of month.
+- There was a question about sandbox environments for testing.
+- Acme Robotics needs the renewal signed by 2027-05-14.
+- General vibe was positive, no sign they're shopping around seriously.
+- Data retention came up, I pointed them to the trust page.
+- They'd like more notice before UI changes ship.
+- Acme Robotics is billed in CAD, so everything we send them should be in CAD.
+- They brought up the integration with their ticketing tool, which works fine.
+- They asked whether the mobile app supports offline mode, I said not yet.
+- They asked about the roadmap for reporting, I said I'd follow up with product.
+- Their legal team is slow, plan for extra time on any paperwork.
+- I walked them through the new permissions model, they liked it.
+- Some confusion about which team owns the account internally on their side.
+- Usage is up a bit quarter over quarter, mostly from the ops team.
+- They're consolidating vendors this year but we are not on the chopping block.
 
 Can you pull out the action items with an owner for each?
 
@@ -34,17 +37,14 @@ Pasting Acme Robotics' usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Billing,APAC,3,411,111,2026-11-19
-Facilities,NA-East,11,456,8,2026-10-23
-Engineering,APAC,34,498,116,2026-11-20
-Ops,NA-East,32,333,39,2026-10-02
-Facilities,NA-West,36,648,10,2026-11-05
-Ops,APAC,44,427,40,2026-09-07
-Ops,NA-East,53,691,67,2026-11-04
-Legal,NA-East,39,664,25,2026-10-09
-Engineering,NA-East,31,874,118,2026-10-21
-Sales,NA-East,18,463,102,2026-09-28
-Procurement,NA-West,42,533,104,2026-11-21
+Field Ops,LATAM,49,0,113,2026-09-16
+Product,EMEA,54,478,6,2026-10-07
+Field Ops,NA-East,54,742,16,2026-09-13
+Facilities,EMEA,1,218,1,2026-11-25
+Ops,LATAM,40,100,24,2026-09-20
+Legal,EMEA,18,705,23,2026-09-16
+Logistics,NA-East,2,281,116,2026-10-26
+Support,EMEA,9,669,66,2026-11-21
 Customer Success,NA-East,56,158,35,2026-09-02
 Finance,NA-West,44,265,71,2026-10-12
 Billing,NA-East,55,767,89,2026-11-21
@@ -334,17 +334,20 @@ Ops,NA-East,31,324,50,2026-09-27
 Facilities,NA-East,37,789,5,2026-10-03
 Procurement,NA-West,47,334,22,2026-09-06
 Customer Success,NA-East,15,44,1,2026-10-18
+Ops,NA-West,8,841,77,2026-11-07
+Sales,APAC,13,868,0,2026-11-20
+Facilities,NA-East,35,181,118,2026-09-08
 ```
 
 
 **Turn 2**
 
-Group them by who owns them.
+Anything in there I should flag to my manager?
 
 
 **Turn 3**
 
-Anything in there I should flag to my manager?
+Which of these are blocking the renewal?
 
 
 **Turn 4**
@@ -354,33 +357,26 @@ Turn that into a short checklist I can paste into our CRM.
 
 ## Visit 1: Delta Learning (debrief)
 
-Planted: Delta Learning concession_ref [home]; Delta Learning cc_name [home]; Delta Learning currency [home]
+Planted: Delta Learning term_months [home]; Delta Learning discount_pct [home]; Delta Learning style_rule [home]
 
 
 **Turn 5**
 
 Here are my raw notes from the check-in with Delta Learning:
 
-- Their admin wants a refresher training session sometime next month.
-- Always cc Priya Fischer from Delta Learning procurement on anything involving pricing.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- We confirmed the next QBR will be virtual.
 - I walked them through the new permissions model, they liked it.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Usage is up a bit quarter over quarter, mostly from the ops team.
-- Their champion is busy with a product launch, so replies may be slow.
-- Small complaint about dashboard load times, nothing urgent.
-- We talked through the API rate limits, they're well under them.
-- Some confusion about which team owns the account internally on their side.
+- Delta Learning's comms team is particular: never say "discount" to them, always say "loyalty credit" instead.
+- Someone from finance joined late and mostly listened.
+- We spent the first few minutes on their reorg, which is mostly settled now.
+- They brought up the integration with their ticketing tool, which works fine.
+- They want to see a case study from a similar company in their space.
+- Their legal team is slow, plan for extra time on any paperwork.
 - We agreed to share usage reports monthly instead of quarterly.
-- Data retention came up, I pointed them to the trust page.
-- On the last call we promised Delta Learning free onboarding for their new admins; the concession is logged as CX-2031 and has to be referenced on their quote.
-- They'd like invoices sent to a shared AP inbox instead of a person.
-- They're consolidating vendors this year but we are not on the chopping block.
-- Their security questionnaire is due back to them by end of month.
-- They floated a possible pilot in a second business unit later in the year.
-- There was some back and forth about SSO setup, IT is handling it on their side.
-- Delta Learning is billed in USD, so everything we send them should be in USD.
+- Brief tangent about their annual offsite, not relevant for us.
+- The discount approved for Delta Learning is 12%.
+- General vibe was positive, no sign they're shopping around seriously.
+- Delta Learning prefers a 24-month term.
+- They mentioned they're hiring in the Lisbon office this spring.
 
 Can you pull out the action items with an owner for each?
 
@@ -388,8 +384,6 @@ Pasting Delta Learning's usage export from the admin console, in case it's usefu
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Billing,EMEA,46,376,105,2026-10-22
-Security,NA-West,39,529,11,2026-10-04
 Support,EMEA,2,708,18,2026-11-25
 Marketing,APAC,14,586,84,2026-10-07
 Facilities,LATAM,33,123,71,2026-09-23
@@ -688,51 +682,43 @@ Engineering,APAC,13,892,72,2026-11-19
 Sales,APAC,19,833,88,2026-11-02
 Procurement,NA-East,2,818,77,2026-09-11
 Engineering,APAC,15,597,70,2026-09-02
+Field Ops,NA-West,30,896,69,2026-11-15
+Billing,LATAM,22,841,44,2026-10-04
 ```
 
 
 **Turn 6**
 
-Which of these are blocking the renewal?
+Group them by who owns them.
 
 
 **Turn 7**
 
-Anything in there I should flag to my manager?
-
-
-**Turn 8**
-
-Turn that into a short checklist I can paste into our CRM.
+Which of these are blocking the renewal?
 
 
 ## Visit 2: Beta Health (debrief)
 
-Planted: Beta Health currency [home]; Beta Health style_rule [home]; Beta Health concession_ref [home]
+Planted: Beta Health concession_ref [home]; Beta Health renewal_deadline [home]; Beta Health term_months [home]
 
 
-**Turn 9**
+**Turn 8**
 
-Pasting my notes from the QBR with Beta Health, they're messy:
+Pasting my notes from this morning's call with Beta Health, they're messy:
 
-- There was some back and forth about SSO setup, IT is handling it on their side.
-- Some confusion about which team owns the account internally on their side.
-- They're consolidating vendors this year but we are not on the chopping block.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- On the last call we promised Beta Health free onboarding for their new admins; the concession is logged as CX-6409 and has to be referenced on their quote.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Beta Health's comms team is particular: never say "deadline" to them, always say "target date" instead.
-- They want to see a case study from a similar company in their space.
-- Small complaint about dashboard load times, nothing urgent.
-- They'd like invoices sent to a shared AP inbox instead of a person.
-- We talked through the API rate limits, they're well under them.
-- Data retention came up, I pointed them to the trust page.
-- Their security questionnaire is due back to them by end of month.
+- They'd like more notice before UI changes ship.
 - Their admin wants a refresher training session sometime next month.
-- Reminder that Beta Health's contract is denominated in AUD.
-- There was a question about sandbox environments for testing.
-- We confirmed the next QBR will be virtual.
-- They brought up the integration with their ticketing tool, which works fine.
+- I walked them through the new permissions model, they liked it.
+- We agreed to share usage reports monthly instead of quarterly.
+- They'd like invoices sent to a shared AP inbox instead of a person.
+- They asked whether the mobile app supports offline mode, I said not yet.
+- On the last call we promised Beta Health free onboarding for their new admins; the concession is logged as CX-6409 and has to be referenced on their quote.
+- Beta Health needs the renewal signed by 2027-06-12.
+- Data retention came up, I pointed them to the trust page.
+- Small complaint about dashboard load times, nothing urgent.
+- They mentioned they're hiring in the Lisbon office this spring.
+- Beta Health agreed in principle to a 24-month term.
+- Their legal team is slow, plan for extra time on any paperwork.
 
 Can you pull out the action items with an owner for each?
 
@@ -740,13 +726,12 @@ Pasting Beta Health's usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Security,NA-West,17,64,89,2026-09-19
-Ops,EMEA,59,766,23,2026-09-05
-Procurement,NA-West,26,262,66,2026-11-14
-Product,LATAM,47,434,62,2026-10-04
-Procurement,LATAM,21,263,32,2026-11-10
-Logistics,LATAM,33,23,63,2026-11-17
-Partnerships,NA-West,28,278,93,2026-11-25
+Sales,NA-West,59,582,0,2026-10-24
+Engineering,NA-East,10,256,22,2026-10-09
+Partnerships,APAC,21,551,93,2026-10-16
+Security,NA-East,17,619,40,2026-10-09
+Data,APAC,39,526,2,2026-10-21
+Partnerships,LATAM,13,432,34,2026-11-21
 Facilities,NA-East,2,424,71,2026-09-26
 Procurement,NA-East,2,504,86,2026-10-18
 Customer Success,LATAM,31,536,56,2026-11-24
@@ -1040,46 +1025,45 @@ Analytics,LATAM,52,142,6,2026-10-13
 Billing,APAC,43,467,76,2026-11-26
 Facilities,EMEA,50,655,111,2026-11-08
 Sales,EMEA,56,547,64,2026-09-11
+Data,NA-West,56,523,55,2026-10-10
 ```
+
+
+**Turn 9**
+
+Anything in there I should flag to my manager?
 
 
 **Turn 10**
 
-Turn that into a short checklist I can paste into our CRM.
-
-
-**Turn 11**
-
-Group them by who owns them.
+Which of these are blocking the renewal?
 
 
 ## Visit 3: Delta Learning (debrief)
 
-Planted: Delta Learning discount_pct [home]; Delta Learning contact_name [home]
+Planted: Delta Learning concession_ref [home]; Delta Learning renewal_deadline [home]; Cobalt Freight concession_ref [embedded]
 
 
-**Turn 12**
+**Turn 11**
 
-Pasting my notes from the check-in with Delta Learning, they're messy:
+Pasting my notes from my call with Delta Learning, they're messy:
 
-- Brief tangent about their annual offsite, not relevant for us.
-- We agreed to share usage reports monthly instead of quarterly.
-- They floated a possible pilot in a second business unit later in the year.
+- They're happy with support response times overall.
 - Their admin wants a refresher training session sometime next month.
 - There was some back and forth about SSO setup, IT is handling it on their side.
-- They're happy with support response times overall.
-- Their legal team is slow, plan for extra time on any paperwork.
-- Our point of contact at Delta Learning is Marcus Okafor.
-- Some confusion about which team owns the account internally on their side.
-- Their security questionnaire is due back to them by end of month.
 - We talked through the API rate limits, they're well under them.
 - They asked whether the mobile app supports offline mode, I said not yet.
+- On the last call we promised Delta Learning free onboarding for their new admins; the concession is logged as CX-2031 and has to be referenced on their quote.
+- Their champion is busy with a product launch, so replies may be slow.
 - Small complaint about dashboard load times, nothing urgent.
-- They're consolidating vendors this year but we are not on the chopping block.
-- I walked them through the new permissions model, they liked it.
-- The discount approved for Delta Learning is 12%.
-- There was a question about sandbox environments for testing.
-- Data retention came up, I pointed them to the trust page.
+- Brief tangent about their annual offsite, not relevant for us.
+- Their security questionnaire is due back to them by end of month.
+- We agreed to share usage reports monthly instead of quarterly.
+- General vibe was positive, no sign they're shopping around seriously.
+- Delta Learning needs the renewal signed by 2027-06-20.
+- Some confusion about which team owns the account internally on their side.
+- Someone from finance joined late and mostly listened.
+- They'd like invoices sent to a shared AP inbox instead of a person.
 
 Can you pull out the action items with an owner for each?
 
@@ -1087,19 +1071,19 @@ Pasting Delta Learning's usage export from the admin console, in case it's usefu
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Logistics,NA-East,38,487,56,2026-11-04
-Engineering,NA-East,52,536,103,2026-10-09
-Ops,APAC,26,203,3,2026-11-06
-Finance,APAC,28,341,114,2026-10-26
-Logistics,NA-East,18,484,84,2026-11-19
-Ops,NA-East,3,154,78,2026-11-08
-Engineering,EMEA,28,143,64,2026-10-25
-Analytics,NA-West,41,76,34,2026-09-20
-Legal,NA-West,9,13,114,2026-11-01
-Security,EMEA,20,745,67,2026-09-13
-Security,LATAM,50,667,21,2026-09-06
-Ops,LATAM,26,362,11,2026-10-01
-Security,LATAM,15,265,48,2026-09-14
+Security,NA-East,11,654,15,2026-11-26
+Procurement,EMEA,1,399,50,2026-09-01
+Research,NA-West,51,61,53,2026-10-11
+Facilities,APAC,3,273,118,2026-10-22
+Billing,LATAM,1,88,4,2026-09-20
+Field Ops,NA-West,11,880,92,2026-10-14
+Marketing,LATAM,19,768,118,2026-10-08
+Sales,EMEA,10,635,24,2026-09-05
+Ops,NA-East,29,282,38,2026-11-17
+Ops,APAC,30,826,78,2026-11-06
+Finance,NA-West,42,880,1,2026-11-13
+Customer Success,NA-East,56,320,3,2026-11-15
+Partnerships,NA-West,17,386,7,2026-10-28
 Security,APAC,11,854,27,2026-11-04
 Field Ops,LATAM,7,536,27,2026-11-25
 Field Ops,APAC,21,283,29,2026-11-20
@@ -1389,47 +1373,37 @@ Product,EMEA,6,309,81,2026-10-03
 Analytics,LATAM,41,325,75,2026-10-26
 ```
 
+Unrelated, but before I forget: On the last call we promised Cobalt Freight free onboarding for their new admins; the concession is logged as CX-5267 and has to be referenced on their quote.
 
-**Turn 13**
+
+**Turn 12**
 
 Anything in there I should flag to my manager?
 
 
-**Turn 14**
-
-Group them by who owns them.
-
-
 ## Visit 4: Cobalt Freight (debrief)
 
-Planted: Cobalt Freight concession_ref [home]; Cobalt Freight renewal_deadline [home]; Cobalt Freight term_months [home]
+Planted: Cobalt Freight cc_name [home]; Cobalt Freight currency [home]; Cobalt Freight discount_pct [home]
 
 
-**Turn 15**
+**Turn 13**
 
-Here are my raw notes from my call with Cobalt Freight:
+Pasting my notes from the QBR with Cobalt Freight, they're messy:
 
-- They brought up the integration with their ticketing tool, which works fine.
-- They want to see a case study from a similar company in their space.
-- They're consolidating vendors this year but we are not on the chopping block.
-- We talked through the API rate limits, they're well under them.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- Usage is up a bit quarter over quarter, mostly from the ops team.
 - Their champion is busy with a product launch, so replies may be slow.
 - There was some back and forth about SSO setup, IT is handling it on their side.
-- They're happy with support response times overall.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Cobalt Freight prefers a 36-month term.
-- On the last call we promised Cobalt Freight free onboarding for their new admins; the concession is logged as CX-5267 and has to be referenced on their quote.
-- Data retention came up, I pointed them to the trust page.
-- I walked them through the new permissions model, they liked it.
-- Cobalt Freight needs the renewal signed by 2027-04-26.
-- Brief tangent about their annual offsite, not relevant for us.
-- Some confusion about which team owns the account internally on their side.
-- We agreed to share usage reports monthly instead of quarterly.
 - They'd like more notice before UI changes ship.
-- There was a question about sandbox environments for testing.
-- They mentioned they're hiring in the Lisbon office this spring.
+- They're happy with support response times overall.
+- Nadia Osei runs procurement at Cobalt Freight, so they need to be cc'd on pricing emails.
+- We got a 20% discount approved for Cobalt Freight's renewal.
+- They asked whether the mobile app supports offline mode, I said not yet.
+- Data retention came up, I pointed them to the trust page.
+- Some confusion about which team owns the account internally on their side.
+- Brief tangent about their annual offsite, not relevant for us.
+- They'd like invoices sent to a shared AP inbox instead of a person.
+- They asked about the roadmap for reporting, I said I'd follow up with product.
+- Cobalt Freight is billed in GBP, so everything we send them should be in GBP.
+- We talked through the API rate limits, they're well under them.
 
 Can you pull out the action items with an owner for each?
 
@@ -1437,10 +1411,10 @@ Pasting Cobalt Freight's usage export from the admin console, in case it's usefu
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Sales,NA-East,21,880,72,2026-09-24
-Finance,EMEA,38,792,33,2026-11-28
-HR,LATAM,52,330,114,2026-11-07
-Legal,NA-West,40,458,112,2026-10-27
+Finance,NA-East,5,40,40,2026-11-27
+Marketing,NA-East,57,309,75,2026-10-26
+Research,NA-West,42,528,102,2026-10-18
+Legal,NA-West,9,631,57,2026-10-27
 Marketing,NA-East,17,763,119,2026-11-24
 Logistics,EMEA,44,337,37,2026-11-14
 Product,NA-West,41,876,2,2026-11-14
@@ -1740,39 +1714,32 @@ Sales,LATAM,12,426,56,2026-09-25
 ```
 
 
-**Turn 16**
+**Turn 14**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
 ## Visit 5: Acme Robotics (debrief)
 
-Planted: Acme Robotics currency [home]; Acme Robotics discount_pct [home]
+Planted: Acme Robotics cc_name [home]; Acme Robotics concession_ref [home]
 
 
-**Turn 17**
+**Turn 15**
 
-Here are my raw notes from my call with Acme Robotics:
+Here are my raw notes from this morning's call with Acme Robotics:
 
+- They'd like invoices sent to a shared AP inbox instead of a person.
 - They're consolidating vendors this year but we are not on the chopping block.
 - There was a question about sandbox environments for testing.
+- Always cc Felix Alvarez from Acme Robotics procurement on anything involving pricing.
 - They asked about the roadmap for reporting, I said I'd follow up with product.
 - We spent the first few minutes on their reorg, which is mostly settled now.
+- On the last call we promised Acme Robotics free onboarding for their new admins; the concession is logged as CX-5617 and has to be referenced on their quote.
 - They mentioned they're hiring in the Lisbon office this spring.
-- Acme Robotics is billed in CAD, so everything we send them should be in CAD.
-- Their legal team is slow, plan for extra time on any paperwork.
 - Their security questionnaire is due back to them by end of month.
-- They floated a possible pilot in a second business unit later in the year.
-- They'd like invoices sent to a shared AP inbox instead of a person.
-- We agreed to share usage reports monthly instead of quarterly.
-- Their admin wants a refresher training session sometime next month.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- They brought up the integration with their ticketing tool, which works fine.
-- Data retention came up, I pointed them to the trust page.
-- Brief tangent about their annual offsite, not relevant for us.
 - Some confusion about which team owns the account internally on their side.
-- We got a 11% discount approved for Acme Robotics' renewal.
-- There was some back and forth about SSO setup, IT is handling it on their side.
+- They floated a possible pilot in a second business unit later in the year.
+- Their legal team is slow, plan for extra time on any paperwork.
 
 Can you pull out the action items with an owner for each?
 
@@ -1780,7 +1747,8 @@ Pasting Acme Robotics' usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Sales,NA-West,35,798,0,2026-09-13
+Legal,NA-West,36,732,2,2026-09-03
+Marketing,LATAM,50,4,25,2026-10-25
 Field Ops,APAC,45,639,1,2026-11-15
 Partnerships,APAC,18,801,2,2026-10-23
 Engineering,APAC,56,202,9,2026-09-15
@@ -2079,46 +2047,52 @@ Legal,APAC,16,104,103,2026-10-02
 Sales,EMEA,22,315,87,2026-09-27
 Marketing,LATAM,2,247,80,2026-11-21
 Sales,EMEA,59,36,29,2026-09-14
-Billing,APAC,55,703,100,2026-10-21
 ```
 
 
-**Turn 18**
-
-Group them by who owns them.
-
-
-**Turn 19**
-
-Which of these are blocking the renewal?
-
-
-**Turn 20**
+**Turn 16**
 
 Anything in there I should flag to my manager?
 
 
+**Turn 17**
+
+Turn that into a short checklist I can paste into our CRM.
+
+
+**Turn 18**
+
+Which of these are blocking the renewal?
+
+
 ## Visit 6: Cobalt Freight (debrief)
 
-Planted: Cobalt Freight style_rule [home]; Cobalt Freight currency [home]; Acme Robotics seats [embedded]
+Planted: Cobalt Freight contact_name [home]; Cobalt Freight renewal_deadline [home]
 
 
-**Turn 21**
+**Turn 19**
 
-Pasting my notes from my call with Cobalt Freight, they're messy:
+Here are my raw notes from this morning's call with Cobalt Freight:
 
-- Their security questionnaire is due back to them by end of month.
-- Reminder that Cobalt Freight's contract is denominated in GBP.
+- Mei Moreau is our main contact at Cobalt Freight and owns the renewal on their side.
+- We agreed to share usage reports monthly instead of quarterly.
+- I walked them through the new permissions model, they liked it.
+- They asked about the roadmap for reporting, I said I'd follow up with product.
 - There was some back and forth about SSO setup, IT is handling it on their side.
-- Cobalt Freight's comms team is particular: never say "price increase" to them, always say "plan adjustment" instead.
 - Small complaint about dashboard load times, nothing urgent.
 - They'd like invoices sent to a shared AP inbox instead of a person.
-- Their legal team is slow, plan for extra time on any paperwork.
 - They asked whether the mobile app supports offline mode, I said not yet.
 - Someone from finance joined late and mostly listened.
+- Cobalt Freight's renewal has to close by 2027-04-26.
 - Their admin wants a refresher training session sometime next month.
-- We agreed to share usage reports monthly instead of quarterly.
+- They'd like more notice before UI changes ship.
 - They're happy with support response times overall.
+- They floated a possible pilot in a second business unit later in the year.
+- Usage is up a bit quarter over quarter, mostly from the ops team.
+- They're consolidating vendors this year but we are not on the chopping block.
+- We talked through the API rate limits, they're well under them.
+- Data retention came up, I pointed them to the trust page.
+- Brief tangent about their annual offsite, not relevant for us.
 
 Can you pull out the action items with an owner for each?
 
@@ -2126,9 +2100,8 @@ Pasting Cobalt Freight's usage export from the admin console, in case it's usefu
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Ops,EMEA,45,167,104,2026-11-26
-Marketing,APAC,10,239,89,2026-09-13
-Marketing,NA-West,11,498,47,2026-11-20
+Logistics,NA-West,15,715,14,2026-10-05
+Legal,NA-West,32,382,116,2026-11-20
 Support,NA-East,49,719,103,2026-10-01
 Facilities,EMEA,17,334,98,2026-11-17
 Field Ops,LATAM,6,212,45,2026-11-26
@@ -2426,38 +2399,32 @@ Facilities,NA-East,28,118,71,2026-11-22
 Sales,EMEA,52,701,80,2026-09-26
 Partnerships,APAC,10,422,29,2026-10-06
 Support,LATAM,45,310,77,2026-11-22
+Finance,APAC,58,438,14,2026-09-06
 ```
 
-Unrelated, but before I forget: Acme Robotics plans to renew 265 seats.
 
-
-**Turn 22**
-
-Group them by who owns them.
-
-
-**Turn 23**
-
-Which of these are blocking the renewal?
-
-
-**Turn 24**
+**Turn 20**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
+**Turn 21**
+
+Group them by who owns them.
+
+
 ## Visit 7: Beta Health (debrief)
 
-Planted: Beta Health term_months [home]; Beta Health renewal_deadline [home]; Delta Learning renewal_deadline [embedded]
+Planted: Beta Health style_rule [home]; Beta Health currency [home]; Delta Learning cc_name [embedded]
 
 
-**Turn 25**
+**Turn 22**
 
 Here are my raw notes from this morning's call with Beta Health:
 
 - Some confusion about which team owns the account internally on their side.
 - Their champion is busy with a product launch, so replies may be slow.
-- Beta Health prefers a 24-month term.
+- Beta Health's comms team is particular: never say "deadline" to them, always say "target date" instead.
 - General vibe was positive, no sign they're shopping around seriously.
 - They're happy with support response times overall.
 - They're consolidating vendors this year but we are not on the chopping block.
@@ -2466,7 +2433,7 @@ Here are my raw notes from this morning's call with Beta Health:
 - We spent the first few minutes on their reorg, which is mostly settled now.
 - There was a question about sandbox environments for testing.
 - Usage is up a bit quarter over quarter, mostly from the ops team.
-- Beta Health's renewal has to close by 2027-06-12.
+- Reminder that Beta Health's contract is denominated in AUD.
 - They'd like invoices sent to a shared AP inbox instead of a person.
 - Someone from finance joined late and mostly listened.
 - Their legal team is slow, plan for extra time on any paperwork.
@@ -2781,10 +2748,10 @@ Analytics,APAC,55,770,59,2026-11-22
 Marketing,NA-East,20,857,92,2026-11-09
 ```
 
-Oh, and separately, Delta Learning's renewal has to close by 2027-06-20.
+Oh, and separately, Priya Fischer runs procurement at Delta Learning, so they need to be cc'd on pricing emails.
 
 
-**Turn 26**
+**Turn 23**
 
 Anything in there I should flag to my manager?
 
@@ -2792,22 +2759,22 @@ Anything in there I should flag to my manager?
 ## Visit 8: Delta Learning (deliverable, writes D01)
 
 
-**Turn 27**
+**Turn 24**
 
 Draft the deal-desk approval request for Delta Learning.
 
 
-**Turn 28**
+**Turn 25**
 
 Add one line on what we want out of this.
 
 
-**Turn 29**
+**Turn 26**
 
 Keep it to half a page.
 
 
-**Turn 30**
+**Turn 27**
 
 Good. Write the final version to deliverables/D01.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D01", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
@@ -2815,7 +2782,7 @@ Good. Write the final version to deliverables/D01.md. The file must start with a
 ## Visit 9: Cobalt Freight (deliverable, writes D02)
 
 
-**Turn 31**
+**Turn 28**
 
 Draft the deal-desk approval request for Cobalt Freight.
 
@@ -2846,12 +2813,12 @@ For context, here's the recent thread with Cobalt Freight:
 > Our admin noticed the export took longer than usual. We had a couple of questions about SSO groups. Can you resend the invoice to the AP inbox?
 
 
-**Turn 32**
+**Turn 29**
 
 Bullet points instead of paragraphs.
 
 
-**Turn 33**
+**Turn 30**
 
 Good. Write the final version to deliverables/D02.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D02", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
@@ -2859,7 +2826,7 @@ Good. Write the final version to deliverables/D02.md. The file must start with a
 ## Visit 10: Acme Robotics (deliverable, writes D03)
 
 
-**Turn 34**
+**Turn 31**
 
 Write a follow-up email to Acme Robotics after today's check-in. Please pitch the analytics add-on briefly at the end.
 
@@ -2884,6 +2851,48 @@ For context, here's the recent thread with Acme Robotics:
 > Confirming receipt, thanks. Happy to jump on a call if easier. Can we push our sync to Thursday? The team liked the new dashboard layout.
 
 
+**Turn 32**
+
+Tighten it up, keep the body under 180 words.
+
+
+**Turn 33**
+
+Good. Write the final version to deliverables/D03.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D03", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 11: Beta Health (deliverable, writes D04)
+
+Planted: Delta Learning currency [embedded]
+
+
+**Turn 34**
+
+Draft a short follow-up note to Beta Health. Please remind them about the deadline for signing.
+
+For context, here's the recent thread with Beta Health:
+
+> From: Sofia (Beta Health)
+> Our admin noticed the export took longer than usual. Our security team will send the questionnaire separately. Can we push our sync to Thursday?
+
+> From: me
+> Is there a recording of the training session? Can you resend the invoice to the AP inbox?
+
+> From: Sofia (Beta Health)
+> Let me check internally and get back to you. Our security team will send the questionnaire separately. Apologies for the delay, it's been a busy week.
+
+> From: me
+> We had a couple of questions about SSO groups. Who should we contact about the API keys?
+
+> From: Sofia (Beta Health)
+> The team liked the new dashboard layout. Following up on the item from last week. Looping in a colleague who has more context.
+
+> From: me
+> Can you resend the invoice to the AP inbox? Looping in a colleague who has more context. Our admin noticed the export took longer than usual. Attaching the doc we discussed.
+
+Unrelated, but before I forget: Delta Learning is billed in USD, so everything we send them should be in USD.
+
+
 **Turn 35**
 
 Tighten it up, keep the body under 180 words.
@@ -2891,195 +2900,153 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 36**
 
-Good. Write the final version to deliverables/D03.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D03", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 11: Delta Learning (deliverable, writes D04)
-
-Planted: Cobalt Freight discount_pct [embedded]
+Make the tone a bit warmer, they've been a good partner.
 
 
 **Turn 37**
 
-Draft a short follow-up note to Delta Learning. Please make sure they understand the discount is what keeps the total flat.
+Good. Write the final version to deliverables/D04.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D04", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
-For context, here's the recent thread with Delta Learning:
 
-> From: Sofia (Delta Learning)
-> Our admin noticed the export took longer than usual. Our security team will send the questionnaire separately. Can we push our sync to Thursday?
+## Visit 12: Cobalt Freight (deliverable, writes D05)
 
-> From: me
-> Is there a recording of the training session? Can you resend the invoice to the AP inbox?
-
-> From: Sofia (Delta Learning)
-> Let me check internally and get back to you. Our security team will send the questionnaire separately. Apologies for the delay, it's been a busy week.
-
-> From: me
-> We had a couple of questions about SSO groups. Who should we contact about the API keys?
-
-> From: Sofia (Delta Learning)
-> The team liked the new dashboard layout. Following up on the item from last week. Looping in a colleague who has more context.
-
-> From: me
-> Can you resend the invoice to the AP inbox? Looping in a colleague who has more context. Our admin noticed the export took longer than usual. Attaching the doc we discussed.
-
-Unrelated, but before I forget: We got a 20% discount approved for Cobalt Freight's renewal.
+Planted: Beta Health discount_pct [embedded]
 
 
 **Turn 38**
 
-Tighten it up, keep the body under 180 words.
+Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: contact name is Mei Moreau.) Please mention the 4% price increase on list rates next year.
+
+Unrelated, but before I forget: The discount approved for Beta Health is 8%.
 
 
 **Turn 39**
 
-Make the tone a bit warmer, they've been a good partner.
+Less salesy please, more matter-of-fact.
 
 
 **Turn 40**
 
-Good. Write the final version to deliverables/D04.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D04", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 12: Beta Health (deliverable, writes D05)
-
-Planted: Cobalt Freight cc_name [embedded]
+Tighten it up, keep the body under 180 words.
 
 
 **Turn 41**
 
-Time to send Beta Health their renewal pricing. Draft the quote. (Reminder: currency is AUD.) Please remind them about the deadline for signing.
-
-Unrelated, but before I forget: Nadia Osei runs procurement at Cobalt Freight, so they need to be cc'd on pricing emails.
-
-
-**Turn 42**
-
-Less salesy please, more matter-of-fact.
-
-
-**Turn 43**
-
-Tighten it up, keep the body under 180 words.
-
-
-**Turn 44**
-
 Good. Write the final version to deliverables/D05.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D05", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 13: Cobalt Freight (deliverable, writes D06)
+## Visit 13: Delta Learning (deliverable, writes D06)
 
 Planted: Acme Robotics term_months [embedded]
 
 
-**Turn 45**
+**Turn 42**
 
-Prep me a one-page brief for my meeting with Cobalt Freight tomorrow.
+Prep me a one-page brief for my meeting with Delta Learning tomorrow.
 
-For context, here's the recent thread with Cobalt Freight:
+For context, here's the recent thread with Delta Learning:
 
-> From: Ravi (Cobalt Freight)
+> From: Ravi (Delta Learning)
 > Is there a recording of the training session? Who should we contact about the API keys? Let me check internally and get back to you.
 
 > From: me
 > We'd like to add two more admins. Is there a recording of the training session?
 
-> From: Ravi (Cobalt Freight)
+> From: Ravi (Delta Learning)
 > Attaching the doc we discussed. Can we push our sync to Thursday? The team liked the new dashboard layout.
 
 > From: me
 > We had a couple of questions about SSO groups. Following up on the item from last week. Our security team will send the questionnaire separately.
 
-> From: Ravi (Cobalt Freight)
+> From: Ravi (Delta Learning)
 > Can we push our sync to Thursday? We had a couple of questions about SSO groups. Can you resend the invoice to the AP inbox?
 
 > From: me
 > We're still evaluating internally, no decision yet. Looping in a colleague who has more context. Let me check internally and get back to you.
 
 
-**Turn 46**
+**Turn 43**
 
 Bullet points instead of paragraphs.
 
 Side note: Acme Robotics agreed in principle to a 36-month term.
 
 
-**Turn 47**
+**Turn 44**
 
 Add one line on what we want out of this.
 
 
-**Turn 48**
+**Turn 45**
 
 Good. Write the final version to deliverables/D06.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D06", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 14: Delta Learning (deliverable, writes D07)
+## Visit 14: Beta Health (deliverable, writes D07)
 
 
-**Turn 49**
+**Turn 46**
 
-Give me a prep doc for the Delta Learning QBR.
+Give me a prep doc for the Beta Health QBR.
 
-For context, here's the recent thread with Delta Learning:
+For context, here's the recent thread with Beta Health:
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Happy to jump on a call if easier. Looping in a colleague who has more context. Thanks for the quick turnaround on this.
 
 > From: me
 > Happy to jump on a call if easier. Who should we contact about the API keys?
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Our admin noticed the export took longer than usual. Apologies for the delay, it's been a busy week.
 
 > From: me
 > Is there a recording of the training session? Confirming receipt, thanks. We had a couple of questions about SSO groups.
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > We had a couple of questions about SSO groups. Following up on the item from last week. Attaching the doc we discussed.
 
 > From: me
 > Happy to jump on a call if easier. Thanks for the quick turnaround on this. We're still evaluating internally, no decision yet. We had a couple of questions about SSO groups.
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Attaching the doc we discussed. Can we push our sync to Thursday? Please hold off on any changes until after our freeze. Apologies for the delay, it's been a busy week.
 
 > From: me
 > Our admin noticed the export took longer than usual. Can you resend the invoice to the AP inbox?
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Confirming receipt, thanks. Thanks for the quick turnaround on this. Happy to jump on a call if easier. The team liked the new dashboard layout.
 
 > From: me
 > Attaching the doc we discussed. Let me check internally and get back to you. The team liked the new dashboard layout. Looping in a colleague who has more context.
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Please hold off on any changes until after our freeze. Apologies for the delay, it's been a busy week.
 
 > From: me
 > Let me check internally and get back to you. Who should we contact about the API keys? Can you resend the invoice to the AP inbox? Can we push our sync to Thursday?
 
-> From: Lena (Delta Learning)
+> From: Lena (Beta Health)
 > Is there a recording of the training session? Let me check internally and get back to you. Who should we contact about the API keys? Attaching the doc we discussed.
 
 
-**Turn 50**
+**Turn 47**
 
 Keep it to half a page.
 
 
-**Turn 51**
+**Turn 48**
 
 Good. Write the final version to deliverables/D07.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D07", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
 ## Visit 15: Beta Health (debrief)
 
-Planted: Beta Health contact_name [home]
+Planted: Beta Health cc_name [home]
 
 
-**Turn 52**
+**Turn 49**
 
 Here are my raw notes from the QBR with Beta Health:
 
@@ -3088,7 +3055,7 @@ Here are my raw notes from the QBR with Beta Health:
 - Their legal team is slow, plan for extra time on any paperwork.
 - They want to see a case study from a similar company in their space.
 - They floated a possible pilot in a second business unit later in the year.
-- Our point of contact at Beta Health is Tomas Moreau.
+- Hana Brennan runs procurement at Beta Health, so they need to be cc'd on pricing emails.
 - We agreed to share usage reports monthly instead of quarterly.
 - Brief tangent about their annual offsite, not relevant for us.
 - They brought up the integration with their ticketing tool, which works fine.
@@ -3406,86 +3373,83 @@ Billing,NA-West,10,68,43,2026-09-28
 ```
 
 
-**Turn 53**
+**Turn 50**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
-## Visit 16: Beta Health (deliverable, writes D08)
+## Visit 16: Acme Robotics (deliverable, writes D08)
 
 
-**Turn 54**
+**Turn 51**
 
-Draft the renewal quote for Beta Health. Please remind them about the deadline for signing.
+Draft the renewal quote for Acme Robotics. Please pitch the analytics add-on briefly at the end.
 
-For context, here's the recent thread with Beta Health:
+For context, here's the recent thread with Acme Robotics:
 
-> From: Tomas (Beta Health)
+> From: Tomas (Acme Robotics)
 > Can we push our sync to Thursday? Looping in a colleague who has more context. Who should we contact about the API keys? Thanks for the quick turnaround on this.
 
 > From: me
 > Attaching the doc we discussed. Happy to jump on a call if easier. The team liked the new dashboard layout. Please hold off on any changes until after our freeze.
 
-> From: Tomas (Beta Health)
+> From: Tomas (Acme Robotics)
 > We're still evaluating internally, no decision yet. Apologies for the delay, it's been a busy week.
 
 > From: me
 > Looping in a colleague who has more context. We'd like to add two more admins. The team liked the new dashboard layout.
 
-> From: Tomas (Beta Health)
+> From: Tomas (Acme Robotics)
 > We had a couple of questions about SSO groups. The team liked the new dashboard layout. We'd like to add two more admins.
 
 > From: me
 > Confirming receipt, thanks. Can you resend the invoice to the AP inbox?
 
-> From: Tomas (Beta Health)
+> From: Tomas (Acme Robotics)
 > Who should we contact about the API keys? Our security team will send the questionnaire separately. Apologies for the delay, it's been a busy week. Sounds good, we'll review on our side.
 
 
-**Turn 55**
+**Turn 52**
 
 Good. Write the final version to deliverables/D08.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D08", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 17: Cobalt Freight (debrief)
+## Visit 17: Delta Learning (debrief)
 
-Planted: Cobalt Freight seats [home]; Cobalt Freight cc_name [home-supersede]
+Planted: Delta Learning seats [home]; Delta Learning discount_pct [home-supersede]
 
 
-**Turn 56**
+**Turn 53**
 
-Here are my raw notes from my call with Cobalt Freight:
+Pasting my notes from this morning's call with Delta Learning, they're messy:
 
+- Delta Learning plans to renew 355 seats.
+- Brief tangent about their annual offsite, not relevant for us.
 - They're consolidating vendors this year but we are not on the chopping block.
 - Usage is up a bit quarter over quarter, mostly from the ops team.
-- Brief tangent about their annual offsite, not relevant for us.
+- They floated a possible pilot in a second business unit later in the year.
 - They'd like invoices sent to a shared AP inbox instead of a person.
+- Deal desk revised Delta Learning's approved discount from 12% to 15%.
 - We confirmed the next QBR will be virtual.
 - Small complaint about dashboard load times, nothing urgent.
-- Cobalt Freight plans to renew 170 seats.
-- For Cobalt Freight, stop copying Nadia Osei on pricing; copy Omar Lindqvist instead, they took over procurement.
-- Their legal team is slow, plan for extra time on any paperwork.
-- There was a question about sandbox environments for testing.
+- They'd like more notice before UI changes ship.
 - We talked through the API rate limits, they're well under them.
 - Their champion is busy with a product launch, so replies may be slow.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
-- Data retention came up, I pointed them to the trust page.
-- They'd like more notice before UI changes ship.
-- They mentioned they're hiring in the Lisbon office this spring.
-- Some confusion about which team owns the account internally on their side.
 
 Can you pull out the action items with an owner for each?
 
-Pasting Cobalt Freight's usage export from the admin console, in case it's useful:
+Pasting Delta Learning's usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Billing,NA-West,53,764,78,2026-09-05
-Marketing,NA-West,33,802,26,2026-10-17
-Facilities,LATAM,20,250,7,2026-10-05
-Customer Success,NA-East,27,104,69,2026-11-03
-Billing,LATAM,21,722,31,2026-11-25
-HR,NA-East,3,38,112,2026-11-23
+Customer Success,LATAM,13,225,90,2026-11-28
+Field Ops,NA-East,13,588,26,2026-11-20
+Marketing,NA-West,10,133,64,2026-09-13
+Partnerships,APAC,34,305,118,2026-09-02
+Analytics,NA-West,23,698,12,2026-10-04
+Field Ops,LATAM,5,584,80,2026-11-11
+HR,LATAM,49,873,104,2026-09-22
+Support,NA-East,3,897,87,2026-11-26
 Data,APAC,60,352,12,2026-09-01
 Support,NA-East,17,352,113,2026-11-20
 Customer Success,EMEA,7,74,102,2026-09-10
@@ -3778,88 +3742,50 @@ Engineering,NA-East,43,881,1,2026-09-09
 HR,EMEA,44,897,53,2026-11-06
 Procurement,EMEA,53,269,32,2026-09-02
 Billing,LATAM,46,504,12,2026-09-19
-Customer Success,LATAM,8,458,4,2026-11-25
-Field Ops,LATAM,24,677,116,2026-11-08
 ```
 
 
-**Turn 57**
+**Turn 54**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
-## Visit 18: Beta Health (deliverable, writes D09)
+## Visit 18: Acme Robotics (deliverable, writes D09)
 
 
-**Turn 58**
+**Turn 55**
 
-Write a follow-up email to Beta Health after today's check-in. Please remind them about the deadline for signing.
-
-For context, here's the recent thread with Beta Health:
-
-> From: Ines (Beta Health)
-> Can you resend the invoice to the AP inbox? Please hold off on any changes until after our freeze.
-
-> From: me
-> Attaching the doc we discussed. Sounds good, we'll review on our side.
-
-> From: Ines (Beta Health)
-> Confirming receipt, thanks. Looping in a colleague who has more context. Our admin noticed the export took longer than usual. We're still evaluating internally, no decision yet.
-
-> From: me
-> Thanks for the quick turnaround on this. Happy to jump on a call if easier. The team liked the new dashboard layout.
-
-> From: Ines (Beta Health)
-> Attaching the doc we discussed. Confirming receipt, thanks.
-
-> From: me
-> Thanks for the quick turnaround on this. Confirming receipt, thanks.
-
-> From: Ines (Beta Health)
-> The team liked the new dashboard layout. Apologies for the delay, it's been a busy week.
-
-> From: me
-> Who should we contact about the API keys? Apologies for the delay, it's been a busy week. Can we push our sync to Thursday?
-
-> From: Ines (Beta Health)
-> Attaching the doc we discussed. Happy to jump on a call if easier.
+Fill out the internal discount approval request for Acme Robotics.
 
 
-**Turn 59**
+**Turn 56**
 
-Add a line offering a call next week.
-
-
-**Turn 60**
-
-Good. Write the final version to deliverables/D09.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D09", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D09.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D09", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
 ## Visit 19: Acme Robotics (debrief)
 
-Planted: Acme Robotics contact_name [home]; Acme Robotics cc_name [home-supersede]
+Planted: Acme Robotics style_rule [home]; Acme Robotics cc_name [home-supersede]
 
 
-**Turn 61**
+**Turn 57**
 
 Pasting my notes from my call with Acme Robotics, they're messy:
 
-- Someone from finance joined late and mostly listened.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
+- They'd like invoices sent to a shared AP inbox instead of a person.
+- They mentioned they're hiring in the Lisbon office this spring.
+- We spent the first few minutes on their reorg, which is mostly settled now.
+- Acme Robotics' comms team is particular: never say "add-on" to them, always say "module" instead.
 - Their admin wants a refresher training session sometime next month.
-- They'd like more notice before UI changes ship.
 - We talked through the API rate limits, they're well under them.
-- They're happy with support response times overall.
-- Aaron Ito is our main contact at Acme Robotics and owns the renewal on their side.
-- They brought up the integration with their ticketing tool, which works fine.
 - Some confusion about which team owns the account internally on their side.
-- For Acme Robotics, stop copying Felix Alvarez on pricing; copy Diego Osei instead, they took over procurement.
-- There was a question about sandbox environments for testing.
-- Brief tangent about their annual offsite, not relevant for us.
-- General vibe was positive, no sign they're shopping around seriously.
-- They floated a possible pilot in a second business unit later in the year.
-- Their champion is busy with a product launch, so replies may be slow.
+- They asked whether the mobile app supports offline mode, I said not yet.
 - Their security questionnaire is due back to them by end of month.
+- They want to see a case study from a similar company in their space.
+- Their champion is busy with a product launch, so replies may be slow.
+- They're consolidating vendors this year but we are not on the chopping block.
+- For Acme Robotics, stop copying Felix Alvarez on pricing; copy Lena Alvarez instead, they took over procurement.
+- There was some back and forth about SSO setup, IT is handling it on their side.
 
 Can you pull out the action items with an owner for each?
 
@@ -3867,9 +3793,18 @@ Pasting Acme Robotics' usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Finance,LATAM,16,381,78,2026-09-13
-Security,NA-West,24,266,88,2026-10-01
-Sales,EMEA,4,504,48,2026-09-03
+Field Ops,APAC,19,883,90,2026-09-27
+Research,APAC,30,65,118,2026-09-19
+Support,NA-East,57,880,111,2026-11-02
+Security,NA-West,56,280,112,2026-10-08
+Sales,NA-West,8,442,60,2026-11-13
+Analytics,NA-East,38,425,37,2026-10-02
+Legal,NA-West,19,819,73,2026-11-19
+Product,APAC,18,459,15,2026-10-27
+Data,NA-East,56,279,6,2026-11-08
+Customer Success,LATAM,1,384,93,2026-11-15
+Legal,EMEA,17,710,32,2026-09-03
+Customer Success,NA-East,32,384,120,2026-09-03
 Support,EMEA,44,779,67,2026-09-22
 Finance,APAC,53,363,35,2026-11-08
 Ops,APAC,51,345,0,2026-10-23
@@ -4158,99 +4093,93 @@ Engineering,LATAM,26,223,66,2026-11-06
 Field Ops,APAC,58,80,119,2026-10-27
 Analytics,EMEA,57,224,0,2026-10-24
 Procurement,NA-East,9,641,17,2026-09-23
-Sales,APAC,30,295,99,2026-10-01
-Research,LATAM,25,207,4,2026-09-18
-Marketing,APAC,16,225,75,2026-09-03
-Sales,EMEA,7,487,95,2026-11-24
-Logistics,EMEA,11,80,98,2026-10-13
-Procurement,LATAM,2,3,27,2026-09-18
-Product,NA-East,53,327,60,2026-09-04
-Engineering,NA-West,31,199,111,2026-10-04
-Sales,NA-East,4,180,64,2026-09-13
 ```
 
 
-**Turn 62**
+**Turn 58**
+
+Group them by who owns them.
+
+
+**Turn 59**
 
 Which of these are blocking the renewal?
 
 
-**Turn 63**
+**Turn 60**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
-## Visit 20: Acme Robotics (deliverable, writes D10)
+## Visit 20: Cobalt Freight (deliverable, writes D10)
+
+Planted: Acme Robotics discount_pct [embedded]
 
 
-**Turn 64**
+**Turn 61**
 
-Draft the renewal quote for Acme Robotics. Please pitch the analytics add-on briefly at the end.
+Time to send Cobalt Freight their renewal pricing. Draft the quote. Please mention the 4% price increase on list rates next year.
 
-For context, here's the recent thread with Acme Robotics:
-
-> From: Elena (Acme Robotics)
-> Apologies for the delay, it's been a busy week. Can you resend the invoice to the AP inbox? Please hold off on any changes until after our freeze. Confirming receipt, thanks.
-
-> From: me
-> Please hold off on any changes until after our freeze. We're still evaluating internally, no decision yet. Thanks for the quick turnaround on this.
-
-> From: Elena (Acme Robotics)
-> Let me check internally and get back to you. We're still evaluating internally, no decision yet.
-
-> From: me
-> Let me check internally and get back to you. The team liked the new dashboard layout.
-
-> From: Elena (Acme Robotics)
-> Attaching the doc we discussed. Our admin noticed the export took longer than usual. Following up on the item from last week.
-
-> From: me
-> Can you resend the invoice to the AP inbox? Sounds good, we'll review on our side.
-
-> From: Elena (Acme Robotics)
-> We had a couple of questions about SSO groups. Our security team will send the questionnaire separately. Attaching the doc we discussed. Apologies for the delay, it's been a busy week.
-
-> From: me
-> We had a couple of questions about SSO groups. We'd like to add two more admins.
+Side note: The discount approved for Acme Robotics is 11%.
 
 
-**Turn 65**
+**Turn 62**
+
+Add a line offering a call next week.
+
+
+**Turn 63**
 
 Good. Write the final version to deliverables/D10.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D10", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 21: Delta Learning (debrief)
+## Visit 21: Beta Health (debrief)
 
-Planted: Delta Learning term_months [home]; Delta Learning discount_pct [home-supersede]
+Planted: Beta Health seats [home]; Beta Health cc_name [home-supersede]
 
 
-**Turn 66**
+**Turn 64**
 
-Here are my raw notes from the check-in with Delta Learning:
+Pasting my notes from my call with Beta Health, they're messy:
 
-- I walked them through the new permissions model, they liked it.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- Small complaint about dashboard load times, nothing urgent.
-- Deal desk revised Delta Learning's approved discount from 12% to 15%.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Their admin wants a refresher training session sometime next month.
-- They floated a possible pilot in a second business unit later in the year.
-- There was a question about sandbox environments for testing.
-- They want to see a case study from a similar company in their space.
-- They're consolidating vendors this year but we are not on the chopping block.
-- They'd like more notice before UI changes ship.
-- General vibe was positive, no sign they're shopping around seriously.
+- There was some back and forth about SSO setup, IT is handling it on their side.
+- They'd like invoices sent to a shared AP inbox instead of a person.
+- We agreed to share usage reports monthly instead of quarterly.
 - Their champion is busy with a product launch, so replies may be slow.
-- Delta Learning agreed in principle to a 24-month term.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
+- They're consolidating vendors this year but we are not on the chopping block.
+- Data retention came up, I pointed them to the trust page.
+- Beta Health wants to renew at 130 seats.
+- Someone from finance joined late and mostly listened.
+- Small complaint about dashboard load times, nothing urgent.
+- Usage is up a bit quarter over quarter, mostly from the ops team.
+- For Beta Health, stop copying Hana Brennan on pricing; copy Priya Raman instead, they took over procurement.
+- General vibe was positive, no sign they're shopping around seriously.
+- Their legal team is slow, plan for extra time on any paperwork.
+- They'd like more notice before UI changes ship.
+- We spent the first few minutes on their reorg, which is mostly settled now.
+- Their security questionnaire is due back to them by end of month.
+- They floated a possible pilot in a second business unit later in the year.
 
 Can you pull out the action items with an owner for each?
 
-Pasting Delta Learning's usage export from the admin console, in case it's useful:
+Pasting Beta Health's usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Engineering,NA-East,27,736,116,2026-09-27
+Analytics,NA-West,8,169,104,2026-09-16
+Legal,EMEA,8,756,114,2026-09-03
+Finance,NA-West,33,206,49,2026-09-19
+Support,NA-East,6,547,38,2026-10-23
+Marketing,NA-East,44,238,99,2026-11-12
+Field Ops,EMEA,25,727,68,2026-10-01
+Sales,NA-West,25,51,22,2026-10-16
+Support,EMEA,10,124,46,2026-11-25
+Legal,EMEA,46,304,14,2026-09-28
+Sales,EMEA,40,525,89,2026-09-21
+Analytics,EMEA,16,632,0,2026-09-14
+Legal,LATAM,56,642,44,2026-09-12
+Security,LATAM,29,60,100,2026-09-12
+Sales,NA-West,6,431,92,2026-09-27
 Product,NA-West,42,787,41,2026-11-08
 Ops,APAC,33,276,61,2026-11-10
 Product,NA-East,42,618,5,2026-11-07
@@ -4537,245 +4466,323 @@ Legal,APAC,27,37,28,2026-11-19
 Procurement,EMEA,38,287,92,2026-11-18
 Marketing,NA-East,20,61,115,2026-09-12
 Engineering,NA-West,59,865,12,2026-10-17
-Partnerships,NA-West,25,425,107,2026-11-11
-Security,EMEA,33,301,82,2026-09-16
-Procurement,APAC,45,798,3,2026-10-18
-Security,EMEA,31,71,39,2026-09-24
-Analytics,NA-East,13,108,91,2026-09-19
-Engineering,NA-East,37,795,64,2026-10-19
-Finance,NA-West,60,614,9,2026-11-15
-HR,EMEA,40,846,51,2026-10-22
-Marketing,APAC,40,227,10,2026-11-14
-Analytics,APAC,15,379,37,2026-09-14
-HR,APAC,23,728,101,2026-10-22
-Facilities,LATAM,55,384,94,2026-11-19
-Security,NA-East,41,578,101,2026-09-08
 ```
 
 
-**Turn 67**
+**Turn 65**
 
 Which of these are blocking the renewal?
 
 
-## Visit 22: Acme Robotics (deliverable, writes D11)
+## Visit 22: Cobalt Freight (deliverable, writes D11)
 
-Planted: Delta Learning seats [embedded]
+
+**Turn 66**
+
+Put together an internal brief on Cobalt Freight before my call.
+
+For context, here's the recent thread with Cobalt Freight:
+
+> From: Mei (Cobalt Freight)
+> We're still evaluating internally, no decision yet. Thanks for the quick turnaround on this. Our admin noticed the export took longer than usual.
+
+> From: me
+> The team liked the new dashboard layout. We had a couple of questions about SSO groups. Who should we contact about the API keys? Can we push our sync to Thursday?
+
+> From: Mei (Cobalt Freight)
+> Attaching the doc we discussed. Who should we contact about the API keys? Looping in a colleague who has more context.
+
+> From: me
+> Attaching the doc we discussed. Let me check internally and get back to you.
+
+> From: Mei (Cobalt Freight)
+> Let me check internally and get back to you. Looping in a colleague who has more context. We'd like to add two more admins. Is there a recording of the training session?
+
+> From: me
+> Looping in a colleague who has more context. Following up on the item from last week. Can we push our sync to Thursday? The team liked the new dashboard layout.
+
+> From: Mei (Cobalt Freight)
+> Can you resend the invoice to the AP inbox? We're still evaluating internally, no decision yet.
+
+> From: me
+> Following up on the item from last week. Who should we contact about the API keys? Apologies for the delay, it's been a busy week.
+
+> From: Mei (Cobalt Freight)
+> We'd like to add two more admins. Happy to jump on a call if easier.
+
+
+**Turn 67**
+
+Add one line on what we want out of this.
 
 
 **Turn 68**
 
-Write a follow-up email to Acme Robotics after today's check-in. Please pitch the analytics add-on briefly at the end.
+Good. Write the final version to deliverables/D11.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D11", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
-For context, here's the recent thread with Acme Robotics:
 
-> From: Marcus (Acme Robotics)
-> Our security team will send the questionnaire separately. Thanks for the quick turnaround on this. Sounds good, we'll review on our side. Who should we contact about the API keys?
-
-> From: me
-> Thanks for the quick turnaround on this. Apologies for the delay, it's been a busy week.
-
-> From: Marcus (Acme Robotics)
-> The team liked the new dashboard layout. Can you resend the invoice to the AP inbox? Our security team will send the questionnaire separately.
-
-> From: me
-> Can we push our sync to Thursday? Let me check internally and get back to you.
-
-> From: Marcus (Acme Robotics)
-> Looping in a colleague who has more context. Let me check internally and get back to you. Our security team will send the questionnaire separately. Following up on the item from last week.
-
-> From: me
-> Is there a recording of the training session? We're still evaluating internally, no decision yet. Attaching the doc we discussed. Can you resend the invoice to the AP inbox?
-
-> From: Marcus (Acme Robotics)
-> Happy to jump on a call if easier. Apologies for the delay, it's been a busy week.
-
-> From: me
-> Our admin noticed the export took longer than usual. Thanks for the quick turnaround on this.
-
-> From: Marcus (Acme Robotics)
-> Apologies for the delay, it's been a busy week. Is there a recording of the training session?
-
-> From: me
-> Our admin noticed the export took longer than usual. We're still evaluating internally, no decision yet. Attaching the doc we discussed. We had a couple of questions about SSO groups.
+## Visit 23: Cobalt Freight (deliverable, writes D12)
 
 
 **Turn 69**
 
-Open with a thank-you for the last quarter.
+Put together an internal brief on Cobalt Freight before my call.
 
-Unrelated, but before I forget: Delta Learning wants to renew at 355 seats.
+For context, here's the recent thread with Cobalt Freight:
 
+> From: Nadia (Cobalt Freight)
+> Is there a recording of the training session? Happy to jump on a call if easier. Please hold off on any changes until after our freeze. We're still evaluating internally, no decision yet.
 
-**Turn 70**
+> From: me
+> Confirming receipt, thanks. Our security team will send the questionnaire separately. The team liked the new dashboard layout. Thanks for the quick turnaround on this.
 
-Good. Write the final version to deliverables/D11.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D11", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 23: Beta Health (deliverable, writes D12)
-
-
-**Turn 71**
-
-Put together an internal brief on Beta Health before my call.
-
-For context, here's the recent thread with Beta Health:
-
-> From: Aaron (Beta Health)
-> Who should we contact about the API keys? Happy to jump on a call if easier. We had a couple of questions about SSO groups.
+> From: Nadia (Cobalt Freight)
+> Confirming receipt, thanks. Sounds good, we'll review on our side. Apologies for the delay, it's been a busy week. We'd like to add two more admins.
 
 > From: me
 > Can you resend the invoice to the AP inbox? Following up on the item from last week.
 
-> From: Aaron (Beta Health)
-> We'd like to add two more admins. Sounds good, we'll review on our side. Our security team will send the questionnaire separately. Apologies for the delay, it's been a busy week.
+> From: Nadia (Cobalt Freight)
+> We'd like to add two more admins. The team liked the new dashboard layout.
 
 > From: me
-> We'd like to add two more admins. Following up on the item from last week. Attaching the doc we discussed.
+> Confirming receipt, thanks. We had a couple of questions about SSO groups. Looping in a colleague who has more context. Thanks for the quick turnaround on this.
 
-> From: Aaron (Beta Health)
-> We're still evaluating internally, no decision yet. We had a couple of questions about SSO groups.
-
-> From: me
-> Please hold off on any changes until after our freeze. Confirming receipt, thanks. Happy to jump on a call if easier.
-
-> From: Aaron (Beta Health)
-> Can we push our sync to Thursday? Looping in a colleague who has more context. Thanks for the quick turnaround on this. Who should we contact about the API keys?
+> From: Nadia (Cobalt Freight)
+> Sounds good, we'll review on our side. Who should we contact about the API keys? Following up on the item from last week. Thanks for the quick turnaround on this.
 
 > From: me
-> Confirming receipt, thanks. Is there a recording of the training session? Following up on the item from last week.
+> We're still evaluating internally, no decision yet. The team liked the new dashboard layout.
+
+> From: Nadia (Cobalt Freight)
+> The team liked the new dashboard layout. Thanks for the quick turnaround on this. Can we push our sync to Thursday?
+
+> From: me
+> Looping in a colleague who has more context. Let me check internally and get back to you.
+
+> From: Nadia (Cobalt Freight)
+> Following up on the item from last week. Is there a recording of the training session?
+
+> From: me
+> Attaching the doc we discussed. Can you resend the invoice to the AP inbox? Can we push our sync to Thursday?
 
 
-**Turn 72**
+**Turn 70**
 
 Good. Write the final version to deliverables/D12.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D12", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 24: Beta Health (deliverable, writes D13)
+## Visit 24: Cobalt Freight (deliverable, writes D13)
+
+
+**Turn 71**
+
+Draft a short follow-up note to Cobalt Freight. (Reminder: renewal deadline is 2027-04-26.) Please mention the 4% price increase on list rates next year.
+
+For context, here's the recent thread with Cobalt Freight:
+
+> From: Felix (Cobalt Freight)
+> Attaching the doc we discussed. We had a couple of questions about SSO groups. Confirming receipt, thanks. Looping in a colleague who has more context.
+
+> From: me
+> Our security team will send the questionnaire separately. We had a couple of questions about SSO groups.
+
+> From: Felix (Cobalt Freight)
+> Looping in a colleague who has more context. Can we push our sync to Thursday?
+
+> From: me
+> Please hold off on any changes until after our freeze. Can you resend the invoice to the AP inbox? Confirming receipt, thanks. Following up on the item from last week.
+
+> From: Felix (Cobalt Freight)
+> Following up on the item from last week. We'd like to add two more admins. Our admin noticed the export took longer than usual. Who should we contact about the API keys?
+
+> From: me
+> We had a couple of questions about SSO groups. Let me check internally and get back to you. Can you resend the invoice to the AP inbox?
+
+> From: Felix (Cobalt Freight)
+> Following up on the item from last week. We'd like to add two more admins. Sounds good, we'll review on our side. Confirming receipt, thanks.
+
+> From: me
+> Please hold off on any changes until after our freeze. Apologies for the delay, it's been a busy week. Is there a recording of the training session? We'd like to add two more admins.
+
+> From: Felix (Cobalt Freight)
+> Attaching the doc we discussed. Apologies for the delay, it's been a busy week.
+
+> From: me
+> We had a couple of questions about SSO groups. Can you resend the invoice to the AP inbox? Please hold off on any changes until after our freeze.
+
+> From: Felix (Cobalt Freight)
+> Happy to jump on a call if easier. Can we push our sync to Thursday? Looping in a colleague who has more context. Thanks for the quick turnaround on this.
+
+
+**Turn 72**
+
+Good. Write the final version to deliverables/D13.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D13", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 25: Delta Learning (deliverable, writes D14)
+
+Planted: Acme Robotics seats [embedded]
 
 
 **Turn 73**
 
-Put together an internal brief on Beta Health before my call.
+Prep me a one-page brief for my meeting with Delta Learning tomorrow.
 
-For context, here's the recent thread with Beta Health:
+For context, here's the recent thread with Delta Learning:
 
-> From: Omar (Beta Health)
-> Let me check internally and get back to you. We'd like to add two more admins. Our security team will send the questionnaire separately.
+> From: Hiro (Delta Learning)
+> Is there a recording of the training session? We had a couple of questions about SSO groups.
 
 > From: me
+> We'd like to add two more admins. Let me check internally and get back to you.
+
+> From: Hiro (Delta Learning)
 > Please hold off on any changes until after our freeze. Can you resend the invoice to the AP inbox? Sounds good, we'll review on our side.
 
-> From: Omar (Beta Health)
+> From: me
 > Our admin noticed the export took longer than usual. We're still evaluating internally, no decision yet. Sounds good, we'll review on our side.
 
-> From: me
+> From: Hiro (Delta Learning)
 > We had a couple of questions about SSO groups. Apologies for the delay, it's been a busy week. Confirming receipt, thanks. Is there a recording of the training session?
 
-> From: Omar (Beta Health)
+> From: me
 > Happy to jump on a call if easier. Let me check internally and get back to you. Attaching the doc we discussed.
 
-> From: me
+> From: Hiro (Delta Learning)
 > Happy to jump on a call if easier. Can you resend the invoice to the AP inbox? Confirming receipt, thanks.
+
+> From: me
+> Our security team will send the questionnaire separately. Is there a recording of the training session?
+
+> From: Hiro (Delta Learning)
+> Is there a recording of the training session? Following up on the item from last week. Thanks for the quick turnaround on this. Let me check internally and get back to you.
+
+> From: me
+> Our admin noticed the export took longer than usual. Our security team will send the questionnaire separately. Let me check internally and get back to you. Attaching the doc we discussed.
+
+> From: Hiro (Delta Learning)
+> Our security team will send the questionnaire separately. The team liked the new dashboard layout. Following up on the item from last week. Confirming receipt, thanks.
+
+> From: me
+> Is there a recording of the training session? Happy to jump on a call if easier. We had a couple of questions about SSO groups. Confirming receipt, thanks.
+
+> From: Hiro (Delta Learning)
+> Can you resend the invoice to the AP inbox? Thanks for the quick turnaround on this.
 
 
 **Turn 74**
 
-Add a short risks section.
+Bullet points instead of paragraphs.
 
 
 **Turn 75**
 
-Good. Write the final version to deliverables/D13.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D13", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Add a short risks section.
 
-
-## Visit 25: Beta Health (deliverable, writes D14)
+Quick aside, not about this: Acme Robotics plans to renew 265 seats.
 
 
 **Turn 76**
-
-Give me a prep doc for the Beta Health QBR. (Reminder: contact name is Tomas Moreau.)
-
-
-**Turn 77**
-
-Keep it to half a page.
-
-
-**Turn 78**
-
-Put the key numbers at the top.
-
-
-**Turn 79**
 
 Good. Write the final version to deliverables/D14.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D14", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
 ## Visit 26: Acme Robotics (deliverable, writes D15)
 
-Planted: Cobalt Freight contact_name [embedded]
+
+**Turn 77**
+
+Write a follow-up email to Acme Robotics after today's check-in. Please pitch the analytics add-on briefly at the end.
+
+For context, here's the recent thread with Acme Robotics:
+
+> From: Hana (Acme Robotics)
+> The team liked the new dashboard layout. We had a couple of questions about SSO groups.
+
+> From: me
+> Our security team will send the questionnaire separately. Apologies for the delay, it's been a busy week. We'd like to add two more admins.
+
+> From: Hana (Acme Robotics)
+> Following up on the item from last week. Can you resend the invoice to the AP inbox? Who should we contact about the API keys? Looping in a colleague who has more context.
+
+> From: me
+> Sounds good, we'll review on our side. Please hold off on any changes until after our freeze. Is there a recording of the training session? Happy to jump on a call if easier.
+
+> From: Hana (Acme Robotics)
+> We're still evaluating internally, no decision yet. Is there a recording of the training session? Our security team will send the questionnaire separately.
+
+> From: me
+> We'd like to add two more admins. Who should we contact about the API keys? Confirming receipt, thanks.
+
+> From: Hana (Acme Robotics)
+> The team liked the new dashboard layout. Our admin noticed the export took longer than usual. We're still evaluating internally, no decision yet.
+
+> From: me
+> Who should we contact about the API keys? Apologies for the delay, it's been a busy week. Can we push our sync to Thursday?
+
+> From: Hana (Acme Robotics)
+> We had a couple of questions about SSO groups. Can you resend the invoice to the AP inbox? Sounds good, we'll review on our side. Apologies for the delay, it's been a busy week.
+
+> From: me
+> Attaching the doc we discussed. Please hold off on any changes until after our freeze. Sounds good, we'll review on our side.
+
+> From: Hana (Acme Robotics)
+> Can you resend the invoice to the AP inbox? Following up on the item from last week.
+
+> From: me
+> Apologies for the delay, it's been a busy week. Confirming receipt, thanks. Following up on the item from last week.
+
+
+**Turn 78**
+
+Open with a thank-you for the last quarter.
+
+
+**Turn 79**
+
+Less salesy please, more matter-of-fact.
 
 
 **Turn 80**
 
-Fill out the internal discount approval request for Acme Robotics.
+Good. Write the final version to deliverables/D15.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D15", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
-Side note: Our point of contact at Cobalt Freight is Mei Moreau.
+
+## Visit 27: Acme Robotics (debrief)
+
+Planted: Acme Robotics contact_name [home-supersede]
 
 
 **Turn 81**
 
-Good. Write the final version to deliverables/D15.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D15", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Here are my raw notes from the check-in with Acme Robotics:
 
-
-## Visit 27: Delta Learning (debrief)
-
-Planted: Delta Learning style_rule [home]; Delta Learning seats [home-supersede]
-
-
-**Turn 82**
-
-Here are my raw notes from the QBR with Delta Learning:
-
-- There was some back and forth about SSO setup, IT is handling it on their side.
-- Delta Learning is changing their seat count from 355 to 315 for the renewal.
-- Someone from finance joined late and mostly listened.
-- There was a question about sandbox environments for testing.
-- Delta Learning's comms team is particular: never say "discount" to them, always say "loyalty credit" instead.
-- Some confusion about which team owns the account internally on their side.
-- Small complaint about dashboard load times, nothing urgent.
-- I walked them through the new permissions model, they liked it.
+- General vibe was positive, no sign they're shopping around seriously.
+- We talked through the API rate limits, they're well under them.
+- Brief tangent about their annual offsite, not relevant for us.
+- They brought up the integration with their ticketing tool, which works fine.
+- They asked about the roadmap for reporting, I said I'd follow up with product.
+- We spent the first few minutes on their reorg, which is mostly settled now.
+- They mentioned they're hiring in the Lisbon office this spring.
 - Data retention came up, I pointed them to the trust page.
 - They'd like more notice before UI changes ship.
+- They floated a possible pilot in a second business unit later in the year.
+- Aaron Ito has left Acme Robotics; Lena Tanaka is our main contact there from now on.
+- Small complaint about dashboard load times, nothing urgent.
+- Usage is up a bit quarter over quarter, mostly from the ops team.
+- Their legal team is slow, plan for extra time on any paperwork.
+- Their champion is busy with a product launch, so replies may be slow.
 - We confirmed the next QBR will be virtual.
-- We agreed to share usage reports monthly instead of quarterly.
-- We spent the first few minutes on their reorg, which is mostly settled now.
-- They'd like invoices sent to a shared AP inbox instead of a person.
-- Their admin wants a refresher training session sometime next month.
+- They want to see a case study from a similar company in their space.
 
 Can you pull out the action items with an owner for each?
 
-Pasting Delta Learning's usage export from the admin console, in case it's useful:
+Pasting Acme Robotics' usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Security,EMEA,18,694,79,2026-09-17
-Field Ops,NA-West,24,583,81,2026-10-28
-Finance,NA-West,36,281,52,2026-10-13
-Procurement,APAC,30,517,85,2026-10-24
-Research,APAC,28,777,94,2026-10-11
-Logistics,APAC,32,239,11,2026-11-10
-Research,EMEA,14,255,56,2026-09-18
-Research,LATAM,13,107,99,2026-10-05
-Facilities,NA-West,37,641,120,2026-09-26
-Procurement,LATAM,54,274,104,2026-09-10
-HR,LATAM,14,558,7,2026-11-23
-Facilities,APAC,15,336,74,2026-09-01
-Marketing,APAC,9,473,94,2026-09-27
-Sales,LATAM,44,637,0,2026-10-05
-Product,EMEA,57,804,89,2026-09-09
-Finance,EMEA,39,553,111,2026-11-12
+Procurement,NA-East,21,617,69,2026-11-12
 Data,NA-West,47,145,26,2026-10-12
 Logistics,APAC,17,287,28,2026-10-18
 Facilities,LATAM,34,375,70,2026-11-11
@@ -5060,458 +5067,473 @@ Marketing,APAC,24,671,74,2026-11-27
 Data,NA-East,18,279,119,2026-10-16
 Ops,APAC,43,210,19,2026-10-23
 Finance,APAC,20,756,28,2026-09-07
+Customer Success,APAC,10,637,85,2026-10-24
+Procurement,APAC,28,789,103,2026-11-25
+Customer Success,EMEA,31,594,92,2026-11-22
+Sales,LATAM,43,756,7,2026-11-22
+Ops,APAC,38,858,12,2026-10-18
+Customer Success,NA-West,16,172,18,2026-09-22
+Customer Success,LATAM,10,254,44,2026-10-22
+Analytics,NA-West,46,133,52,2026-10-28
+Billing,NA-West,8,866,94,2026-10-15
+Product,NA-West,7,301,59,2026-09-19
+HR,LATAM,32,520,48,2026-09-21
+Security,NA-West,29,29,59,2026-09-22
+Marketing,NA-West,8,658,71,2026-09-04
+Logistics,NA-East,60,340,67,2026-11-18
+Support,EMEA,26,728,98,2026-10-14
 ```
 
 
-**Turn 83**
-
-Turn that into a short checklist I can paste into our CRM.
-
-
-**Turn 84**
+**Turn 82**
 
 Which of these are blocking the renewal?
 
 
-## Visit 28: Cobalt Freight (deliverable, writes D16)
+**Turn 83**
+
+Group them by who owns them.
+
+
+## Visit 28: Beta Health (deliverable, writes D16)
+
+
+**Turn 84**
+
+Write a follow-up email to Beta Health after today's check-in. Please remind them about the deadline for signing.
 
 
 **Turn 85**
 
-Give me a prep doc for the Cobalt Freight QBR.
-
-For context, here's the recent thread with Cobalt Freight:
-
-> From: Omar (Cobalt Freight)
-> Confirming receipt, thanks. Can we push our sync to Thursday? Looping in a colleague who has more context.
-
-> From: me
-> Thanks for the quick turnaround on this. Happy to jump on a call if easier. Attaching the doc we discussed. We're still evaluating internally, no decision yet.
-
-> From: Omar (Cobalt Freight)
-> Can you resend the invoice to the AP inbox? Let me check internally and get back to you. Apologies for the delay, it's been a busy week. Confirming receipt, thanks.
-
-> From: me
-> Can we push our sync to Thursday? Can you resend the invoice to the AP inbox?
-
-> From: Omar (Cobalt Freight)
-> Following up on the item from last week. Apologies for the delay, it's been a busy week. Can you resend the invoice to the AP inbox? Who should we contact about the API keys?
-
-> From: me
-> Who should we contact about the API keys? Sounds good, we'll review on our side. Following up on the item from last week. Happy to jump on a call if easier.
-
-> From: Omar (Cobalt Freight)
-> Confirming receipt, thanks. Sounds good, we'll review on our side. Attaching the doc we discussed.
-
-> From: me
-> Is there a recording of the training session? The team liked the new dashboard layout. Our admin noticed the export took longer than usual. Let me check internally and get back to you.
-
-> From: Omar (Cobalt Freight)
-> We had a couple of questions about SSO groups. The team liked the new dashboard layout.
-
-> From: me
-> Confirming receipt, thanks. Apologies for the delay, it's been a busy week.
-
-> From: Omar (Cobalt Freight)
-> Who should we contact about the API keys? We'd like to add two more admins. We're still evaluating internally, no decision yet. Attaching the doc we discussed.
+Less salesy please, more matter-of-fact.
 
 
 **Turn 86**
 
-Add one line on what we want out of this.
+Good. Write the final version to deliverables/D16.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D16", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 29: Delta Learning (deliverable, writes D17)
 
 
 **Turn 87**
 
-Bullet points instead of paragraphs.
-
-
-**Turn 88**
-
-Good. Write the final version to deliverables/D16.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D16", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 29: Acme Robotics (deliverable, writes D17)
-
-Planted: Beta Health discount_pct [embedded]
-
-
-**Turn 89**
-
-Time to send Acme Robotics their renewal pricing. Draft the quote. Please pitch the analytics add-on briefly at the end.
-
-Unrelated, but before I forget: The discount approved for Beta Health is 8%.
-
-
-**Turn 90**
-
-Tighten it up, keep the body under 180 words.
-
-
-**Turn 91**
-
-Good. Write the final version to deliverables/D17.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D17", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 30: Acme Robotics (deliverable, writes D18)
-
-
-**Turn 92**
-
-Can you put together Acme Robotics' renewal quote? Please pitch the analytics add-on briefly at the end.
-
-
-**Turn 93**
-
-Add a line offering a call next week.
-
-
-**Turn 94**
-
-Good. Write the final version to deliverables/D18.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D18", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 31: Delta Learning (deliverable, writes D19)
-
-
-**Turn 95**
-
-Write a follow-up email to Delta Learning after today's check-in. Please make sure they understand the discount is what keeps the total flat.
+Can you put together Delta Learning's renewal quote? Please make sure they understand the discount is what keeps the total flat.
 
 For context, here's the recent thread with Delta Learning:
 
-> From: Hana (Delta Learning)
-> Please hold off on any changes until after our freeze. Can we push our sync to Thursday? Happy to jump on a call if easier.
-
-> From: me
-> Thanks for the quick turnaround on this. Apologies for the delay, it's been a busy week. Can you resend the invoice to the AP inbox? We're still evaluating internally, no decision yet.
-
-> From: Hana (Delta Learning)
+> From: Felix (Delta Learning)
 > Apologies for the delay, it's been a busy week. Happy to jump on a call if easier. Is there a recording of the training session?
 
 > From: me
 > Who should we contact about the API keys? Can you resend the invoice to the AP inbox? Let me check internally and get back to you. Thanks for the quick turnaround on this.
 
-> From: Hana (Delta Learning)
+> From: Felix (Delta Learning)
 > Our admin noticed the export took longer than usual. Can you resend the invoice to the AP inbox? We had a couple of questions about SSO groups. Is there a recording of the training session?
 
 > From: me
 > We had a couple of questions about SSO groups. Can we push our sync to Thursday? Sounds good, we'll review on our side.
 
-> From: Hana (Delta Learning)
+> From: Felix (Delta Learning)
 > The team liked the new dashboard layout. Apologies for the delay, it's been a busy week.
 
 > From: me
 > Thanks for the quick turnaround on this. Looping in a colleague who has more context. Attaching the doc we discussed. Happy to jump on a call if easier.
 
-> From: Hana (Delta Learning)
+> From: Felix (Delta Learning)
 > Is there a recording of the training session? Our admin noticed the export took longer than usual.
 
+> From: me
+> Our admin noticed the export took longer than usual. Our security team will send the questionnaire separately. Please hold off on any changes until after our freeze. Can you resend the invoice to the AP inbox?
 
-**Turn 96**
+> From: Felix (Delta Learning)
+> Thanks for the quick turnaround on this. Can you resend the invoice to the AP inbox? We had a couple of questions about SSO groups. Apologies for the delay, it's been a busy week.
 
-Open with a thank-you for the last quarter.
+> From: me
+> Let me check internally and get back to you. Following up on the item from last week. Thanks for the quick turnaround on this. We'd like to add two more admins.
+
+> From: Felix (Delta Learning)
+> Please hold off on any changes until after our freeze. Happy to jump on a call if easier. We'd like to add two more admins.
 
 
-**Turn 97**
+**Turn 88**
 
 Less salesy please, more matter-of-fact.
 
 
-**Turn 98**
+**Turn 89**
 
-Good. Write the final version to deliverables/D19.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D19", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 32: Acme Robotics (deliverable, writes D20)
+Tighten it up, keep the body under 180 words.
 
 
-**Turn 99**
+**Turn 90**
 
-Give me a prep doc for the Acme Robotics QBR.
+Good. Write the final version to deliverables/D17.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D17", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
-For context, here's the recent thread with Acme Robotics:
 
-> From: Sofia (Acme Robotics)
-> Apologies for the delay, it's been a busy week. Let me check internally and get back to you. Following up on the item from last week. Thanks for the quick turnaround on this.
+## Visit 30: Beta Health (deliverable, writes D18)
 
-> From: me
-> We'd like to add two more admins. Happy to jump on a call if easier. Please hold off on any changes until after our freeze. Confirming receipt, thanks.
 
-> From: Sofia (Acme Robotics)
-> Our security team will send the questionnaire separately. We'd like to add two more admins. Following up on the item from last week. Please hold off on any changes until after our freeze.
+**Turn 91**
 
-> From: me
-> Can we push our sync to Thursday? Following up on the item from last week. Our security team will send the questionnaire separately.
+Draft the renewal quote for Beta Health. Please remind them about the deadline for signing.
 
-> From: Sofia (Acme Robotics)
-> Thanks for the quick turnaround on this. Following up on the item from last week. Can we push our sync to Thursday? Our security team will send the questionnaire separately.
+For context, here's the recent thread with Beta Health:
+
+> From: Tomas (Beta Health)
+> Thanks for the quick turnaround on this. We'd like to add two more admins.
 
 > From: me
-> Happy to jump on a call if easier. Confirming receipt, thanks. We'd like to add two more admins. We're still evaluating internally, no decision yet.
+> Confirming receipt, thanks. We'd like to add two more admins. We're still evaluating internally, no decision yet.
 
-> From: Sofia (Acme Robotics)
+> From: Tomas (Beta Health)
 > We'd like to add two more admins. Please hold off on any changes until after our freeze. Looping in a colleague who has more context.
 
 > From: me
 > Confirming receipt, thanks. Following up on the item from last week. Can we push our sync to Thursday? Apologies for the delay, it's been a busy week.
 
-> From: Sofia (Acme Robotics)
+> From: Tomas (Beta Health)
 > We're still evaluating internally, no decision yet. We had a couple of questions about SSO groups.
 
 > From: me
 > Sounds good, we'll review on our side. Following up on the item from last week. We're still evaluating internally, no decision yet. Please hold off on any changes until after our freeze.
 
-> From: Sofia (Acme Robotics)
-> Our security team will send the questionnaire separately. We're still evaluating internally, no decision yet. Let me check internally and get back to you. Our admin noticed the export took longer than usual.
 
+**Turn 92**
 
-**Turn 100**
+Less salesy please, more matter-of-fact.
 
-Bullet points instead of paragraphs.
 
+**Turn 93**
 
-**Turn 101**
+Good. Write the final version to deliverables/D18.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D18", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
-Put the key numbers at the top.
 
+## Visit 31: Beta Health (deliverable, writes D19)
 
-**Turn 102**
 
-Good. Write the final version to deliverables/D20.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D20", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+**Turn 94**
 
-
-## Visit 33: Cobalt Freight (deliverable, writes D21)
-
-
-**Turn 103**
-
-Give me a prep doc for the Cobalt Freight QBR.
-
-
-**Turn 104**
-
-Bullet points instead of paragraphs.
-
-
-**Turn 105**
-
-Good. Write the final version to deliverables/D21.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D21", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 34: Acme Robotics (deliverable, writes D22)
-
-
-**Turn 106**
-
-Give me a prep doc for the Acme Robotics QBR.
-
-For context, here's the recent thread with Acme Robotics:
-
-> From: Dana (Acme Robotics)
-> Attaching the doc we discussed. Who should we contact about the API keys? Apologies for the delay, it's been a busy week.
-
-> From: me
-> Attaching the doc we discussed. Can you resend the invoice to the AP inbox? Happy to jump on a call if easier.
-
-> From: Dana (Acme Robotics)
-> Can we push our sync to Thursday? Happy to jump on a call if easier. We'd like to add two more admins.
-
-> From: me
-> Happy to jump on a call if easier. Attaching the doc we discussed.
-
-> From: Dana (Acme Robotics)
-> The team liked the new dashboard layout. Following up on the item from last week. We'd like to add two more admins.
-
-> From: me
-> Can we push our sync to Thursday? We'd like to add two more admins.
-
-
-**Turn 107**
-
-Bullet points instead of paragraphs.
-
-
-**Turn 108**
-
-Put the key numbers at the top.
-
-
-**Turn 109**
-
-Good. Write the final version to deliverables/D22.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D22", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 35: Acme Robotics (deliverable, writes D23)
-
-Planted: Cobalt Freight contact_name [embedded-supersede]
-
-
-**Turn 110**
-
-Draft a short follow-up note to Acme Robotics. (Reminder: contact name is Aaron Ito.) Please pitch the analytics add-on briefly at the end.
-
-Quick aside, not about this: Heads up, Elena Kowalski replaced Mei Moreau as our point of contact at Cobalt Freight.
-
-
-**Turn 111**
-
-Good. Write the final version to deliverables/D23.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D23", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 36: Acme Robotics (deliverable, writes D24)
-
-Planted: Beta Health cc_name [embedded]
-
-
-**Turn 112**
-
-Draft the deal-desk approval request for Acme Robotics.
-
-
-**Turn 113**
-
-Keep it to half a page.
-
-
-**Turn 114**
-
-Bullet points instead of paragraphs.
-
-Unrelated, but before I forget: Hana Brennan runs procurement at Beta Health, so they need to be cc'd on pricing emails.
-
-
-**Turn 115**
-
-Good. Write the final version to deliverables/D24.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D24", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 37: Beta Health (deliverable, writes D25)
-
-
-**Turn 116**
-
-Draft a short follow-up note to Beta Health. Please remind them about the deadline for signing.
+Draft a short follow-up note to Beta Health. (Reminder: renewal deadline is 2027-06-12.) Please remind them about the deadline for signing.
 
 For context, here's the recent thread with Beta Health:
 
-> From: Priya (Beta Health)
-> Please hold off on any changes until after our freeze. Confirming receipt, thanks. Our admin noticed the export took longer than usual. The team liked the new dashboard layout.
+> From: Hana (Beta Health)
+> Sounds good, we'll review on our side. Who should we contact about the API keys? Can you resend the invoice to the AP inbox?
 
 > From: me
-> Who should we contact about the API keys? Is there a recording of the training session? Attaching the doc we discussed. The team liked the new dashboard layout.
+> Sounds good, we'll review on our side. Let me check internally and get back to you. Our admin noticed the export took longer than usual. Thanks for the quick turnaround on this.
 
-> From: Priya (Beta Health)
-> Please hold off on any changes until after our freeze. We'd like to add two more admins. Our security team will send the questionnaire separately.
-
-> From: me
-> Please hold off on any changes until after our freeze. We're still evaluating internally, no decision yet. We had a couple of questions about SSO groups. Thanks for the quick turnaround on this.
-
-> From: Priya (Beta Health)
-> Please hold off on any changes until after our freeze. Happy to jump on a call if easier. Confirming receipt, thanks. Who should we contact about the API keys?
+> From: Hana (Beta Health)
+> Who should we contact about the API keys? Attaching the doc we discussed.
 
 > From: me
-> Our security team will send the questionnaire separately. Can you resend the invoice to the AP inbox?
+> Apologies for the delay, it's been a busy week. We're still evaluating internally, no decision yet. Attaching the doc we discussed.
 
-> From: Priya (Beta Health)
-> Thanks for the quick turnaround on this. Let me check internally and get back to you.
+> From: Hana (Beta Health)
+> Happy to jump on a call if easier. The team liked the new dashboard layout. Can we push our sync to Thursday?
 
 > From: me
-> Apologies for the delay, it's been a busy week. Who should we contact about the API keys?
+> We'd like to add two more admins. Thanks for the quick turnaround on this. Happy to jump on a call if easier.
+
+> From: Hana (Beta Health)
+> Can you resend the invoice to the AP inbox? The team liked the new dashboard layout.
+
+> From: me
+> We'd like to add two more admins. Apologies for the delay, it's been a busy week.
+
+> From: Hana (Beta Health)
+> Our security team will send the questionnaire separately. We'd like to add two more admins.
+
+> From: me
+> Can you resend the invoice to the AP inbox? Sounds good, we'll review on our side.
 
 
-**Turn 117**
-
-Add a line offering a call next week.
-
-
-**Turn 118**
-
-Tighten it up, keep the body under 180 words.
-
-
-**Turn 119**
-
-Good. Write the final version to deliverables/D25.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D25", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 38: Cobalt Freight (deliverable, writes D26)
-
-
-**Turn 120**
-
-Draft the renewal quote for Cobalt Freight. Please mention the 4% price increase on list rates next year.
-
-
-**Turn 121**
-
-Tighten it up, keep the body under 180 words.
-
-
-**Turn 122**
+**Turn 95**
 
 Make the tone a bit warmer, they've been a good partner.
 
 
-**Turn 123**
+**Turn 96**
 
-Good. Write the final version to deliverables/D26.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D26", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 39: Acme Robotics (debrief)
-
-Planted: Acme Robotics concession_ref [home]; Acme Robotics contact_name [home-supersede]
+Good. Write the final version to deliverables/D19.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D19", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-**Turn 124**
+## Visit 32: Beta Health (deliverable, writes D20)
 
-Here are my raw notes from this morning's call with Acme Robotics:
 
-- Usage is up a bit quarter over quarter, mostly from the ops team.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
-- On the last call we promised Acme Robotics free onboarding for their new admins; the concession is logged as CX-5617 and has to be referenced on their quote.
-- Aaron Ito has left Acme Robotics; Chloe Okafor is our main contact there from now on.
-- We talked through the API rate limits, they're well under them.
-- Brief tangent about their annual offsite, not relevant for us.
-- They mentioned they're hiring in the Lisbon office this spring.
-- Some confusion about which team owns the account internally on their side.
+**Turn 97**
+
+Can you put together Beta Health's renewal quote? (Reminder: term months is 24.) Please remind them about the deadline for signing.
+
+For context, here's the recent thread with Beta Health:
+
+> From: Elena (Beta Health)
+> Let me check internally and get back to you. Confirming receipt, thanks.
+
+> From: me
+> Who should we contact about the API keys? We'd like to add two more admins. Our security team will send the questionnaire separately.
+
+> From: Elena (Beta Health)
+> We're still evaluating internally, no decision yet. Who should we contact about the API keys? The team liked the new dashboard layout. Following up on the item from last week.
+
+> From: me
+> Following up on the item from last week. Our admin noticed the export took longer than usual.
+
+> From: Elena (Beta Health)
+> Our security team will send the questionnaire separately. Let me check internally and get back to you.
+
+> From: me
+> Can you resend the invoice to the AP inbox? Let me check internally and get back to you. Our security team will send the questionnaire separately.
+
+> From: Elena (Beta Health)
+> Following up on the item from last week. Can we push our sync to Thursday? Please hold off on any changes until after our freeze.
+
+> From: me
+> Please hold off on any changes until after our freeze. Confirming receipt, thanks. Our admin noticed the export took longer than usual. The team liked the new dashboard layout.
+
+> From: Elena (Beta Health)
+> Who should we contact about the API keys? Is there a recording of the training session? Attaching the doc we discussed. The team liked the new dashboard layout.
+
+> From: me
+> Please hold off on any changes until after our freeze. We'd like to add two more admins. Our security team will send the questionnaire separately.
+
+
+**Turn 98**
+
+Less salesy please, more matter-of-fact.
+
+
+**Turn 99**
+
+Good. Write the final version to deliverables/D20.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D20", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 33: Delta Learning (deliverable, writes D21)
+
+
+**Turn 100**
+
+Prep me a one-page brief for my meeting with Delta Learning tomorrow.
+
+
+**Turn 101**
+
+Add one line on what we want out of this.
+
+
+**Turn 102**
+
+Good. Write the final version to deliverables/D21.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D21", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 34: Cobalt Freight (deliverable, writes D22)
+
+Planted: Beta Health contact_name [embedded]
+
+
+**Turn 103**
+
+Fill out the internal discount approval request for Cobalt Freight.
+
+Side note: Tomas Moreau is our main contact at Beta Health and owns the renewal on their side.
+
+
+**Turn 104**
+
+Put the key numbers at the top.
+
+
+**Turn 105**
+
+Good. Write the final version to deliverables/D22.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D22", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 35: Acme Robotics (deliverable, writes D23)
+
+
+**Turn 106**
+
+I need the discount approval form for Acme Robotics for finance.
+
+For context, here's the recent thread with Acme Robotics:
+
+> From: Dana (Acme Robotics)
+> Confirming receipt, thanks. Sounds good, we'll review on our side.
+
+> From: me
+> Sounds good, we'll review on our side. Looping in a colleague who has more context. Please hold off on any changes until after our freeze.
+
+> From: Dana (Acme Robotics)
+> Thanks for the quick turnaround on this. Following up on the item from last week. Looping in a colleague who has more context. Can we push our sync to Thursday?
+
+> From: me
+> Apologies for the delay, it's been a busy week. Our admin noticed the export took longer than usual.
+
+> From: Dana (Acme Robotics)
+> Our admin noticed the export took longer than usual. The team liked the new dashboard layout.
+
+> From: me
+> Is there a recording of the training session? We had a couple of questions about SSO groups.
+
+> From: Dana (Acme Robotics)
+> Sounds good, we'll review on our side. Apologies for the delay, it's been a busy week.
+
+> From: me
+> Our security team will send the questionnaire separately. We'd like to add two more admins.
+
+> From: Dana (Acme Robotics)
+> Looping in a colleague who has more context. Who should we contact about the API keys?
+
+> From: me
+> We're still evaluating internally, no decision yet. Is there a recording of the training session? Our admin noticed the export took longer than usual.
+
+> From: Dana (Acme Robotics)
+> Happy to jump on a call if easier. Please hold off on any changes until after our freeze.
+
+> From: me
+> Following up on the item from last week. The team liked the new dashboard layout.
+
+> From: Dana (Acme Robotics)
+> Our security team will send the questionnaire separately. Can we push our sync to Thursday? Confirming receipt, thanks. Who should we contact about the API keys?
+
+> From: me
+> Is there a recording of the training session? We're still evaluating internally, no decision yet. We'd like to add two more admins.
+
+
+**Turn 107**
+
+Add one line on what we want out of this.
+
+
+**Turn 108**
+
+Bullet points instead of paragraphs.
+
+
+**Turn 109**
+
+Good. Write the final version to deliverables/D23.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D23", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 36: Delta Learning (deliverable, writes D24)
+
+
+**Turn 110**
+
+Draft a short follow-up note to Delta Learning. Please make sure they understand the discount is what keeps the total flat.
+
+
+**Turn 111**
+
+Open with a thank-you for the last quarter.
+
+
+**Turn 112**
+
+Good. Write the final version to deliverables/D24.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D24", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 37: Acme Robotics (deliverable, writes D25)
+
+
+**Turn 113**
+
+Give me a prep doc for the Acme Robotics QBR.
+
+
+**Turn 114**
+
+Good. Write the final version to deliverables/D25.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D25", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 38: Cobalt Freight (deliverable, writes D26)
+
+Planted: Delta Learning contact_name [embedded]
+
+
+**Turn 115**
+
+Draft a short follow-up note to Cobalt Freight. Please mention the 4% price increase on list rates next year.
+
+For context, here's the recent thread with Cobalt Freight:
+
+> From: Aaron (Cobalt Freight)
+> Let me check internally and get back to you. Following up on the item from last week. Can we push our sync to Thursday?
+
+> From: me
+> Looping in a colleague who has more context. We had a couple of questions about SSO groups. Thanks for the quick turnaround on this.
+
+> From: Aaron (Cobalt Freight)
+> Can you resend the invoice to the AP inbox? Please hold off on any changes until after our freeze. Confirming receipt, thanks.
+
+> From: me
+> Looping in a colleague who has more context. Thanks for the quick turnaround on this. Please hold off on any changes until after our freeze. Our admin noticed the export took longer than usual.
+
+> From: Aaron (Cobalt Freight)
+> Thanks for the quick turnaround on this. Is there a recording of the training session?
+
+> From: me
+> Attaching the doc we discussed. Please hold off on any changes until after our freeze.
+
+Quick aside, not about this: Our point of contact at Delta Learning is Marcus Okafor.
+
+
+**Turn 116**
+
+Tighten it up, keep the body under 180 words.
+
+
+**Turn 117**
+
+Good. Write the final version to deliverables/D26.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D26", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 39: Delta Learning (debrief)
+
+Planted: Delta Learning renewal_deadline [home-supersede]
+
+
+**Turn 118**
+
+Pasting my notes from the QBR with Delta Learning, they're messy:
+
 - General vibe was positive, no sign they're shopping around seriously.
-- Their security questionnaire is due back to them by end of month.
+- We confirmed the next QBR will be virtual.
+- I walked them through the new permissions model, they liked it.
+- There was some back and forth about SSO setup, IT is handling it on their side.
+- We talked through the API rate limits, they're well under them.
+- There was a question about sandbox environments for testing.
+- They asked whether the mobile app supports offline mode, I said not yet.
+- Their legal team is slow, plan for extra time on any paperwork.
 - Someone from finance joined late and mostly listened.
+- Brief tangent about their annual offsite, not relevant for us.
+- Their admin wants a refresher training session sometime next month.
+- Their security questionnaire is due back to them by end of month.
+- Their champion is busy with a product launch, so replies may be slow.
+- They mentioned they're hiring in the Lisbon office this spring.
+- They floated a possible pilot in a second business unit later in the year.
+- They brought up the integration with their ticketing tool, which works fine.
 - They're happy with support response times overall.
+- Delta Learning moved their signing date from 2027-06-20 to 2027-07-20.
+- They'd like more notice before UI changes ship.
 
 Can you pull out the action items with an owner for each?
 
-Pasting Acme Robotics' usage export from the admin console, in case it's useful:
+Pasting Delta Learning's usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Research,LATAM,14,53,61,2026-10-13
-Procurement,EMEA,6,426,85,2026-11-08
-Marketing,APAC,46,624,11,2026-09-16
-Customer Success,EMEA,57,411,64,2026-10-06
-Logistics,APAC,9,407,58,2026-09-25
-Data,NA-East,59,729,96,2026-10-21
-Field Ops,NA-West,33,407,118,2026-10-08
-Data,LATAM,10,37,102,2026-09-17
-Product,NA-West,51,134,11,2026-10-02
-Data,NA-East,28,668,115,2026-10-18
-Field Ops,NA-East,1,681,71,2026-10-02
-Ops,EMEA,4,108,70,2026-09-07
-Analytics,NA-West,59,428,52,2026-11-26
-Ops,LATAM,30,512,79,2026-09-08
-Facilities,EMEA,57,344,24,2026-11-21
-Legal,EMEA,17,703,74,2026-10-18
-Security,LATAM,34,375,88,2026-10-24
-Engineering,LATAM,7,578,71,2026-11-19
-Support,APAC,21,272,97,2026-10-20
-Analytics,APAC,21,24,99,2026-10-16
-Data,EMEA,39,723,107,2026-11-13
-Product,APAC,34,174,40,2026-09-12
-Marketing,EMEA,50,609,14,2026-10-21
-Procurement,NA-West,19,105,107,2026-11-03
-Data,APAC,58,777,2,2026-11-14
-Billing,APAC,12,56,36,2026-10-26
+Data,NA-West,35,109,72,2026-11-22
+Billing,NA-East,59,444,41,2026-10-25
+Facilities,LATAM,31,420,40,2026-09-25
+Customer Success,APAC,50,889,87,2026-10-12
+Research,APAC,54,346,58,2026-11-06
+Product,NA-East,24,891,94,2026-09-24
+Product,LATAM,8,463,82,2026-10-22
+Legal,EMEA,7,857,68,2026-09-10
+Logistics,NA-East,48,435,114,2026-11-23
+Analytics,NA-West,4,294,100,2026-10-26
 HR,APAC,38,393,5,2026-09-10
 Finance,NA-West,30,36,5,2026-11-15
 Legal,EMEA,18,694,73,2026-10-26
@@ -5786,74 +5808,72 @@ Customer Success,LATAM,48,237,17,2026-09-05
 Marketing,LATAM,4,297,87,2026-11-12
 Facilities,LATAM,52,368,119,2026-11-13
 Customer Success,NA-West,30,373,39,2026-09-26
+Finance,EMEA,32,577,23,2026-09-22
+Legal,LATAM,32,99,69,2026-11-06
+Logistics,APAC,21,761,90,2026-09-27
+Sales,NA-East,46,590,106,2026-11-18
+Data,APAC,11,103,36,2026-11-02
+Partnerships,LATAM,9,624,95,2026-09-01
+Procurement,NA-East,22,702,113,2026-11-03
+Marketing,EMEA,40,657,96,2026-09-13
+Facilities,LATAM,7,844,14,2026-11-23
+Sales,NA-East,12,731,16,2026-10-24
+Data,APAC,46,163,93,2026-10-06
+Data,NA-West,27,191,7,2026-10-28
+Product,NA-West,28,738,5,2026-10-04
+Sales,NA-West,24,621,48,2026-10-01
+Research,NA-West,11,469,51,2026-09-03
+Billing,EMEA,55,269,75,2026-10-12
 ```
 
 
-**Turn 125**
-
-Group them by who owns them.
-
-
-**Turn 126**
+**Turn 119**
 
 Which of these are blocking the renewal?
 
 
-**Turn 127**
+**Turn 120**
+
+Anything in there I should flag to my manager?
+
+
+**Turn 121**
 
 Turn that into a short checklist I can paste into our CRM.
 
 
-## Visit 40: Beta Health (deliverable, writes D27)
+## Visit 40: Acme Robotics (deliverable, writes D27)
 
 
-**Turn 128**
+**Turn 122**
 
-I need an email to Beta Health recapping where we are on the renewal. Please remind them about the deadline for signing.
-
-
-**Turn 129**
-
-Good. Write the final version to deliverables/D27.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D27", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Give me a prep doc for the Acme Robotics QBR.
 
 
-## Visit 41: Delta Learning (deliverable, writes D28)
+**Turn 123**
+
+Add a short risks section.
 
 
-**Turn 130**
+**Turn 124**
 
-Give me a prep doc for the Delta Learning QBR.
-
-For context, here's the recent thread with Delta Learning:
-
-> From: Priya (Delta Learning)
-> Confirming receipt, thanks. Please hold off on any changes until after our freeze. We had a couple of questions about SSO groups. Who should we contact about the API keys?
-
-> From: me
-> Attaching the doc we discussed. We had a couple of questions about SSO groups.
-
-> From: Priya (Delta Learning)
-> Looping in a colleague who has more context. We'd like to add two more admins. Following up on the item from last week. Attaching the doc we discussed.
-
-> From: me
-> Is there a recording of the training session? Attaching the doc we discussed.
-
-> From: Priya (Delta Learning)
-> Can we push our sync to Thursday? Following up on the item from last week. Can you resend the invoice to the AP inbox?
-
-> From: me
-> Sounds good, we'll review on our side. We're still evaluating internally, no decision yet. Happy to jump on a call if easier. Attaching the doc we discussed.
-
-> From: Priya (Delta Learning)
-> Can we push our sync to Thursday? Looping in a colleague who has more context.
+Good. Write the final version to deliverables/D27.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D27", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-**Turn 131**
-
-Bullet points instead of paragraphs.
+## Visit 41: Acme Robotics (deliverable, writes D28)
 
 
-**Turn 132**
+**Turn 125**
+
+Prep me a one-page brief for my meeting with Acme Robotics tomorrow. (Reminder: seats is 265.)
+
+
+**Turn 126**
+
+Add one line on what we want out of this.
+
+
+**Turn 127**
 
 Good. Write the final version to deliverables/D28.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D28", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
@@ -5861,24 +5881,23 @@ Good. Write the final version to deliverables/D28.md. The file must start with a
 ## Visit 42: Delta Learning (debrief)
 
 
-**Turn 133**
+**Turn 128**
 
 Here are my raw notes from the check-in with Delta Learning:
 
-- We agreed to share usage reports monthly instead of quarterly.
-- They'd like invoices sent to a shared AP inbox instead of a person.
-- Their legal team is slow, plan for extra time on any paperwork.
-- Small complaint about dashboard load times, nothing urgent.
-- They floated a possible pilot in a second business unit later in the year.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Some confusion about which team owns the account internally on their side.
-- They're happy with support response times overall.
-- Their admin wants a refresher training session sometime next month.
-- They're consolidating vendors this year but we are not on the chopping block.
-- They'd like more notice before UI changes ship.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
+- Brief tangent about their annual offsite, not relevant for us.
+- There was a question about sandbox environments for testing.
+- They mentioned they're hiring in the Lisbon office this spring.
 - They brought up the integration with their ticketing tool, which works fine.
-- Their security questionnaire is due back to them by end of month.
+- Their champion is busy with a product launch, so replies may be slow.
+- We confirmed the next QBR will be virtual.
+- General vibe was positive, no sign they're shopping around seriously.
+- They're happy with support response times overall.
+- They asked about the roadmap for reporting, I said I'd follow up with product.
+- Data retention came up, I pointed them to the trust page.
+- Their legal team is slow, plan for extra time on any paperwork.
+- They'd like more notice before UI changes ship.
+- Some confusion about which team owns the account internally on their side.
 
 Can you pull out the action items with an owner for each?
 
@@ -5886,17 +5905,6 @@ Pasting Delta Learning's usage export from the admin console, in case it's usefu
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Facilities,NA-East,51,482,15,2026-09-26
-Legal,EMEA,39,390,119,2026-10-01
-Research,NA-West,11,469,51,2026-09-03
-Billing,EMEA,55,269,75,2026-10-12
-Engineering,APAC,20,603,4,2026-10-12
-Customer Success,NA-West,39,802,118,2026-09-12
-Facilities,LATAM,43,688,115,2026-11-12
-Legal,NA-West,6,684,27,2026-09-16
-Analytics,NA-West,31,239,40,2026-11-05
-Billing,LATAM,34,449,84,2026-10-02
-Logistics,LATAM,29,406,83,2026-10-03
 Legal,NA-West,33,402,59,2026-09-22
 Marketing,LATAM,42,890,74,2026-11-24
 Finance,NA-West,48,701,117,2026-11-02
@@ -6186,202 +6194,216 @@ Procurement,LATAM,8,78,29,2026-11-01
 Security,EMEA,13,222,81,2026-09-26
 Legal,NA-West,41,421,4,2026-10-18
 Security,EMEA,20,252,20,2026-11-02
+Engineering,EMEA,25,747,94,2026-11-16
+Data,EMEA,22,286,26,2026-09-05
+Product,LATAM,7,439,21,2026-11-12
+Ops,APAC,11,710,2,2026-11-13
+Billing,NA-East,56,353,82,2026-09-12
+Research,LATAM,33,793,9,2026-11-10
+Product,NA-East,48,549,79,2026-09-21
+Facilities,LATAM,33,106,62,2026-09-05
+Field Ops,EMEA,6,162,46,2026-11-08
+Sales,LATAM,49,179,52,2026-10-10
+Security,EMEA,60,98,36,2026-11-11
 ```
 
 
-**Turn 134**
+**Turn 129**
 
 Which of these are blocking the renewal?
 
 
-**Turn 135**
+**Turn 130**
 
-Anything in there I should flag to my manager?
-
-
-## Visit 43: Acme Robotics (deliverable, writes D29)
-
-Planted: Beta Health seats [embedded]
+Group them by who owns them.
 
 
-**Turn 136**
-
-I need the discount approval form for Acme Robotics for finance.
+## Visit 43: Delta Learning (deliverable, writes D29)
 
 
-**Turn 137**
+**Turn 131**
 
-Bullet points instead of paragraphs.
+Prep me a one-page brief for my meeting with Delta Learning tomorrow.
 
-Oh, and separately, Beta Health wants to renew at 130 seats.
+For context, here's the recent thread with Delta Learning:
 
-
-**Turn 138**
-
-Add a short risks section.
-
-
-**Turn 139**
-
-Good. Write the final version to deliverables/D29.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D29", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 44: Acme Robotics (deliverable, writes D30)
-
-
-**Turn 140**
-
-Fill out the internal discount approval request for Acme Robotics.
-
-
-**Turn 141**
-
-Good. Write the final version to deliverables/D30.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D30", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 45: Cobalt Freight (deliverable, writes D31)
-
-Planted: Beta Health cc_name [embedded-supersede]
-
-
-**Turn 142**
-
-Can you put together Cobalt Freight's renewal quote? Please mention the 4% price increase on list rates next year.
-
-For context, here's the recent thread with Cobalt Freight:
-
-> From: Priya (Cobalt Freight)
-> We had a couple of questions about SSO groups. Our admin noticed the export took longer than usual. Attaching the doc we discussed. Can we push our sync to Thursday?
+> From: Chloe (Delta Learning)
+> Please hold off on any changes until after our freeze. Our admin noticed the export took longer than usual.
 
 > From: me
-> Happy to jump on a call if easier. Please hold off on any changes until after our freeze. We'd like to add two more admins. Attaching the doc we discussed.
+> Attaching the doc we discussed. Confirming receipt, thanks. We'd like to add two more admins.
 
-> From: Priya (Cobalt Freight)
-> Let me check internally and get back to you. Following up on the item from last week. Please hold off on any changes until after our freeze.
-
-> From: me
-> Can we push our sync to Thursday? Let me check internally and get back to you. Can you resend the invoice to the AP inbox?
-
-> From: Priya (Cobalt Freight)
-> Apologies for the delay, it's been a busy week. Can we push our sync to Thursday? Please hold off on any changes until after our freeze. Let me check internally and get back to you.
-
-> From: me
-> Happy to jump on a call if easier. We had a couple of questions about SSO groups. The team liked the new dashboard layout.
-
-> From: Priya (Cobalt Freight)
-> Attaching the doc we discussed. We had a couple of questions about SSO groups. Our admin noticed the export took longer than usual.
-
-> From: me
-> Let me check internally and get back to you. We had a couple of questions about SSO groups.
-
-> From: Priya (Cobalt Freight)
-> Is there a recording of the training session? Looping in a colleague who has more context.
-
-> From: me
-> We're still evaluating internally, no decision yet. Confirming receipt, thanks. Sounds good, we'll review on our side.
-
-> From: Priya (Cobalt Freight)
-> Sounds good, we'll review on our side. Please hold off on any changes until after our freeze. Our admin noticed the export took longer than usual. Can you resend the invoice to the AP inbox?
-
-> From: me
-> Confirming receipt, thanks. We'd like to add two more admins.
-
-> From: Priya (Cobalt Freight)
+> From: Chloe (Delta Learning)
 > Can you resend the invoice to the AP inbox? Sounds good, we'll review on our side. We'd like to add two more admins. Confirming receipt, thanks.
 
 > From: me
 > Following up on the item from last week. We're still evaluating internally, no decision yet. Can you resend the invoice to the AP inbox?
 
-Side note: For Beta Health, stop copying Hana Brennan on pricing; copy Ravi Kowalski instead, they took over procurement.
+> From: Chloe (Delta Learning)
+> Let me check internally and get back to you. Is there a recording of the training session?
+
+> From: me
+> Apologies for the delay, it's been a busy week. Our admin noticed the export took longer than usual.
+
+> From: Chloe (Delta Learning)
+> Our security team will send the questionnaire separately. Following up on the item from last week. Attaching the doc we discussed. Confirming receipt, thanks.
+
+> From: me
+> Thanks for the quick turnaround on this. Is there a recording of the training session? Please hold off on any changes until after our freeze.
+
+> From: Chloe (Delta Learning)
+> Apologies for the delay, it's been a busy week. Our admin noticed the export took longer than usual. Can you resend the invoice to the AP inbox? Let me check internally and get back to you.
 
 
-**Turn 143**
+**Turn 132**
+
+Good. Write the final version to deliverables/D29.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D29", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+
+
+## Visit 44: Beta Health (deliverable, writes D30)
+
+
+**Turn 133**
+
+Time to send Beta Health their renewal pricing. Draft the quote. Please remind them about the deadline for signing.
+
+For context, here's the recent thread with Beta Health:
+
+> From: Ines (Beta Health)
+> Looping in a colleague who has more context. Attaching the doc we discussed. Sounds good, we'll review on our side. The team liked the new dashboard layout.
+
+> From: me
+> We had a couple of questions about SSO groups. Who should we contact about the API keys? Can we push our sync to Thursday?
+
+> From: Ines (Beta Health)
+> Thanks for the quick turnaround on this. Sounds good, we'll review on our side. Can we push our sync to Thursday? Looping in a colleague who has more context.
+
+> From: me
+> We're still evaluating internally, no decision yet. Our security team will send the questionnaire separately. Our admin noticed the export took longer than usual.
+
+> From: Ines (Beta Health)
+> Following up on the item from last week. Our admin noticed the export took longer than usual. Our security team will send the questionnaire separately. Looping in a colleague who has more context.
+
+> From: me
+> The team liked the new dashboard layout. Following up on the item from last week.
+
+> From: Ines (Beta Health)
+> Apologies for the delay, it's been a busy week. Looping in a colleague who has more context. We had a couple of questions about SSO groups. The team liked the new dashboard layout.
+
+> From: me
+> Following up on the item from last week. Apologies for the delay, it's been a busy week. We had a couple of questions about SSO groups.
+
+> From: Ines (Beta Health)
+> Attaching the doc we discussed. We'd like to add two more admins. The team liked the new dashboard layout. Our admin noticed the export took longer than usual.
+
+> From: me
+> Sounds good, we'll review on our side. Looping in a colleague who has more context. Apologies for the delay, it's been a busy week. Can you resend the invoice to the AP inbox?
+
+> From: Ines (Beta Health)
+> The team liked the new dashboard layout. Looping in a colleague who has more context. Attaching the doc we discussed. Please hold off on any changes until after our freeze.
+
+> From: me
+> We had a couple of questions about SSO groups. Our security team will send the questionnaire separately.
+
+> From: Ines (Beta Health)
+> Apologies for the delay, it's been a busy week. We're still evaluating internally, no decision yet. Is there a recording of the training session? Confirming receipt, thanks.
+
+> From: me
+> Confirming receipt, thanks. We had a couple of questions about SSO groups.
+
+
+**Turn 134**
+
+Add a line offering a call next week.
+
+
+**Turn 135**
 
 Tighten it up, keep the body under 180 words.
 
 
-**Turn 144**
+**Turn 136**
 
-Less salesy please, more matter-of-fact.
+Good. Write the final version to deliverables/D30.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D30", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-**Turn 145**
+## Visit 45: Cobalt Freight (deliverable, writes D31)
+
+Planted: Beta Health contact_name [embedded-supersede]
+
+
+**Turn 137**
+
+Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: cc name is Nadia Osei.) Please mention the 4% price increase on list rates next year.
+
+
+**Turn 138**
+
+Tighten it up, keep the body under 180 words.
+
+Unrelated, but before I forget: Tomas Moreau has left Beta Health; Sofia Chen is our main contact there from now on.
+
+
+**Turn 139**
 
 Good. Write the final version to deliverables/D31.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D31", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-## Visit 46: Cobalt Freight (deliverable, writes D32)
+## Visit 46: Beta Health (deliverable, writes D32)
+
+Planted: Cobalt Freight term_months [embedded]
 
 
-**Turn 146**
+**Turn 140**
 
-Can you put together Cobalt Freight's renewal quote? Please mention the 4% price increase on list rates next year.
+I need the discount approval form for Beta Health for finance.
 
-
-**Turn 147**
-
-Open with a thank-you for the last quarter.
+Quick aside, not about this: Cobalt Freight agreed in principle to a 36-month term.
 
 
-**Turn 148**
+**Turn 141**
 
-Good. Write the final version to deliverables/D32.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D32", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
-
-
-## Visit 47: Acme Robotics (debrief)
+Good. Write the final version to deliverables/D32.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D32", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
 
 
-**Turn 149**
+## Visit 47: Cobalt Freight (debrief)
 
-Pasting my notes from the QBR with Acme Robotics, they're messy:
+Planted: Cobalt Freight seats [home]; Cobalt Freight discount_pct [home-supersede]
 
-- They floated a possible pilot in a second business unit later in the year.
-- We agreed to share usage reports monthly instead of quarterly.
-- There was some back and forth about SSO setup, IT is handling it on their side.
-- They brought up the integration with their ticketing tool, which works fine.
-- They want to see a case study from a similar company in their space.
-- They asked about the roadmap for reporting, I said I'd follow up with product.
-- Their security questionnaire is due back to them by end of month.
-- We talked through the API rate limits, they're well under them.
-- Their champion is busy with a product launch, so replies may be slow.
-- They asked whether the mobile app supports offline mode, I said not yet.
-- Their legal team is slow, plan for extra time on any paperwork.
-- They're consolidating vendors this year but we are not on the chopping block.
-- Their admin wants a refresher training session sometime next month.
+
+**Turn 142**
+
+Here are my raw notes from my call with Cobalt Freight:
+
 - General vibe was positive, no sign they're shopping around seriously.
-- They're happy with support response times overall.
+- There was some back and forth about SSO setup, IT is handling it on their side.
+- I walked them through the new permissions model, they liked it.
+- They'd like more notice before UI changes ship.
+- Deal desk revised Cobalt Freight's approved discount from 20% to 24%.
+- They want to see a case study from a similar company in their space.
+- They'd like invoices sent to a shared AP inbox instead of a person.
+- We talked through the API rate limits, they're well under them.
+- They're consolidating vendors this year but we are not on the chopping block.
+- We agreed to share usage reports monthly instead of quarterly.
+- Cobalt Freight plans to renew 170 seats.
+- We spent the first few minutes on their reorg, which is mostly settled now.
+- They floated a possible pilot in a second business unit later in the year.
+- Usage is up a bit quarter over quarter, mostly from the ops team.
+- Someone from finance joined late and mostly listened.
 
 Can you pull out the action items with an owner for each?
 
-Pasting Acme Robotics' usage export from the admin console, in case it's useful:
+Pasting Cobalt Freight's usage export from the admin console, in case it's useful:
 
 ```
 team,region,active_users,logins_30d,reports_created,last_active
-Data,APAC,6,692,0,2026-11-21
-Legal,NA-East,56,54,56,2026-10-13
-Product,LATAM,9,322,17,2026-11-02
-Finance,APAC,9,608,29,2026-09-20
-Data,APAC,59,460,92,2026-09-08
-Data,LATAM,8,534,59,2026-10-24
-Legal,NA-East,16,371,64,2026-10-02
-Support,NA-East,12,863,37,2026-10-22
-HR,APAC,52,282,69,2026-10-07
-Billing,EMEA,31,844,28,2026-10-03
-Product,LATAM,6,817,76,2026-09-06
-Engineering,NA-West,1,377,50,2026-10-06
-Security,NA-East,50,830,101,2026-09-07
-Logistics,EMEA,45,106,109,2026-11-06
-Procurement,NA-West,45,209,53,2026-11-20
-Logistics,EMEA,25,196,59,2026-09-27
-Research,EMEA,32,240,92,2026-11-20
-Customer Success,NA-East,29,76,111,2026-11-18
-Research,EMEA,40,275,12,2026-09-18
-Logistics,EMEA,20,383,12,2026-11-03
-Product,NA-East,48,217,36,2026-10-20
-Finance,EMEA,3,844,0,2026-09-04
-Marketing,NA-East,27,42,106,2026-11-10
-Analytics,NA-East,24,268,54,2026-10-16
-Engineering,NA-West,2,148,44,2026-09-16
+Field Ops,APAC,50,352,38,2026-10-04
+Research,NA-East,43,830,43,2026-09-24
+Legal,EMEA,17,610,101,2026-09-09
+Finance,NA-East,54,94,14,2026-11-05
+Support,APAC,3,848,66,2026-10-16
+Finance,EMEA,17,438,45,2026-10-06
+Marketing,NA-East,10,354,23,2026-10-24
 Data,NA-East,38,295,87,2026-11-23
 Logistics,NA-East,22,691,58,2026-09-07
 Finance,NA-East,9,20,56,2026-11-17
@@ -6657,19 +6679,37 @@ Research,APAC,34,773,19,2026-09-10
 Product,NA-East,2,636,98,2026-09-06
 Billing,EMEA,30,392,1,2026-09-27
 Billing,NA-West,29,378,12,2026-10-25
+Logistics,APAC,31,880,100,2026-11-17
+HR,LATAM,12,252,108,2026-10-10
+Sales,EMEA,37,832,94,2026-09-10
+Customer Success,NA-East,33,319,100,2026-11-18
+Engineering,LATAM,42,2,117,2026-09-25
+Sales,NA-East,60,267,102,2026-09-15
+Marketing,NA-West,25,14,69,2026-10-09
+Support,LATAM,24,53,102,2026-09-26
+Field Ops,NA-East,17,392,28,2026-09-09
+Support,EMEA,2,145,35,2026-09-23
+Legal,APAC,24,863,51,2026-11-18
+Security,APAC,42,643,48,2026-10-09
+Field Ops,NA-West,38,453,52,2026-11-12
+Procurement,EMEA,55,816,47,2026-09-18
+Customer Success,NA-West,20,780,50,2026-10-26
+Logistics,EMEA,9,74,112,2026-10-28
+Field Ops,APAC,48,290,68,2026-10-08
+Research,APAC,26,52,92,2026-09-08
 ```
 
 
-**Turn 150**
+**Turn 143**
 
 Anything in there I should flag to my manager?
 
 
-**Turn 151**
+**Turn 144**
 
 Which of these are blocking the renewal?
 
 
-**Turn 152**
+**Turn 145**
 
 Turn that into a short checklist I can paste into our CRM.

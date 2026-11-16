@@ -288,13 +288,18 @@ def generate(seed=0, n_clients=4, n_visits=48, notes_scale=1.0, embed_prob=0.3,
     kinds = ["debrief"] * late_debriefs + ["deliverable"] * (rest - late_debriefs)
     rng.shuffle(kinds)
     prev = None
+    counts = {c: 2 for c in names}
     for k in kinds:
         # Usually switch client; sometimes stay (a deliverable right after that client's debrief
         # gives near-term checks to contrast with old ones).
         if prev is not None and rng.random() < same_client_prob:
             c = prev
         else:
-            c = rng.choice([c for c in names if c != prev])
+            # balanced: among clients other than prev, pick one of the least visited so far
+            cands = [c for c in names if c != prev]
+            low = min(counts[c] for c in cands)
+            c = rng.choice([c for c in cands if counts[c] == low])
+        counts[c] += 1
         seq.append((c, k))
         prev = c
 

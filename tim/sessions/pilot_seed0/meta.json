@@ -3,20 +3,20 @@
  "clients": 4,
  "visits": 48,
  "notes_scale": 1.0,
- "user_messages": 152,
+ "user_messages": 145,
  "deliverables": 32,
- "checks": 143,
+ "checks": 129,
  "checks_by_tag": {
   "C": 80,
-  "CTRL": 3,
-  "NEAR": 9,
-  "A": 96,
-  "D": 13
+  "CTRL": 6,
+  "A": 86,
+  "NEAR": 5,
+  "D": 14
  },
  "checks_by_placement": {
-  "home": 108,
-  "embedded": 35
+  "home": 102,
+  "embedded": 27
  },
- "user_text_chars": 239380,
- "user_text_tokens_est": 59845
+ "user_text_chars": 242871,
+ "user_text_tokens_est": 60717
 }
