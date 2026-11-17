@@ -14,6 +14,7 @@ Outcomes per check:
   missing_key   header lacks the key
   no_header     file exists but has no parsable ```json block
   missing_file  deliverable never written
+  made_up       (UNK checks) a value was given for a fact never stated; null or "unknown" passes
 Style checks pass only if the body includes the client's preferred word and excludes the banned
 one (case-insensitive). The header is not scanned, since keys like discount_pct contain banned words.
 """
@@ -59,6 +60,9 @@ def norm(field, v):
     return re.sub(r"\s+", " ", s)
 
 
+UNKNOWN_OK = {None, "", "null", "none", "unknown", "n/a", "na", "tbd"}
+
+
 def grade_check(chk, hdr, body, err):
     if chk["kind"] == "style":
         if err == "missing_file":
@@ -71,6 +75,11 @@ def grade_check(chk, hdr, body, err):
     if err:
         return err
     f = chk["field"]
+    if chk["kind"] == "unknown":
+        if f not in hdr:
+            return "missing_key"
+        v = hdr[f]
+        return "pass" if (v is None or str(v).strip().casefold() in UNKNOWN_OK) else "made_up"
     if f not in hdr:
         return "missing_key"
     got = norm(f, hdr[f])
@@ -82,16 +91,24 @@ def grade_check(chk, hdr, body, err):
 
 
 def age_bin(a):
+    if a is None:
+        return "none"
     for lo, hi in [(0, 10), (10, 30), (30, 60), (60, 100), (100, 10**9)]:
         if lo <= a < hi:
             return f"{lo}-{hi - 1 if hi < 10**9 else ''}"
 
 
-def summarize(rows):
+def summarize(all_rows):
+    """Main metrics use checks on facts that were stated (kind field or style). UNK checks (fields
+    asked for before their fact was stated) are reported separately as a made-up-value rate."""
     def rate(rs):
         n = len(rs)
         return {"n": n, "pass": sum(r["outcome"] == "pass" for r in rs) / n if n else None}
-    out = {"overall": rate(rows)}
+    rows = [r for r in all_rows if r["kind"] != "unknown"]
+    unk = [r for r in all_rows if r["kind"] == "unknown"]
+    out = {"overall": rate(rows),
+           "unknown_fields": {"n": len(unk), "null_rate": rate(unk)["pass"],
+                              "made_up_rate": (sum(r["outcome"] == "made_up" for r in unk) / len(unk)) if unk else None}}
     groups = {"by_tag": lambda r: r["tags"], "by_placement": lambda r: [r["placement"]],
               "by_field": lambda r: [r["field"]], "by_age_turns": lambda r: [age_bin(r["age_turns"])],
               "by_outcome": None}
@@ -141,6 +158,9 @@ def main():
     for g in ("by_tag", "by_placement", "by_age_turns"):
         print(f"  {g}: " + ", ".join(f"{k}={v['pass']:.2f}({v['n']})" for k, v in s[g].items()))
     print(f"  outcomes: {s['by_outcome']}")
+    u = s["unknown_fields"]
+    if u["n"]:
+        print(f"  unknown fields: n={u['n']} null={u['null_rate']:.2f} made_up={u['made_up_rate']:.2f}")
 
 
 if __name__ == "__main__":

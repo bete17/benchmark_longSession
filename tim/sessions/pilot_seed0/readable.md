@@ -2776,7 +2776,7 @@ Keep it to half a page.
 
 **Turn 27**
 
-Good. Write the final version to deliverables/D01.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D01", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D01.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D01", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 9: Cobalt Freight (deliverable, writes D02)
@@ -2820,7 +2820,7 @@ Bullet points instead of paragraphs.
 
 **Turn 30**
 
-Good. Write the final version to deliverables/D02.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D02", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D02.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D02", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 10: Acme Robotics (deliverable, writes D03)
@@ -2828,7 +2828,7 @@ Good. Write the final version to deliverables/D02.md. The file must start with a
 
 **Turn 31**
 
-Write a follow-up email to Acme Robotics after today's check-in. Please pitch the analytics add-on briefly at the end.
+Write a follow-up email to Acme Robotics after today's check-in. Please briefly pitch the optional analytics package they can bolt on.
 
 For context, here's the recent thread with Acme Robotics:
 
@@ -2858,7 +2858,7 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 33**
 
-Good. Write the final version to deliverables/D03.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D03", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D03.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D03", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 11: Beta Health (deliverable, writes D04)
@@ -2868,7 +2868,7 @@ Planted: Delta Learning currency [embedded]
 
 **Turn 34**
 
-Draft a short follow-up note to Beta Health. Please remind them about the deadline for signing.
+Draft a short follow-up note to Beta Health. Please remind them of the date they need to sign by.
 
 For context, here's the recent thread with Beta Health:
 
@@ -2905,7 +2905,7 @@ Make the tone a bit warmer, they've been a good partner.
 
 **Turn 37**
 
-Good. Write the final version to deliverables/D04.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D04", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D04.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D04", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 12: Cobalt Freight (deliverable, writes D05)
@@ -2915,7 +2915,7 @@ Planted: Beta Health discount_pct [embedded]
 
 **Turn 38**
 
-Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: contact name is Mei Moreau.) Please mention the 4% price increase on list rates next year.
+Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: contact name is Mei Moreau.) Please mention that list rates go up 4% next year.
 
 Unrelated, but before I forget: The discount approved for Beta Health is 8%.
 
@@ -2932,7 +2932,7 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 41**
 
-Good. Write the final version to deliverables/D05.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D05", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D05.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D05", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 13: Delta Learning (deliverable, writes D06)
@@ -2979,7 +2979,7 @@ Add one line on what we want out of this.
 
 **Turn 45**
 
-Good. Write the final version to deliverables/D06.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D06", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D06.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D06", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 14: Beta Health (deliverable, writes D07)
@@ -3038,7 +3038,7 @@ Keep it to half a page.
 
 **Turn 48**
 
-Good. Write the final version to deliverables/D07.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D07", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D07.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D07", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 15: Beta Health (debrief)
@@ -3383,7 +3383,7 @@ Turn that into a short checklist I can paste into our CRM.
 
 **Turn 51**
 
-Draft the renewal quote for Acme Robotics. Please pitch the analytics add-on briefly at the end.
+Draft the renewal quote for Acme Robotics. Please briefly pitch the optional analytics package they can bolt on.
 
 For context, here's the recent thread with Acme Robotics:
 
@@ -3411,7 +3411,7 @@ For context, here's the recent thread with Acme Robotics:
 
 **Turn 52**
 
-Good. Write the final version to deliverables/D08.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D08", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D08.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D08", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 17: Delta Learning (debrief)
@@ -3760,7 +3760,7 @@ Fill out the internal discount approval request for Acme Robotics.
 
 **Turn 56**
 
-Good. Write the final version to deliverables/D09.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D09", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D09.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D09", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 19: Acme Robotics (debrief)
@@ -4118,7 +4118,7 @@ Planted: Acme Robotics discount_pct [embedded]
 
 **Turn 61**
 
-Time to send Cobalt Freight their renewal pricing. Draft the quote. Please mention the 4% price increase on list rates next year.
+Time to send Cobalt Freight their renewal pricing. Draft the quote. Please mention that list rates go up 4% next year.
 
 Side note: The discount approved for Acme Robotics is 11%.
 
@@ -4130,7 +4130,7 @@ Add a line offering a call next week.
 
 **Turn 63**
 
-Good. Write the final version to deliverables/D10.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D10", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D10.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D10", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 21: Beta Health (debrief)
@@ -4518,7 +4518,7 @@ Add one line on what we want out of this.
 
 **Turn 68**
 
-Good. Write the final version to deliverables/D11.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D11", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D11.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D11", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 23: Cobalt Freight (deliverable, writes D12)
@@ -4569,7 +4569,7 @@ For context, here's the recent thread with Cobalt Freight:
 
 **Turn 70**
 
-Good. Write the final version to deliverables/D12.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D12", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D12.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D12", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 24: Cobalt Freight (deliverable, writes D13)
@@ -4577,7 +4577,7 @@ Good. Write the final version to deliverables/D12.md. The file must start with a
 
 **Turn 71**
 
-Draft a short follow-up note to Cobalt Freight. (Reminder: renewal deadline is 2027-04-26.) Please mention the 4% price increase on list rates next year.
+Draft a short follow-up note to Cobalt Freight. (Reminder: renewal deadline is 2027-04-26.) Please mention that list rates go up 4% next year.
 
 For context, here's the recent thread with Cobalt Freight:
 
@@ -4617,7 +4617,7 @@ For context, here's the recent thread with Cobalt Freight:
 
 **Turn 72**
 
-Good. Write the final version to deliverables/D13.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D13", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D13.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D13", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 25: Delta Learning (deliverable, writes D14)
@@ -4685,7 +4685,7 @@ Quick aside, not about this: Acme Robotics plans to renew 265 seats.
 
 **Turn 76**
 
-Good. Write the final version to deliverables/D14.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D14", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D14.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D14", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 26: Acme Robotics (deliverable, writes D15)
@@ -4693,7 +4693,7 @@ Good. Write the final version to deliverables/D14.md. The file must start with a
 
 **Turn 77**
 
-Write a follow-up email to Acme Robotics after today's check-in. Please pitch the analytics add-on briefly at the end.
+Write a follow-up email to Acme Robotics after today's check-in. Please briefly pitch the optional analytics package they can bolt on.
 
 For context, here's the recent thread with Acme Robotics:
 
@@ -4746,7 +4746,7 @@ Less salesy please, more matter-of-fact.
 
 **Turn 80**
 
-Good. Write the final version to deliverables/D15.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D15", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D15.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D15", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 27: Acme Robotics (debrief)
@@ -5100,7 +5100,7 @@ Group them by who owns them.
 
 **Turn 84**
 
-Write a follow-up email to Beta Health after today's check-in. Please remind them about the deadline for signing.
+Write a follow-up email to Beta Health after today's check-in. Please remind them of the date they need to sign by.
 
 
 **Turn 85**
@@ -5110,7 +5110,7 @@ Less salesy please, more matter-of-fact.
 
 **Turn 86**
 
-Good. Write the final version to deliverables/D16.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D16", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D16.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D16", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 29: Delta Learning (deliverable, writes D17)
@@ -5118,7 +5118,7 @@ Good. Write the final version to deliverables/D16.md. The file must start with a
 
 **Turn 87**
 
-Can you put together Delta Learning's renewal quote? Please make sure they understand the discount is what keeps the total flat.
+Can you put together Delta Learning's renewal quote? Please make sure they understand the reduced rate we approved is what keeps their total flat.
 
 For context, here's the recent thread with Delta Learning:
 
@@ -5168,7 +5168,7 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 90**
 
-Good. Write the final version to deliverables/D17.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D17", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D17.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D17", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 30: Beta Health (deliverable, writes D18)
@@ -5176,7 +5176,7 @@ Good. Write the final version to deliverables/D17.md. The file must start with a
 
 **Turn 91**
 
-Draft the renewal quote for Beta Health. Please remind them about the deadline for signing.
+Draft the renewal quote for Beta Health. Please remind them of the date they need to sign by.
 
 For context, here's the recent thread with Beta Health:
 
@@ -5206,7 +5206,7 @@ Less salesy please, more matter-of-fact.
 
 **Turn 93**
 
-Good. Write the final version to deliverables/D18.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D18", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D18.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D18", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 31: Beta Health (deliverable, writes D19)
@@ -5214,7 +5214,7 @@ Good. Write the final version to deliverables/D18.md. The file must start with a
 
 **Turn 94**
 
-Draft a short follow-up note to Beta Health. (Reminder: renewal deadline is 2027-06-12.) Please remind them about the deadline for signing.
+Draft a short follow-up note to Beta Health. (Reminder: renewal deadline is 2027-06-12.) Please remind them of the date they need to sign by.
 
 For context, here's the recent thread with Beta Health:
 
@@ -5256,7 +5256,7 @@ Make the tone a bit warmer, they've been a good partner.
 
 **Turn 96**
 
-Good. Write the final version to deliverables/D19.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D19", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D19.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D19", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 32: Beta Health (deliverable, writes D20)
@@ -5264,7 +5264,7 @@ Good. Write the final version to deliverables/D19.md. The file must start with a
 
 **Turn 97**
 
-Can you put together Beta Health's renewal quote? (Reminder: term months is 24.) Please remind them about the deadline for signing.
+Can you put together Beta Health's renewal quote? (Reminder: term months is 24.) Please remind them of the date they need to sign by.
 
 For context, here's the recent thread with Beta Health:
 
@@ -5306,7 +5306,7 @@ Less salesy please, more matter-of-fact.
 
 **Turn 99**
 
-Good. Write the final version to deliverables/D20.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D20", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D20.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D20", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 33: Delta Learning (deliverable, writes D21)
@@ -5324,7 +5324,7 @@ Add one line on what we want out of this.
 
 **Turn 102**
 
-Good. Write the final version to deliverables/D21.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D21", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D21.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D21", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 34: Cobalt Freight (deliverable, writes D22)
@@ -5346,7 +5346,7 @@ Put the key numbers at the top.
 
 **Turn 105**
 
-Good. Write the final version to deliverables/D22.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D22", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D22.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D22", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 35: Acme Robotics (deliverable, writes D23)
@@ -5413,7 +5413,7 @@ Bullet points instead of paragraphs.
 
 **Turn 109**
 
-Good. Write the final version to deliverables/D23.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D23", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D23.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D23", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 36: Delta Learning (deliverable, writes D24)
@@ -5421,7 +5421,7 @@ Good. Write the final version to deliverables/D23.md. The file must start with a
 
 **Turn 110**
 
-Draft a short follow-up note to Delta Learning. Please make sure they understand the discount is what keeps the total flat.
+Draft a short follow-up note to Delta Learning. Please make sure they understand the reduced rate we approved is what keeps their total flat.
 
 
 **Turn 111**
@@ -5431,7 +5431,7 @@ Open with a thank-you for the last quarter.
 
 **Turn 112**
 
-Good. Write the final version to deliverables/D24.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D24", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D24.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D24", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 37: Acme Robotics (deliverable, writes D25)
@@ -5444,7 +5444,7 @@ Give me a prep doc for the Acme Robotics QBR.
 
 **Turn 114**
 
-Good. Write the final version to deliverables/D25.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D25", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D25.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D25", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 38: Cobalt Freight (deliverable, writes D26)
@@ -5454,7 +5454,7 @@ Planted: Delta Learning contact_name [embedded]
 
 **Turn 115**
 
-Draft a short follow-up note to Cobalt Freight. Please mention the 4% price increase on list rates next year.
+Draft a short follow-up note to Cobalt Freight. Please mention that list rates go up 4% next year.
 
 For context, here's the recent thread with Cobalt Freight:
 
@@ -5486,7 +5486,7 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 117**
 
-Good. Write the final version to deliverables/D26.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D26", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D26.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, renewal_deadline (deliverable_id is "D26", type is "followup_email", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 39: Delta Learning (debrief)
@@ -5857,7 +5857,7 @@ Add a short risks section.
 
 **Turn 124**
 
-Good. Write the final version to deliverables/D27.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D27", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D27.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D27", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 41: Acme Robotics (deliverable, writes D28)
@@ -5875,7 +5875,7 @@ Add one line on what we want out of this.
 
 **Turn 127**
 
-Good. Write the final version to deliverables/D28.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D28", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D28.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D28", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 42: Delta Learning (debrief)
@@ -6257,7 +6257,7 @@ For context, here's the recent thread with Delta Learning:
 
 **Turn 132**
 
-Good. Write the final version to deliverables/D29.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D29", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D29.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, seats, term_months, renewal_deadline, discount_pct (deliverable_id is "D29", type is "meeting_brief", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 44: Beta Health (deliverable, writes D30)
@@ -6265,7 +6265,7 @@ Good. Write the final version to deliverables/D29.md. The file must start with a
 
 **Turn 133**
 
-Time to send Beta Health their renewal pricing. Draft the quote. Please remind them about the deadline for signing.
+Time to send Beta Health their renewal pricing. Draft the quote. Please remind them of the date they need to sign by.
 
 For context, here's the recent thread with Beta Health:
 
@@ -6324,7 +6324,7 @@ Tighten it up, keep the body under 180 words.
 
 **Turn 136**
 
-Good. Write the final version to deliverables/D30.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D30", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D30.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D30", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 45: Cobalt Freight (deliverable, writes D31)
@@ -6334,7 +6334,7 @@ Planted: Beta Health contact_name [embedded-supersede]
 
 **Turn 137**
 
-Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: cc name is Nadia Osei.) Please mention the 4% price increase on list rates next year.
+Time to send Cobalt Freight their renewal pricing. Draft the quote. (Reminder: cc name is Nadia Osei.) Please mention that list rates go up 4% next year.
 
 
 **Turn 138**
@@ -6346,7 +6346,7 @@ Unrelated, but before I forget: Tomas Moreau has left Beta Health; Sofia Chen is
 
 **Turn 139**
 
-Good. Write the final version to deliverables/D31.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D31", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D31.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, contact_name, cc_name, currency, seats, term_months, discount_pct, concession_ref (deliverable_id is "D31", type is "renewal_quote", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 46: Beta Health (deliverable, writes D32)
@@ -6363,7 +6363,7 @@ Quick aside, not about this: Cobalt Freight agreed in principle to a 36-month te
 
 **Turn 141**
 
-Good. Write the final version to deliverables/D32.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D32", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD), then the body below it.
+Good. Write the final version to deliverables/D32.md. The file must start with a ```json block containing exactly these keys: deliverable_id, client, type, discount_pct, seats, currency, term_months (deliverable_id is "D32", type is "discount_approval", discount_pct and seats and term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), then the body below it.
 
 
 ## Visit 47: Cobalt Freight (debrief)

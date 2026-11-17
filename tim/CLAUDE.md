@@ -23,15 +23,18 @@ tim/
   gen/generate.py              seeded session generator (stdlib only)
   grade/grade.py               grader (stdlib only)
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
+  run/system_prompt.md         the system prompt for the Actor in EVERY condition (replaces pi's coding prompt)
   sessions/pilot_seed0/        the generated pilot session
     session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
-    checks.jsonl               129 checks over 32 deliverables, each tagged A / C / D / CTRL / NEAR
+    checks.jsonl               163 checks over 32 deliverables: 129 on stated facts, tagged A / C / D /
+                               CTRL / NEAR, plus 34 UNK checks (field asked before its fact was stated;
+                               the right answer is null, anything else counts as made up)
     facts.json, visits.json    ground truth and the intended visit boundaries
     readable.md                the session as a readable script with planted facts listed per visit
     meta.json                  counts and a character-based size estimate (~60k user tokens)
 ```
 
-Verified before handoff: `make_oracle.py --mode perfect` grades 100%, `--mode stale` fails exactly
+Verified before handoff: `make_oracle.py --mode perfect` grades 100% (and null on all 34 UNK fields), `--mode stale` fails exactly
 the 14 D checks as "stale", `--mode empty` grades 0%.
 
 The agent under test sees only each message's `text`, sent in order. Deliverables are files the agent
@@ -77,18 +80,23 @@ push after each step (`git push origin main`; small commits). Stop at every gate
 2. Find how to drive pi non-interactively for many turns in ONE session (check `pi --help`: an RPC or
    print mode with session continuation). The driver must send message N only after the agent finishes
    message N-1, including its tool calls.
-3. Confirm pi compaction can be forced at a 100k ceiling via `compaction.reserveTokens`
+3. Replace pi's default (coding-agent) system prompt with `run/system_prompt.md` in every condition,
+   keeping pi's file tools so the agent can write deliverables. Check `pi --help` for the flag that
+   replaces the system prompt (not one that appends). Verify (a) the file tools still work and
+   (b) under `ag pi` the replaced system prompt still reaches the model (inspect one request in AG's
+   server.log or the pi session).
+4. Confirm pi compaction can be forced at a 100k ceiling via `compaction.reserveTokens`
    (reserve = contextWindow - 100000 for the chosen model) and that compaction events are visible in
    the session file.
-4. Confirm `ag pi` works on Gemini for both Actor and Gatherer, and that you can collect: Actor usage
+5. Confirm `ag pi` works on Gemini for both Actor and Gatherer, and that you can collect: Actor usage
    per call, Gatherer usage per call (by purpose), and context size per call.
-5. Write `tim/run/run_session.py`: given a session dir, a condition config, and an output dir, run the
+6. Write `tim/run/run_session.py`: given a session dir, a condition config, and an output dir, run the
    session and save into `tim/results/<condition>_seed<k>_rep<r>/`:
    `deliverables/`, `turns.jsonl` (per user turn: wall time, actor input/output/cache tokens,
    context tokens, compaction or AG-build events), `gatherer_calls.jsonl` (AG conditions),
    the raw pi session file, AG's server.log and call log, and `cost.json` with three numbers:
    `actor_usd`, `gatherer_usd`, `total_usd` (prices in `tim/run/prices.json`, cite the source page).
-6. Measure the real token size of the pilot session after a short run. If a full run would not pass
+7. Measure the real token size of the pilot session after a short run. If a full run would not pass
    100k of actor context at least twice under pi compaction, regenerate with a larger
    `--report-rows` (main size lever) and note it. Do not change other generator semantics without
    asking.

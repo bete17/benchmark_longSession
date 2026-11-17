@@ -20,6 +20,7 @@ We test where AG helps, where it hurts, and what it costs, against the same harn
 | D | A superseded fact: old and new versions both survive | Time-aware selection should prefer the latest | The new value appears and the old one does not. Risk test: AG may page the old one back in |
 | E | Context and cost grow until compaction | Context stays bounded | Tokens and dollars per turn |
 | CTRL | Fact is in the current prompt | Nothing to gain | Regression check: AG must not make these worse |
+| UNK | A field is requested before its fact was ever stated | Nothing to page in | The right answer is null. A value counts as made up. Reported separately, not in the main pass rate |
 
 Out of scope for the pilot: B (self-poisoning, weak fit with AG's design since the running task stays
 verbatim) and F (environment changes picked up by pollers, planned as module 2).
@@ -60,7 +61,7 @@ Two fact placements, tagged separately:
 ### Pilot size
 
 Generated (`sessions/pilot_seed0`, seed 0): 4 clients, 48 visits (balanced across clients), 145 user messages, 32 deliverables,
-129 checks (A 86, C 80, D 14, CTRL 6, NEAR 5; home 102, embedded 27). User text is about 240k
+163 checks: 129 on stated facts (A 86, C 80, D 14, CTRL 6, NEAR 5; home 102, embedded 27) and 34 UNK. User text is about 240k
 characters (roughly 60k to 70k tokens, mostly pasted usage exports and email threads); with the agent's
 replies and tool calls the actor history should pass 100k at least twice. Claude Code measures the
 real size in the smoke test and regenerates with a larger `--report-rows` if needed.
@@ -79,6 +80,17 @@ Python, deterministic, seeded:
    validator confirms every planted value is still present verbatim.
 4. Emit `session.jsonl` (the user messages, in order) and `checks.jsonl` (per deliverable:
    the required values, forbidden values, and tags A/C/D/CTRL with fact age and visits-since-last).
+
+### Decisions (Nov 17)
+
+- Unknown values: the format line asks for null for anything not yet told. The scripted user cannot
+  answer clarifying questions, so asking is not an option in this design.
+- Client wording rules (style checks): the request describes the topic in neutral words and never
+  uses the banned word itself, so the check tests memory of the rule rather than conflict resolution
+  between an old rule and a new instruction. Style checks are reported as their own slice.
+- System prompt: pi's default coding prompt is replaced in every condition by `run/system_prompt.md`,
+  a short account-manager-assistant prompt. Tools stay the same.
+- Models: a Gemini Flash-tier model for both Actor and Gatherer.
 
 ## 5. Grading
 
@@ -104,7 +116,8 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 
 ## 7. Metrics
 
-- Pass rate overall and by tag (A, C, D, CTRL), and home vs embedded.
+- Pass rate overall and by tag (A, C, D, CTRL), and home vs embedded. Style checks as their own slice.
+- Made-up rate on UNK fields.
 - Pass rate vs fact age (turns since stated) and vs turn index: the degradation curves.
 - Cost reported as three numbers: Actor (Pi) tokens and dollars, Gatherer tokens and dollars,
   and the combined total. Pi-only conditions have only the first.

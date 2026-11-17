@@ -5,9 +5,10 @@
  "notes_scale": 1.0,
  "user_messages": 145,
  "deliverables": 32,
- "checks": 129,
+ "checks": 163,
  "checks_by_tag": {
   "C": 80,
+  "UNK": 34,
   "CTRL": 6,
   "A": 86,
   "NEAR": 5,
@@ -15,8 +16,9 @@
  },
  "checks_by_placement": {
   "home": 102,
+  "none": 34,
   "embedded": 27
  },
- "user_text_chars": 242871,
- "user_text_tokens_est": 60717
+ "user_text_chars": 244288,
+ "user_text_tokens_est": 61072
 }

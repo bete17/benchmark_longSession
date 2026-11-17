@@ -33,7 +33,7 @@ def main():
             if c["kind"] == "style":
                 body += f" We'd like to talk about the {c['expected']['include']}."
                 continue
-            v = c["expected"]
+            v = c["expected"]   # None for UNK checks, written as null
             if a.mode == "stale" and c["superseded_values"]:
                 v = c["superseded_values"][0]
             hdr[c["field"]] = v

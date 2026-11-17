@@ -46,12 +46,15 @@ STYLE_RULES = [("price increase", "plan adjustment"),
                ("deadline", "target date")]
 # What each style rule's trigger sentence asks the agent to talk about.
 STYLE_TRIGGERS = {
-    "price increase": "mention the 4% price increase on list rates next year",
-    "discount": "make sure they understand the discount is what keeps the total flat",
-    "outage": "acknowledge last month's outage and the credits we issued for it",
-    "add-on": "pitch the analytics add-on briefly at the end",
-    "upgrade": "suggest they consider an upgrade to the Enterprise plan",
-    "deadline": "remind them about the deadline for signing",
+    # Neutral wording: the request never uses the banned word itself, but describes a topic where
+    # the agent would naturally reach for it. So the check tests whether the agent REMEMBERS the
+    # client's rule, not whether it resolves a conflict between an old rule and a new instruction.
+    "price increase": "mention that list rates go up 4% next year",
+    "discount": "make sure they understand the reduced rate we approved is what keeps their total flat",
+    "outage": "acknowledge last month's service problems and the credits we issued for them",
+    "add-on": "briefly pitch the optional analytics package they can bolt on",
+    "upgrade": "suggest they consider moving up to the Enterprise plan",
+    "deadline": "remind them of the date they need to sign by",
 }
 
 FIELDS = ["contact_name", "cc_name", "currency", "seats", "term_months", "discount_pct",
@@ -414,7 +417,8 @@ def generate(seed=0, n_clients=4, n_visits=48, notes_scale=1.0, embed_prob=0.3,
                 f"Good. Write the final version to deliverables/{did}.md. The file must start with a "
                 f"```json block containing exactly these keys: {', '.join(keys)} "
                 f"(deliverable_id is \"{did}\", type is \"{dtype}\", discount_pct and seats and "
-                f"term_months as numbers, dates as YYYY-MM-DD), then the body below it.")
+                f"term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), "
+                f"then the body below it.")
             deliverable = (did, dtype, hdr_fields, facing, ctrl_field)
 
         # Embedded facts: in some visits, mention a fact about another client in passing.
@@ -452,7 +456,16 @@ def generate(seed=0, n_clients=4, n_visits=48, notes_scale=1.0, embed_prob=0.3,
             for f in hdr_fields:
                 cur = clients[c].current(f)
                 if cur is None:
-                    continue   # not yet introduced: header value is unknowable, not graded
+                    # Not stated yet: the right answer is null. Anything else is made up.
+                    checks.append({
+                        "check_id": f"{did}.{f}", "deliverable_id": did, "client": c, "type": dtype,
+                        "kind": "unknown", "field": f, "expected": None, "superseded_values": [],
+                        "turn": turn, "stated_turn": None, "age_turns": None, "placement": "none",
+                        "other_visits_since_stated": None,
+                        "visits_since_client_last_seen": (vidx - last_visit_of[c] - 1) if c in last_visit_of else None,
+                        "tags": ["UNK"],
+                    })
+                    continue
                 hist = clients[c].history[f]
                 prev_vis = last_visit_of.get(c)
                 stated_visit = cur.visit
