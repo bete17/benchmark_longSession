@@ -3,3 +3,6 @@
 __pycache__/
 tim/results/**/raw/
 tim/results/_synthetic/
+.env.*
+*.pem
+tim/results/**/*.log

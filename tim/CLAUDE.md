@@ -60,16 +60,23 @@ reads `<run_dir>/deliverables/`.
 - Knobs that matter here: `max_context_tokens` (set 100000), `min_context_tokens` (15000),
   `keep_previous_task_tokens`, `keep_temporal_relevant_tokens`, `keep_task_relevant_tokens` (15000 each),
   `all_task_tokens` (30000), `summarize` (true), `boundary_cooldown` (2), `check_boundaries` (true).
+  Also counted in the budget: `parallel_index_tokens` (10000), `keep_so_far_tokens` (15000),
+  `keep_pinned_tokens` (5000). AG requires section budgets + keep_pinned_tokens < max_context_tokens;
+  the defaults sum to 105000, so defaults plus `max_context_tokens = 100000` is refused (fixed
+  2026-11-17, see RUNLOG.md: the bench scales every budget by 0.5, AG's own `within_limit` rule).
 - When AG builds context: under `min_context_tokens` never; above it, after `boundary_cooldown` user
   messages into the open task, one model call asks whether the new message starts a new task
   (`ag/ag_policies/tools/boundary.py`, biased to "same task"); over `max_context_tokens` a build is forced.
 - Pi compaction: pi compacts past `contextWindow - compaction.reserveTokens` (pi settings.json,
-  default reserve 16384). Under AG, pi's compaction is cancelled while AG answers
+  default reserve 16384). pi's compaction summary asks for 0.8 * reserveTokens output tokens, so the
+  bench registers the model with `contextWindow = 116384` and keeps reserve 16384 (still
+  reserve = contextWindow - 100000), rather than a 1M window with a ~948k reserve. Under AG, pi's compaction is cancelled while AG answers
   (`AG_PI_COMPACTION=allow` overrides). AG infers pi's limit as window minus 16384 times 0.9 unless
   `max_context_tokens` is set, so **set `max_context_tokens = 100000` explicitly** for AG runs.
 - Logs: AG's own model calls (purposes like boundary, segment, rank, summarize) go through
   `ag/ag_tools/llm/calllog.py` with usage; per-call context sizes go to the gatherer's `server.log`.
-  Pi records usage on each assistant message in its session file.
+  Pi records usage on each assistant message in its session file, but not for its compaction summary
+  calls; the bench's logging proxy (run/run_session.py) records every Actor call instead.
 
 ## Your steps (from DESIGN.md section 8)
 

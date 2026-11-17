@@ -1,0 +1,9 @@
+{
+ "source": "https://ai.google.dev/gemini-api/docs/pricing (redirects to https://aistudio.google.com/docs/pricing), read 2026-11-17, paid tier, Standard",
+ "unit": "USD per 1M tokens",
+ "notes": "Rates below are the listed rates through 2026-12-31. From 2027-01-01 the page lists double (input 1.50, output 7.50, cache read 0.15). Output includes thinking tokens. Implicit caching has no storage charge; explicit cache storage is not used here.",
+ "models": {
+  "gemini-3.8-flash": {"input": 0.75, "output": 3.75, "cache_read": 0.075,
+                       "from_2027_01_01": {"input": 1.50, "output": 7.50, "cache_read": 0.15}}
+ }
+}
