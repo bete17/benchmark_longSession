@@ -1,0 +1,26 @@
+{
+ "actor_usd": 0.262,
+ "gatherer_usd": 0.2319,
+ "total_usd": 0.4939,
+ "actor_tokens": {
+  "input": 1522294,
+  "cached": 1346180,
+  "output": 7723,
+  "calls": 32,
+  "compaction_calls": 0
+ },
+ "gatherer_tokens": {
+  "input": 233214,
+  "cached": 0,
+  "output": 15200,
+  "calls": 13,
+  "by_purpose": {
+   "boundary": 9,
+   "segment": 1,
+   "subdivide": 1,
+   "summarize": 2
+  }
+ },
+ "prices": "run/prices.json",
+ "item_token_counter": "tiktoken cl100k_base"
+}

@@ -1,0 +1,108 @@
+{
+ "overall": {
+  "n": 129,
+  "pass": 0.031007751937984496
+ },
+ "unknown_fields": {
+  "n": 34,
+  "null_rate": 0.11764705882352941,
+  "made_up_rate": 0.0
+ },
+ "by_tag": {
+  "A": {
+   "n": 86,
+   "pass": 0.0
+  },
+  "C": {
+   "n": 80,
+   "pass": 0.05
+  },
+  "CTRL": {
+   "n": 6,
+   "pass": 0.0
+  },
+  "D": {
+   "n": 14,
+   "pass": 0.0
+  },
+  "NEAR": {
+   "n": 5,
+   "pass": 0.0
+  }
+ },
+ "by_placement": {
+  "embedded": {
+   "n": 27,
+   "pass": 0.0
+  },
+  "home": {
+   "n": 102,
+   "pass": 0.0392156862745098
+  }
+ },
+ "by_field": {
+  "cc_name": {
+   "n": 15,
+   "pass": 0.0
+  },
+  "concession_ref": {
+   "n": 8,
+   "pass": 0.0
+  },
+  "contact_name": {
+   "n": 15,
+   "pass": 0.0
+  },
+  "currency": {
+   "n": 13,
+   "pass": 0.07692307692307693
+  },
+  "discount_pct": {
+   "n": 22,
+   "pass": 0.09090909090909091
+  },
+  "renewal_deadline": {
+   "n": 18,
+   "pass": 0.0
+  },
+  "seats": {
+   "n": 12,
+   "pass": 0.0
+  },
+  "style_rule": {
+   "n": 9,
+   "pass": 0.0
+  },
+  "term_months": {
+   "n": 17,
+   "pass": 0.058823529411764705
+  }
+ },
+ "by_age_turns": {
+  "0-9": {
+   "n": 1,
+   "pass": 0.0
+  },
+  "10-29": {
+   "n": 22,
+   "pass": 0.18181818181818182
+  },
+  "100-": {
+   "n": 20,
+   "pass": 0.0
+  },
+  "30-59": {
+   "n": 46,
+   "pass": 0.0
+  },
+  "60-99": {
+   "n": 40,
+   "pass": 0.0
+  }
+ },
+ "by_outcome": {
+  "pass": 4,
+  "missing_file": 125
+ },
+ "label": "pi_compact_seed0_rep1"
+}

@@ -115,3 +115,48 @@ Append only. Newest entries at the bottom. Written by Claude Code on Tim's lapto
     background, so a build's calls can land in the turn after the one that started it).
   - turns.jsonl `events`: "compaction" from pi's session file compaction entries (or a compaction
     call), "new_task" from `_boundaries`, "build"/"forced_build" (`_builds.reason = limit`), "error".
+
+## 2026-11-17: step 2, smoke runs
+
+All under `results/smoke/` (raw/ is local only). Commands:
+`python run/run_session.py --condition <c> --session sessions/pilot_seed0 --max-turns <n> --results results/smoke [--rep 2]`,
+then `venv/bin/python trace/export.py --run <dir>` and `grade/grade.py`.
+
+| run | turns | actor $ | gatherer $ | total $ | peak actor context | compactions | AG builds |
+|---|---|---|---|---|---|---|---|
+| pi_compact_seed0_rep1 | 1-30 | 0.231 | 0 | 0.231 | 75,422 | 0 | |
+| ag_default_seed0_rep1 | 1-30 | 0.262 | 0.232 | 0.494 | 71,530 | 0 | 2 (1 ready, 1 still running at the end) |
+| pi_compact_seed0_rep2 | 1-60 | 0.609 | 0 | 0.609 | 100,272 | 1 (turn 55) | |
+
+Earlier probes (two 2-turn pi tests, one 2-turn ag pi test, one 3-turn runner test) cost about $0.03.
+countTokens calls are free. Total spend to end of step 2: about $1.37 of the $10 cap.
+
+- Compaction confirmed: at turn 55 pi compacted at tokensBefore 100,272; the next call was 39,610
+  tokens. Visible as a `compaction` entry in the pi session file, as `compaction_start/end`
+  (reason "threshold") in the RPC stream, and as one proxy call with purpose "compaction"
+  (61.9k in, 748 out). Exported to decisions.jsonl and turns.jsonl.
+- Replaced system prompt under ag pi: confirmed in a captured request (c00032 of the AG run):
+  systemInstruction is run/system_prompt.md plus pi's date and cwd lines. AG's gatherer guide and its
+  sections arrive as user-role items after it.
+- Grades (only deliverables due within the truncated script exist, so overall rates are not
+  meaningful): 30-turn runs both wrote D01 and D02, all stated checks pass, both UNK fields null. 60-turn
+  pi run wrote D01 to D09, every stated check passes, 3 UNK `contact_name` fields made up (D04, D06, D07).
+- Calls per turn: about 1.1 to 1.2 (one reply, plus a short follow-up call after each file write).
+  Implicit caching works: 88 to 92% of actor input tokens are billed at the cache rate.
+- AG observations for step 3: intended visit switches in turns 1 to 30 are at 5, 8, 11, 13, 15, 19,
+  22, 24, 28. AG asked the boundary question at turns 3, 4, 5, 19 to 24 only, and called new_task at
+  5 and 24. No checks between 6 and 18 while build 1 was running (it took 107 s, segment effort high,
+  and was adopted by reads from about turn 19). Because the open task since turn 5 stays verbatim,
+  AG's context at turn 30 (71.5k) is close to pi's (75.4k).
+- Gatherer spend by purpose (30 turns): boundary 9 calls, 218k input, $0.164; segment $0.015;
+  subdivide $0.021; summarize $0.032. LiteLLM reports no cached tokens for Gatherer calls.
+
+## 2026-11-17: step 2, session size
+
+- Gemini countTokens on the user messages: all 145 turns = 144,034 tokens (244,288 chars, 1.70 chars per
+  token; the generator's chars/4 estimate of 61k was low because CSV exports tokenize densely).
+  First 30 turns 66,565, first 60 turns 93,835.
+- Projection for a full pi_compact run: growth after turn 60 is slower (about 50k user tokens left over
+  85 turns, plus about 300 tokens per reply), so the second compaction should land around turn 110 to
+  120 and a third is unlikely. That meets "passes 100k at least twice", but only just. Not regenerating;
+  asking Tim whether to raise `--report-rows` for margin.
