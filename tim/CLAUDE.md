@@ -23,6 +23,7 @@ tim/
   gen/generate.py              seeded session generator (stdlib only)
   grade/grade.py               grader (stdlib only)
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
+  TRACE.md                     the trace format every run must produce (read before writing run code)
   run/system_prompt.md         the system prompt for the Actor in EVERY condition (replaces pi's coding prompt)
   sessions/pilot_seed0/        the generated pilot session
     session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
@@ -90,12 +91,13 @@ push after each step (`git push origin main`; small commits). Stop at every gate
    the session file.
 5. Confirm `ag pi` works on Gemini for both Actor and Gatherer, and that you can collect: Actor usage
    per call, Gatherer usage per call (by purpose), and context size per call.
-6. Write `tim/run/run_session.py`: given a session dir, a condition config, and an output dir, run the
-   session and save into `tim/results/<condition>_seed<k>_rep<r>/`:
-   `deliverables/`, `turns.jsonl` (per user turn: wall time, actor input/output/cache tokens,
-   context tokens, compaction or AG-build events), `gatherer_calls.jsonl` (AG conditions),
-   the raw pi session file, AG's server.log and call log, and `cost.json` with three numbers:
-   `actor_usd`, `gatherer_usd`, `total_usd` (prices in `tim/run/prices.json`, cite the source page).
+6. Write `tim/run/run_session.py` and `tim/trace/export.py` to produce exactly the layout in
+   **`tim/TRACE.md`** (read it fully): raw material under `raw/` (gitignored), the normalized trace
+   under `trace/`, `run.json`, and `cost.json` with `actor_usd`, `gatherer_usd`, `total_usd` (prices in
+   `tim/run/prices.json`, cite the source page). The key requirement is capturing the exact request
+   every Actor call sent, the same way in every condition. A viewer and the attribution analysis are
+   being built against TRACE.md in parallel, so do not change field names; if a field cannot be filled,
+   leave it null and say why in RUNLOG.md.
 7. Measure the real token size of the pilot session after a short run. If a full run would not pass
    100k of actor context at least twice under pi compaction, regenerate with a larger
    `--report-rows` (main size lever) and note it. Do not change other generator semantics without

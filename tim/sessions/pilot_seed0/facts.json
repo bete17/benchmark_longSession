@@ -5,13 +5,15 @@
     "value": "Aaron Ito",
     "turn": 1,
     "visit": 0,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Aaron Ito is our main contact at Acme Robotics and owns the renewal on their side."
    },
    {
     "value": "Lena Tanaka",
     "turn": 81,
     "visit": 27,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Aaron Ito has left Acme Robotics; Lena Tanaka is our main contact there from now on."
    }
   ],
   "currency": [
@@ -19,7 +21,8 @@
     "value": "CAD",
     "turn": 1,
     "visit": 0,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Acme Robotics is billed in CAD, so everything we send them should be in CAD."
    }
   ],
   "renewal_deadline": [
@@ -27,7 +30,8 @@
     "value": "2027-05-14",
     "turn": 1,
     "visit": 0,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Acme Robotics needs the renewal signed by 2027-05-14."
    }
   ],
   "cc_name": [
@@ -35,13 +39,15 @@
     "value": "Felix Alvarez",
     "turn": 15,
     "visit": 5,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Always cc Felix Alvarez from Acme Robotics procurement on anything involving pricing."
    },
    {
     "value": "Lena Alvarez",
     "turn": 57,
     "visit": 19,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "For Acme Robotics, stop copying Felix Alvarez on pricing; copy Lena Alvarez instead, they took over procurement."
    }
   ],
   "concession_ref": [
@@ -49,7 +55,8 @@
     "value": "CX-5617",
     "turn": 15,
     "visit": 5,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "On the last call we promised Acme Robotics free onboarding for their new admins; the concession is logged as CX-5617 and has to be referenced on their quote."
    }
   ],
   "term_months": [
@@ -57,7 +64,8 @@
     "value": 36,
     "turn": 43,
     "visit": 13,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Acme Robotics agreed in principle to a 36-month term."
    }
   ],
   "style_rule": [
@@ -68,7 +76,8 @@
     ],
     "turn": 57,
     "visit": 19,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Acme Robotics' comms team is particular: never say \"add-on\" to them, always say \"module\" instead."
    }
   ],
   "discount_pct": [
@@ -76,7 +85,8 @@
     "value": 11,
     "turn": 61,
     "visit": 20,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "The discount approved for Acme Robotics is 11%."
    }
   ],
   "seats": [
@@ -84,7 +94,8 @@
     "value": 265,
     "turn": 75,
     "visit": 25,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Acme Robotics plans to renew 265 seats."
    }
   ]
  },
@@ -94,7 +105,8 @@
     "value": "CX-6409",
     "turn": 8,
     "visit": 2,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "On the last call we promised Beta Health free onboarding for their new admins; the concession is logged as CX-6409 and has to be referenced on their quote."
    }
   ],
   "renewal_deadline": [
@@ -102,7 +114,8 @@
     "value": "2027-06-12",
     "turn": 8,
     "visit": 2,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Beta Health needs the renewal signed by 2027-06-12."
    }
   ],
   "term_months": [
@@ -110,7 +123,8 @@
     "value": 24,
     "turn": 8,
     "visit": 2,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Beta Health agreed in principle to a 24-month term."
    }
   ],
   "style_rule": [
@@ -121,7 +135,8 @@
     ],
     "turn": 22,
     "visit": 7,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Beta Health's comms team is particular: never say \"deadline\" to them, always say \"target date\" instead."
    }
   ],
   "currency": [
@@ -129,7 +144,8 @@
     "value": "AUD",
     "turn": 22,
     "visit": 7,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Reminder that Beta Health's contract is denominated in AUD."
    }
   ],
   "discount_pct": [
@@ -137,7 +153,8 @@
     "value": 8,
     "turn": 38,
     "visit": 12,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "The discount approved for Beta Health is 8%."
    }
   ],
   "cc_name": [
@@ -145,13 +162,15 @@
     "value": "Hana Brennan",
     "turn": 49,
     "visit": 15,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Hana Brennan runs procurement at Beta Health, so they need to be cc'd on pricing emails."
    },
    {
     "value": "Priya Raman",
     "turn": 64,
     "visit": 21,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "For Beta Health, stop copying Hana Brennan on pricing; copy Priya Raman instead, they took over procurement."
    }
   ],
   "seats": [
@@ -159,7 +178,8 @@
     "value": 130,
     "turn": 64,
     "visit": 21,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Beta Health wants to renew at 130 seats."
    }
   ],
   "contact_name": [
@@ -167,13 +187,15 @@
     "value": "Tomas Moreau",
     "turn": 103,
     "visit": 34,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Tomas Moreau is our main contact at Beta Health and owns the renewal on their side."
    },
    {
     "value": "Sofia Chen",
     "turn": 138,
     "visit": 45,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Tomas Moreau has left Beta Health; Sofia Chen is our main contact there from now on."
    }
   ]
  },
@@ -183,7 +205,8 @@
     "value": "CX-5267",
     "turn": 11,
     "visit": 3,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "On the last call we promised Cobalt Freight free onboarding for their new admins; the concession is logged as CX-5267 and has to be referenced on their quote."
    }
   ],
   "cc_name": [
@@ -191,7 +214,8 @@
     "value": "Nadia Osei",
     "turn": 13,
     "visit": 4,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Nadia Osei runs procurement at Cobalt Freight, so they need to be cc'd on pricing emails."
    }
   ],
   "currency": [
@@ -199,7 +223,8 @@
     "value": "GBP",
     "turn": 13,
     "visit": 4,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Cobalt Freight is billed in GBP, so everything we send them should be in GBP."
    }
   ],
   "discount_pct": [
@@ -207,13 +232,15 @@
     "value": 20,
     "turn": 13,
     "visit": 4,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "We got a 20% discount approved for Cobalt Freight's renewal."
    },
    {
     "value": 24,
     "turn": 142,
     "visit": 47,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Deal desk revised Cobalt Freight's approved discount from 20% to 24%."
    }
   ],
   "contact_name": [
@@ -221,7 +248,8 @@
     "value": "Mei Moreau",
     "turn": 19,
     "visit": 6,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Mei Moreau is our main contact at Cobalt Freight and owns the renewal on their side."
    }
   ],
   "renewal_deadline": [
@@ -229,7 +257,8 @@
     "value": "2027-04-26",
     "turn": 19,
     "visit": 6,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Cobalt Freight's renewal has to close by 2027-04-26."
    }
   ],
   "term_months": [
@@ -237,7 +266,8 @@
     "value": 36,
     "turn": 140,
     "visit": 46,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Cobalt Freight agreed in principle to a 36-month term."
    }
   ],
   "seats": [
@@ -245,7 +275,8 @@
     "value": 170,
     "turn": 142,
     "visit": 47,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Cobalt Freight plans to renew 170 seats."
    }
   ]
  },
@@ -255,7 +286,8 @@
     "value": 24,
     "turn": 5,
     "visit": 1,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Delta Learning prefers a 24-month term."
    }
   ],
   "discount_pct": [
@@ -263,13 +295,15 @@
     "value": 12,
     "turn": 5,
     "visit": 1,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "The discount approved for Delta Learning is 12%."
    },
    {
     "value": 15,
     "turn": 53,
     "visit": 17,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Deal desk revised Delta Learning's approved discount from 12% to 15%."
    }
   ],
   "style_rule": [
@@ -280,7 +314,8 @@
     ],
     "turn": 5,
     "visit": 1,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Delta Learning's comms team is particular: never say \"discount\" to them, always say \"loyalty credit\" instead."
    }
   ],
   "concession_ref": [
@@ -288,7 +323,8 @@
     "value": "CX-2031",
     "turn": 11,
     "visit": 3,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "On the last call we promised Delta Learning free onboarding for their new admins; the concession is logged as CX-2031 and has to be referenced on their quote."
    }
   ],
   "renewal_deadline": [
@@ -296,13 +332,15 @@
     "value": "2027-06-20",
     "turn": 11,
     "visit": 3,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Delta Learning needs the renewal signed by 2027-06-20."
    },
    {
     "value": "2027-07-20",
     "turn": 118,
     "visit": 39,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Delta Learning moved their signing date from 2027-06-20 to 2027-07-20."
    }
   ],
   "cc_name": [
@@ -310,7 +348,8 @@
     "value": "Priya Fischer",
     "turn": 22,
     "visit": 7,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Priya Fischer runs procurement at Delta Learning, so they need to be cc'd on pricing emails."
    }
   ],
   "currency": [
@@ -318,7 +357,8 @@
     "value": "USD",
     "turn": 34,
     "visit": 11,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Delta Learning is billed in USD, so everything we send them should be in USD."
    }
   ],
   "seats": [
@@ -326,7 +366,8 @@
     "value": 355,
     "turn": 53,
     "visit": 17,
-    "placement": "home"
+    "placement": "home",
+    "sentence": "Delta Learning plans to renew 355 seats."
    }
   ],
   "contact_name": [
@@ -334,7 +375,8 @@
     "value": "Marcus Okafor",
     "turn": 115,
     "visit": 38,
-    "placement": "embedded"
+    "placement": "embedded",
+    "sentence": "Our point of contact at Delta Learning is Marcus Okafor."
    }
   ]
  }

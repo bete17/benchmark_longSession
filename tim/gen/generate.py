@@ -174,6 +174,7 @@ class FactValue:
     turn: int            # user turn where it was stated
     visit: int
     placement: str       # "home" | "embedded" | "request" (restated in a request, CTRL)
+    sentence: str = ""   # the exact sentence that stated it (for checking if it was in context)
 
 
 @dataclass
@@ -336,8 +337,9 @@ def generate(seed=0, n_clients=4, n_visits=48, notes_scale=1.0, embed_prob=0.3,
         raise ValueError(f)
 
     def state(c, f, v, placement, vidx, old=None):
-        clients[c].history.setdefault(f, []).append(FactValue(v, turn, vidx, placement))
-        return fact_sentence(rng, c, f, v, old)
+        sent = fact_sentence(rng, c, f, v, old)
+        clients[c].history.setdefault(f, []).append(FactValue(v, turn, vidx, placement, sent))
+        return sent
 
     def pop_initial(c, k):
         out = []
