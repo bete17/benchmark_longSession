@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Long-session trace viewer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#fafaf9;--panel:#fff;--ink:#1c1b19;--muted:#6b6a65;--line:#e4e2dc;--soft:#f2f1ed;
+  --pass:#2f8f5b;--fail:#c8412f;--lucky:#b8860b;--warn:#b8860b;--accent:#3b6fd4;
+  --c0:#3b6fd4;--c1:#1c9a8a;--c2:#d9722b;--c3:#8b5cc7;--c4:#7a7a72;--c5:#c2457a;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#161614;--panel:#1f1f1c;--ink:#ecebe6;--muted:#9a988f;--line:#34332e;--soft:#2a2a26;
+  --pass:#4cb582;--fail:#ef6b58;--lucky:#d9a93a;--warn:#d9a93a;--accent:#6c97ee;
+  --c0:#6c97ee;--c1:#3fc2b0;--c2:#f0955a;--c3:#b08df0;--c4:#a3a39a;--c5:#e476a8;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:16px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:15px;margin:0;font-weight:600}
+nav{display:flex;gap:4px}
+nav button,.btn{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer}
+nav button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.sm{padding:2px 8px;font-size:12px}
+.spacer{flex:1}
+input[type=text]{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:5px 8px}
+main{padding:16px 20px;max-width:1500px;margin:0 auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.panel h2{font-size:13px;margin:0 0 8px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+th{font-weight:600;color:var(--muted);font-size:12px;cursor:default}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}tr.click:hover{background:var(--soft)}
+.chip{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--soft);font-size:12px;margin:0 4px 2px 0;border:1px solid var(--line)}
+.chip.pass{color:var(--pass)}.chip.fail{color:var(--fail)}.chip.ev{background:transparent}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:14px;align-items:start}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:120px}
+.kpi .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}.kpi .l{font-size:12px;color:var(--muted)}
+svg text{fill:var(--muted);font-size:11px}
+svg .grid line{stroke:var(--line)}
+.sticky{position:sticky;top:56px;max-height:calc(100vh - 70px);overflow:auto}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--soft);padding:8px;border-radius:6px;font-size:12px;margin:4px 0;max-height:260px;overflow:auto}
+.sec{margin:10px 0 4px;font-weight:600;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.bar{height:14px;display:flex;border-radius:3px;overflow:hidden;background:var(--soft)}
+.bar span{display:block;height:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hl{background:rgba(217,168,58,.28)}
+label{font-size:13px}
+select{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 6px}
+.legend span{margin-right:14px;font-size:12px}
+.err{color:var(--fail)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Long-session trace viewer</h1>
+  <nav id="nav"></nav>
+  <div class="spacer"></div>
+  <input type="text" id="addroot" placeholder="add a folder of runs (path)" size="30">
+  <button class="btn" id="addbtn">Add</button>
+  <button class="btn" id="reload">Reload</button>
+</header>
+<main id="main"></main>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtTok=n=>n==null?"":n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(n>=1e4?0:1)+"k":String(Math.round(n));
+const usd=n=>n==null?"":"$"+(n<1?n.toFixed(3):n.toFixed(2));
+const pct=n=>n==null?"":(n*100).toFixed(0)+"%";
+const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
+const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",pi_full:"var(--c4)"};
+const colorOf=c=>COND_COLOR[c]||"var(--c5)";
+const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
+const state={tab:"runs",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
+
+async function api(p,opt){const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
+  const t=r.headers.get("content-type")||"";return t.includes("json")?r.json():r.text()}
+async function loadRuns(){const j=await api("/api/runs");state.runs=j.runs;state.roots=j.roots}
+async function getRun(id){if(!state.data[id])state.data[id]=await api("/api/run/"+encodeURIComponent(id)+"/all");return state.data[id]}
+async function getSession(id){if(!(id in state.sessions)){try{state.sessions[id]=await api("/api/run/"+encodeURIComponent(id)+"/session")}catch{state.sessions[id]=null}}return state.sessions[id]}
+
+function nav(){const t=[["runs","Runs"],["run","Run"],["checks","Checks"],["compare","Compare"]];
+  $("#nav").innerHTML=t.map(([k,l])=>`<button data-t="${k}" class="${state.tab===k?"on":""}">${l}</button>`).join("");
+  $("#nav").onclick=e=>{const b=e.target.closest("button");if(b){state.tab=b.dataset.t;render()}}}
+$("#reload").onclick=async()=>{state.data={};state.sessions={};await loadRuns();render()};
+$("#addbtn").onclick=async()=>{const p=$("#addroot").value.trim();if(!p)return;
+  try{await api("/api/add_root",{method:"POST",body:JSON.stringify({path:p})});$("#addroot").value="";await loadRuns();render()}catch(e){alert(e.message)}};
+
+/* ---------- svg helpers ---------- */
+function scale(d0,d1,r0,r1){const f=v=>r0+(v-d0)/((d1-d0)||1)*(r1-r0);f.inv=p=>d0+(p-r0)/((r1-r0)||1)*(d1-d0);return f}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p}
+function axisY(y,max,w,fmt,l){let s="";for(let i=0;i<=4;i++){const v=max*i/4,yy=y(v);s+=`<line x1="${l}" x2="${w}" y1="${yy}" y2="${yy}"/><text x="${l-4}" y="${yy+3}" text-anchor="end">${fmt(v)}</text>`}return `<g class="grid">${s}</g>`}
+function axisX(x,n,h,step=20){let s="";for(let t=0;t<=n;t+=step)s+=`<text x="${x(t)}" y="${h+12}" text-anchor="middle">${t}</text>`;return s}
+
+/* a chart whose x is the turn number; pick a turn by clicking */
+function turnChart({id,h=150,series,n,fmtY,ymax,bands,markers,extra,showSel=true}){
+  const w=900,l=44,r=8,t=8,b=18,x=scale(1,n,l,w-r);
+  const max=ymax||niceMax(Math.max(1,...series.flatMap(s=>s.vals.filter(v=>v!=null))));
+  const y=scale(0,max,h-b,t);
+  let g=axisY(y,max,w-r,fmtY,l)+axisX(x,n,h-b);
+  (bands||[]).forEach((bd,i)=>{g+=`<rect x="${x(bd.a)-.5*((w-l-r)/n)}" y="${t}" width="${(bd.b-bd.a+1)*((w-l-r)/n)}" height="${h-b-t}" fill="${bd.color}" opacity="${i%2?.05:.10}"/>`});
+  series.forEach(s=>{
+    if(s.type==="bars"){const bw=Math.max(1,(w-l-r)/n-1);s.vals.forEach((v,i)=>{if(v==null)return;g+=`<rect x="${x(i+1)-bw/2}" y="${y(v+(s.base?s.base[i]||0:0))}" width="${bw}" height="${Math.max(0,y(0)-y(v))}" fill="${s.color}" opacity=".85"/>`})}
+    else{let d="";s.vals.forEach((v,i)=>{if(v==null)return;d+=(d?"L":"M")+x(i+1).toFixed(1)+" "+y(v).toFixed(1)});g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w||1.6}" ${s.dash?`stroke-dasharray="${s.dash}"`:""}/>`}});
+  (markers||[]).forEach(m=>{g+=m.ceil?`<line x1="${l}" x2="${w-r}" y1="${y(m.ceil)}" y2="${y(m.ceil)}" stroke="var(--fail)" stroke-dasharray="4 3" opacity=".6"/><text x="${w-r}" y="${y(m.ceil)-3}" text-anchor="end">${m.label}</text>`:
+    `<line x1="${x(m.turn)}" x2="${x(m.turn)}" y1="${t}" y2="${h-b}" stroke="${m.color}" stroke-width="${m.w||1}" opacity="${m.op||.7}"><title>${esc(m.title||"")}</title></line>`});
+  if(extra)g+=extra(x,y,h-b);
+  if(showSel&&state.turn!=null&&n>=state.turn)g+=`<line x1="${x(state.turn)}" x2="${x(state.turn)}" y1="${t}" y2="${h-b}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  return `<svg id="${id}" viewBox="0 0 ${w} ${h}" width="100%" style="display:block;cursor:crosshair" data-l="${l}" data-r="${r}" data-n="${n}" data-w="${w}">${g}</svg>`}
+function wirePick(root,fn){root.querySelectorAll("svg[data-n]").forEach(sv=>sv.addEventListener("click",e=>{
+  const rc=sv.getBoundingClientRect(),w=+sv.dataset.w,l=+sv.dataset.l,r=+sv.dataset.r,n=+sv.dataset.n;
+  const px=(e.clientX-rc.left)/rc.width*w;const t=Math.round(1+(px-l)/(w-l-r)*(n-1));if(t>=1&&t<=n)fn(t)}))}
+
+/* ---------- derived series ---------- */
+function derive(d){const turns=d.turns||[];const n=Math.max(turns.length,d.run?.turns_completed||0,1);
+  const tb={};turns.forEach(t=>tb[t.turn]=t);
+  const arr=f=>Array.from({length:n},(_,i)=>tb[i+1]?f(tb[i+1]):null);
+  let ca=0,cg=0;const cumA=[],cumG=[];for(let i=1;i<=n;i++){const t=tb[i];ca+=t?.actor_usd||0;cg+=t?.gatherer_usd||0;cumA.push(ca);cumG.push(cg)}
+  const gr=(d.grades||[]).filter(g=>g.kind!=="unknown").sort((a,b)=>a.turn-b.turn);
+  const roll=Array(n).fill(null);const W=12;
+  gr.forEach((g,i)=>{const w=gr.slice(Math.max(0,i+1-W),i+1);roll[g.turn-1]=w.filter(x=>x.outcome==="pass").length/w.length});
+  let last=null;for(let i=0;i<n;i++){if(roll[i]==null)roll[i]=last;else last=roll[i]}
+  return {n,tb,ctx:arr(t=>t.context_tokens),secA:arr(t=>Math.max(0,(t.seconds||0)-(t.gatherer_seconds||0))),secG:arr(t=>t.gatherer_seconds||0),
+    cumA,cumG,cumT:cumA.map((v,i)=>v+cumG[i]),roll,gr}}
+const attrBy=d=>{const m={};(d.attribution||[]).forEach(a=>m[a.check_id]=a);return m};
+
+/* ---------- RUNS tab ---------- */
+function viewRuns(){
+  const R=state.runs;
+  let h=`<div class="panel"><h2>Runs <span class="muted" style="text-transform:none;letter-spacing:0">(${R.length} found under ${state.roots.map(esc).join(", ")})</span></h2>`;
+  if(!R.length)h+=`<p class="muted">No runs yet. A run is a folder containing run.json in the layout described in TRACE.md. Generate fake ones with <code>python viewer/make_synthetic.py</code>.</p>`;
+  else{h+=`<table><tr><th></th><th>run</th><th>status</th><th class="n">turns</th><th class="n">pass</th><th class="n">A</th><th class="n">C</th><th class="n">D</th><th class="n">CTRL</th><th class="n">made up</th>
+  <th class="n">actor $</th><th class="n">gatherer $</th><th class="n">total $</th><th class="n">latency</th><th class="n">retrieval / usage misses</th></tr>`;
+  R.forEach(r=>{const bt=r.by_tag||{};h+=`<tr class="click" data-id="${esc(r.id)}"><td><input type="checkbox" data-sel="${esc(r.id)}" ${state.sel.has(r.id)?"checked":""}></td>
+   <td><span class="dot" style="background:${colorOf(r.condition)}"></span><b>${esc(r.id)}</b>${r.synthetic?' <span class="chip">synthetic</span>':""}</td>
+   <td>${esc(r.status||"")}</td><td class="n">${r.turns??""}</td><td class="n"><b>${pct(r.overall)}</b></td>
+   <td class="n">${pct(bt.A)}</td><td class="n">${pct(bt.C)}</td><td class="n">${pct(bt.D)}</td><td class="n">${pct(bt.CTRL)}</td><td class="n">${pct(r.made_up_rate)}</td>
+   <td class="n">${usd(r.cost?.actor_usd)}</td><td class="n">${usd(r.cost?.gatherer_usd)}</td><td class="n">${usd(r.cost?.total_usd)}</td><td class="n">${sec(r.seconds)}</td>
+   <td class="n">${r.has_attribution?r.misses.retrieval_miss+" / "+r.misses.usage_miss:'<span class="muted">run attribute.py</span>'}</td></tr>`});
+  h+=`</table><p class="muted">Click a row to open it. Tick runs and open Compare. Pass rates count checks on facts that were stated; "made up" is the share of never-stated fields where the agent gave a value anyway.</p>`}
+  h+=`</div>`;$("#main").innerHTML=h;
+  $("#main").onclick=e=>{const c=e.target.closest("[data-sel]");if(c){c.checked?state.sel.add(c.dataset.sel):state.sel.delete(c.dataset.sel);return}
+    const tr=e.target.closest("tr[data-id]");if(tr){state.cur=tr.dataset.id;state.turn=null;state.tab="run";render()}}}
+
+/* ---------- RUN tab ---------- */
+async function viewRun(){
+  if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
+  const id=state.cur;const d=await getRun(id);const sess=await getSession(id);const D=derive(d);
+  const card=state.runs.find(r=>r.id===id)||{};const run=d.run||{};const S=d.summary||{};
+  const isAG=(d.builds||[]).length||(run.condition||"").startsWith("ag");
+  const totSec=(d.turns||[]).reduce((a,t)=>a+(t.seconds||0),0);
+  const miss=card.misses||{};
+  let h=`<div class="row" style="margin-bottom:8px"><span class="dot" style="background:${colorOf(run.condition)}"></span><b style="font-size:16px">${esc(id)}</b>
+    <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}</span></div>`;
+  h+=`<div class="kpis">
+   <div class="kpi"><div class="v">${pct(S.overall?.pass)}</div><div class="l">pass (n=${S.overall?.n??""})</div></div>
+   ${["A","C","D","CTRL"].map(k=>`<div class="kpi"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">tag ${k} (n=${S.by_tag?.[k]?.n??""})</div></div>`).join("")}
+   <div class="kpi"><div class="v">${usd(d.cost?.actor_usd)}</div><div class="l">Pi / actor</div></div>
+   ${isAG?`<div class="kpi"><div class="v">${usd(d.cost?.gatherer_usd)}</div><div class="l">Gatherer</div></div>`:""}
+   <div class="kpi"><div class="v">${usd(d.cost?.total_usd)}</div><div class="l">combined</div></div>
+   <div class="kpi"><div class="v">${sec(totSec)}</div><div class="l">session latency</div></div>
+   ${card.has_attribution?`<div class="kpi"><div class="v">${miss.retrieval_miss||0} / ${miss.usage_miss||0}</div><div class="l">retrieval / usage misses</div></div>`:""}</div>`;
+  // events & bands
+  const ev=[];(d.turns||[]).forEach(t=>(t.events||[]).forEach(e=>ev.push({turn:t.turn,e})));
+  const clients=[...new Set((d.turns||[]).map(t=>t.client))];const cc=c=>`hsl(${(clients.indexOf(c)*67+200)%360} 55% 50%)`;
+  const bands=[];(d.turns||[]).forEach(t=>{const b=bands[bands.length-1];if(b&&b.visit===t.visit)b.b=t.turn;else bands.push({a:t.turn,b:t.turn,visit:t.visit,client:t.client,color:cc(t.client)})});
+  const evStyle={compaction:["var(--fail)",1.6],new_task:["var(--c2)",1],build:["var(--c3)",1],forced_build:["var(--c3)",2],error:["var(--fail)",2]};
+  const markers=ev.map(x=>({turn:x.turn,color:(evStyle[x.e]||["var(--muted)"])[0],w:(evStyle[x.e]||[0,1])[1],title:x.e+" at turn "+x.turn,op:x.e==="build"?.35:.8}));
+  if(run.ceiling_tokens)markers.push({ceil:run.ceiling_tokens,label:"ceiling "+fmtTok(run.ceiling_tokens)});
+  const A=attrBy(d);
+  const dots=(x,y,hh)=>D.gr.map(g=>{const a=A[g.check_id];const c=g.outcome==="pass"?(a?.verdict==="lucky"?VERDICT_COLOR.lucky:VERDICT_COLOR.ok):(a?VERDICT_COLOR[a.verdict]||VERDICT_COLOR.retrieval_miss:VERDICT_COLOR.retrieval_miss);
+     const yy=g.outcome==="pass"?y(0.93):y(0.07);return `<circle cx="${x(g.turn)}" cy="${yy}" r="3" fill="${c}" opacity=".85"><title>${esc(g.check_id)} ${g.outcome}${a?" ("+a.verdict+")":""}</title></circle>`}).join("");
+  h+=`<div class="grid"><div>`;
+  h+=`<div class="panel"><h2>Context size per turn <span class="muted" style="text-transform:none">(tokens in the largest actor call)</span></h2>
+   <div class="legend"><span style="color:var(--fail)">| compaction</span><span style="color:var(--c2)">| new task (AG)</span><span style="color:var(--c3)">| build (AG)</span><span class="muted">shaded = client visit</span></div>
+   ${turnChart({id:"c1",h:160,n:D.n,series:[{vals:D.ctx,color:colorOf(run.condition)}],fmtY:fmtTok,bands,markers,ymax:Math.max(niceMax(Math.max(...D.ctx.filter(Boolean),1)),run.ceiling_tokens?niceMax(run.ceiling_tokens*1.02):0)})}</div>`;
+  h+=`<div class="panel"><h2>Accuracy at checkpoints <span class="muted" style="text-transform:none">(each dot is one graded check; line = pass rate of the last 12 checks)</span></h2>
+   <div class="legend"><span style="color:var(--pass)">pass</span><span style="color:var(--lucky)">pass without the fact in view</span><span style="color:var(--fail)">fail, fact absent (retrieval)</span><span style="color:#d98a2b">fail, fact present (usage)</span></div>
+   ${turnChart({id:"c2",h:150,n:D.n,series:[{vals:D.roll,color:"var(--ink)",w:1.4,dash:"3 2"}],fmtY:v=>pct(v),ymax:1,bands,markers:ev.filter(e=>e.e==="compaction").map(x=>({turn:x.turn,color:"var(--fail)",w:1.4})),extra:dots})}</div>`;
+  h+=`<div class="panel"><h2>Latency per turn <span class="muted" style="text-transform:none">(actor, plus gatherer on top)</span></h2>
+   ${turnChart({id:"c3",h:130,n:D.n,series:[{type:"bars",vals:D.secA,color:"var(--c0)"},...(isAG?[{type:"bars",vals:D.secG,base:D.secA,color:"var(--c2)"}]:[])],fmtY:v=>v.toFixed(0)+"s",markers:ev.filter(e=>e.e==="compaction"||e.e==="new_task").map(x=>({turn:x.turn,color:evStyle[x.e][0],op:.35})),ymax:niceMax(Math.max(1,...D.secA.map((v,i)=>(v||0)+(D.secG[i]||0))))})}</div>`;
+  h+=`<div class="panel"><h2>Cumulative cost</h2>
+   <div class="legend"><span style="color:var(--c0)">Pi / actor</span>${isAG?'<span style="color:var(--c2)">Gatherer</span><span style="color:var(--ink)">combined</span>':""}</div>
+   ${turnChart({id:"c4",h:130,n:D.n,series:[{vals:D.cumA,color:"var(--c0)"},...(isAG?[{vals:D.cumG,color:"var(--c2)"},{vals:D.cumT,color:"var(--ink)",w:1.2}]:[])],fmtY:usd,markers:ev.filter(e=>e.e==="compaction").map(x=>({turn:x.turn,color:"var(--fail)",op:.35}))})}</div>`;
+  h+=`</div><div class="sticky panel" id="inspector"></div></div>`;
+  $("#main").innerHTML=h;
+  wirePick($("#main"),t=>{state.turn=t;viewRun()});
+  renderInspector(d,sess,D,A);
+}
+
+async function renderInspector(d,sess,D,A){
+  const el=$("#inspector");const t=state.turn;
+  if(t==null){el.innerHTML=`<h2>Turn inspector</h2><p class="muted">Click any chart to inspect a turn: the user message, tokens, cost and latency, what AG decided (same task or new task, what it rebuilt), what was in front of the model, and the checks graded on that turn.</p>`;return}
+  const tr=D.tb[t]||{};const msg=sess?.session?.[t-1];const visit=sess?.visits?.find(v=>v.first_turn<=t&&t<=v.last_turn);
+  let h=`<h2>Turn ${t} <span class="muted" style="text-transform:none">${esc(tr.client||msg?.client||"")}${visit?" | visit "+visit.visit+" ("+esc(visit.kind)+")":""}</span></h2>
+   <div class="row" style="margin-bottom:6px"><button class="btn sm" id="prev">prev</button><button class="btn sm" id="next">next</button>${(tr.events||[]).map(e=>`<span class="chip ev">${esc(e)}</span>`).join("")}</div>`;
+  h+=`<table><tr><td>actor calls</td><td class="n">${tr.actor_calls??""}</td><td>context (peak)</td><td class="n">${fmtTok(tr.context_tokens)}</td></tr>
+   <tr><td>input / output</td><td class="n">${fmtTok(tr.actor_input_tokens)} / ${fmtTok(tr.actor_output_tokens)}</td><td>cached</td><td class="n">${fmtTok(tr.actor_cache_tokens)}</td></tr>
+   <tr><td>latency</td><td class="n">${sec(tr.seconds)}</td><td>gatherer latency</td><td class="n">${sec(tr.gatherer_seconds)}</td></tr>
+   <tr><td>actor cost</td><td class="n">${usd(tr.actor_usd)}</td><td>gatherer cost</td><td class="n">${usd(tr.gatherer_usd)}</td></tr></table>`;
+  if(msg){h+=`<div class="sec">User message</div><pre>${esc(msg.text.length>900?msg.text.slice(0,900)+"\n[... "+(msg.text.length-900)+" more chars]":msg.text)}</pre>`}
+  // decisions
+  const dec=(d.decisions||[]).filter(x=>x.turn===t);
+  if(dec.length){h+=`<div class="sec">Context manager decisions</div>`;dec.forEach(x=>{
+    if(x.kind==="boundary")h+=`<div><span class="chip ${x.detail.new_task?"":"ev"}">${x.detail.new_task?"NEW TASK":"same task"}</span> <span class="muted">${esc(x.detail.why||"")}</span></div>`;
+    else if(x.kind==="compaction")h+=`<div><span class="chip fail">compaction</span> ${fmtTok(x.detail.tokens_before)} to ${fmtTok(x.detail.tokens_after)} tokens, summary ${x.detail.summary_chars} chars</div>`;
+    else h+=`<div style="word-break:break-word"><span class="chip">${esc(x.kind)}</span> <span class="muted">${esc(JSON.stringify(x.detail))}</span></div>`})}
+  const bl=(d.builds||[]).find(b=>b.turn===t);
+  if(bl){h+=`<div class="sec">AG build ${bl.build_id} (${esc(bl.status)}, ${sec(bl.seconds)})</div>
+    <div class="muted">ranking (task indices, most relevant first): ${esc((bl.ranking||[]).join(", "))}</div>
+    <div class="sec">Sections adopted for the next read</div>${(bl.sections||[]).map(s=>`<div>${esc(s.name)} <span class="muted">${fmtTok(s.tokens)}</span></div>`).join("")}
+    <div class="sec">Tasks AG has stored (${(bl.tasks||[]).length})</div><div style="max-height:170px;overflow:auto"><table>${(bl.tasks||[]).map(k=>`<tr><td>${k.index}</td><td>${esc(k.name)}<div class="muted">${esc(k.retention||k.description||"")}</div></td><td class="n">t${k.first_turn}-${k.last_turn}</td><td class="n">${fmtTok(k.tokens)}</td></tr>`).join("")}</table></div>`}
+  const gc=(d.gatherer_calls||[]).filter(x=>x.turn===t);
+  if(gc.length)h+=`<div class="sec">Gatherer model calls</div><table>${gc.map(c=>`<tr><td>${esc(c.purpose)}</td><td class="n">${fmtTok(c.input_tokens)} in / ${fmtTok(c.output_tokens)} out</td><td class="n">${sec(c.seconds)}</td><td class="n">${usd(c.usd)}</td></tr>`).join("")}</table>`;
+  // context contents
+  const calls=(d.calls||[]).filter(c=>c.turn===t);const lastCall=calls[calls.length-1];
+  const cx=lastCall&&(d.contexts||[]).find(c=>c.call_id===lastCall.call_id);
+  if(cx){h+=`<div class="sec">In front of the model on the last call (${fmtTok(cx.total_tokens)} tokens)</div>`;
+    const groups=[];cx.items.forEach(it=>{const g=groups[groups.length-1];
+      if(g&&it.kind==="message"&&g.kind==="message"&&g.role===it.role){g.tokens+=it.tokens;g.hi=Math.max(g.hi,it.origin_turn??0);g.lo=Math.min(g.lo,it.origin_turn??1e9);g.n++;g.turns.push(it.origin_turn)}
+      else groups.push({kind:it.kind,role:it.role,label:it.label,tokens:it.tokens,lo:it.origin_turn??1e9,hi:it.origin_turn??0,n:1,turns:[it.origin_turn]})});
+    const colr={system:"var(--c4)",summary:"var(--c3)",message:"var(--c0)"};const tot=groups.reduce((a,g)=>a+g.tokens,0)||1;
+    h+=`<div class="bar">${groups.map(g=>`<span style="width:${g.tokens/tot*100}%;background:${g.label==="paged in"?"var(--c2)":colr[g.kind]}" title="${esc(g.label||g.kind)} ${g.tokens}"></span>`).join("")}</div>`;
+    h+=`<table>${groups.map(g=>`<tr><td><span class="dot" style="background:${colr[g.kind]}"></span>${g.kind==="message"?(g.n>1?"messages":"message"):esc(g.kind)}</td>
+      <td>${esc(g.label||"")}${g.kind==="message"?" from turn"+(g.n>1?"s ":" ")+(g.lo===g.hi?g.lo:g.lo+" to "+g.hi)+(g.n>1?" ("+g.n+")":""):""}</td><td class="n">${fmtTok(g.tokens)}</td></tr>`).join("")}</table>
+    <button class="btn sm" id="viewreq">view the exact request</button><div id="reqbox"></div>`}
+  // checks this turn
+  const ck=(d.grades||[]).filter(g=>g.turn===t);
+  if(ck.length){h+=`<div class="sec">Checks graded on this turn</div><table>${ck.map(g=>{const a=A[g.check_id];return `<tr class="click" data-chk="${esc(g.check_id)}"><td>${esc(g.check_id)}</td><td><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${a?`<span class="chip">${esc(a.verdict)}</span>`:""}</td><td class="muted">${esc(JSON.stringify(g.expected))}${g.outcome!=="pass"?" got "+esc(JSON.stringify(g.got)):""}</td></tr>`}).join("")}</table>
+    ${[...new Set(ck.map(g=>g.deliverable_id))].map(x=>`<button class="btn sm" data-deliv="${x}">open ${x}.md</button> `).join("")}<div id="delivbox"></div>`}
+  el.innerHTML=h;
+  $("#prev",el).onclick=()=>{state.turn=Math.max(1,t-1);viewRun()};$("#next",el).onclick=()=>{state.turn=Math.min(D.n,t+1);viewRun()};
+  const vr=$("#viewreq",el);if(vr)vr.onclick=()=>showRequest(lastCall.call_id,null,$("#reqbox",el));
+  el.querySelectorAll("[data-deliv]").forEach(b=>b.onclick=async()=>{try{$("#delivbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+b.dataset.deliv))}</pre>`}catch(e){$("#delivbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}});
+  el.querySelectorAll("[data-chk]").forEach(r=>r.onclick=()=>{state.checkSel=r.dataset.chk;state.tab="checks";render()});
+}
+function reqMessages(req){const out=[];if(typeof req.system==="string")out.push({role:"system",text:req.system});
+  (req.messages||[]).forEach(m=>{let c=m.content;if(Array.isArray(c))c=c.map(p=>typeof p==="string"?p:(p.text||p.content||p.input&&JSON.stringify(p.input)||"")).join("\n");else if(c&&typeof c!=="string")c=JSON.stringify(c);out.push({role:m.role,text:c||""})});return out}
+async function showRequest(callId,needles,box){
+  try{const req=await api("/api/run/"+encodeURIComponent(state.cur)+"/request/"+callId);const ms=reqMessages(req);
+    const norm=s=>s.replace(/\s+/g," ").toLowerCase();
+    box.innerHTML=`<div class="muted">${ms.length} messages in the request</div>`+ms.map((m,i)=>{
+      const hit=needles&&needles.some(n=>n&&norm(m.text).includes(norm(n)));
+      return `<div class="${hit?"hl":""}" style="margin:4px 0;padding:2px 4px;border-radius:4px"><span class="chip">${i} ${esc(m.role)}</span>${hit?'<span class="chip pass">contains the fact</span>':""}<pre>${esc(m.text.length>500?m.text.slice(0,500)+" [...]":m.text)}</pre></div>`}).join("")}
+  catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}}
+
+/* ---------- CHECKS tab ---------- */
+async function viewChecks(){
+  if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
+  const id=state.cur,d=await getRun(id),sess=await getSession(id),A=attrBy(d);const F=state.checkFilter;
+  const rows=(d.grades||[]).filter(g=>(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||g.outcome===F.outcome)&&(!F.placement||g.placement===F.placement)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
+  const opts=(arr,cur)=>`<option value="">all</option>`+arr.map(x=>`<option ${x===cur?"selected":""}>${x}</option>`).join("");
+  const uniq=f=>[...new Set((d.grades||[]).map(f).flat().filter(Boolean))].sort();
+  let h=`<div class="row" style="margin-bottom:8px"><b>${esc(id)}</b><label>tag <select data-f="tag">${opts(uniq(g=>g.tags),F.tag)}</select></label>
+   <label>outcome <select data-f="outcome">${opts(uniq(g=>g.outcome),F.outcome)}</select></label>
+   <label>placement <select data-f="placement">${opts(uniq(g=>g.placement),F.placement)}</select></label>
+   <label>verdict <select data-f="verdict">${opts(["ok","lucky","retrieval_miss","usage_miss","made_up"],F.verdict)}</select></label><span class="muted">${rows.length} checks</span></div>`;
+  h+=`<div class="grid"><div class="panel"><table><tr><th>check</th><th>client</th><th>tags</th><th>place</th><th class="n">age</th><th>outcome</th><th>in view?</th><th>expected</th><th>got</th></tr>
+   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click" data-chk="${esc(g.check_id)}" ${state.checkSel===g.check_id?'style="background:var(--soft)"':""}><td>${esc(g.check_id)}</td><td>${esc(g.client)}</td><td>${g.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</td><td>${esc(g.placement)}</td><td class="n">${g.age_turns??""}</td>
+   <td><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span></td><td>${a?`<span class="dot" style="background:${VERDICT_COLOR[a.verdict]||"var(--muted)"}"></span>${esc(a.presence)} (${esc(a.verdict)})`:'<span class="muted">n/a</span>'}</td>
+   <td class="muted">${esc(JSON.stringify(g.expected))}</td><td class="muted">${esc(JSON.stringify(g.got))}</td></tr>`}).join("")}</table></div><div class="sticky panel" id="chkdetail"><h2>Check detail</h2><p class="muted">Select a check.</p></div></div>`;
+  $("#main").innerHTML=h;
+  $("#main").onchange=e=>{const f=e.target.dataset.f;if(f){state.checkFilter[f]=e.target.value;viewChecks()}};
+  $("#main").onclick=e=>{const r=e.target.closest("tr[data-chk]");if(r){state.checkSel=r.dataset.chk;viewChecks()}};
+  if(state.checkSel)checkDetail(d,sess,A,state.checkSel)}
+async function checkDetail(d,sess,A,cid){
+  const el=$("#chkdetail");const g=(d.grades||[]).find(x=>x.check_id===cid);if(!g)return;
+  const chk=sess?.checks?.find(c=>c.check_id===cid);const a=A[cid];
+  let src=null;if(chk&&chk.stated_turn!=null&&sess.facts?.[chk.client]?.[chk.field])src=sess.facts[chk.client][chk.field].find(f=>f.turn===chk.stated_turn);
+  const sup=(chk?.superseded_values||[]);
+  let h=`<h2>${esc(cid)}</h2><div class="row"><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${g.tags.map(t=>`<span class="chip">${t}</span>`).join("")}${a?`<span class="chip">${esc(a.verdict)}</span>`:""}</div>
+   <table><tr><td>client</td><td>${esc(g.client)}</td></tr><tr><td>asked on turn</td><td><a href="#" data-turn="${g.turn}">${g.turn}</a></td></tr>
+   <tr><td>fact stated on turn</td><td>${chk?.stated_turn!=null?`<a href="#" data-turn="${chk.stated_turn}">${chk.stated_turn}</a> (${esc(chk.placement)}, age ${chk.age_turns} turns)`:"never stated"}</td></tr>
+   <tr><td>visits since client last seen</td><td>${g.visits_since_client_last_seen??""}</td></tr>
+   <tr><td>expected</td><td><b>${esc(JSON.stringify(g.expected))}</b></td></tr><tr><td>agent wrote</td><td>${esc(JSON.stringify(g.got))}</td></tr>
+   ${sup.length?`<tr><td>superseded values</td><td>${esc(JSON.stringify(sup))}</td></tr>`:""}</table>`;
+  if(src)h+=`<div class="sec">Where the fact was said</div><pre>${esc(src.sentence)}</pre>`;
+  if(a&&a.call_id){h+=`<div class="sec">Writing call ${esc(a.call_id)}: fact ${esc(a.presence)}</div><button class="btn sm" id="inspreq">find it in the request</button><div id="reqbox2"></div>`}
+  h+=`<div class="sec">Deliverable</div><button class="btn sm" id="opend">open ${esc(g.deliverable_id)}.md</button><div id="dbox"></div>`;
+  el.innerHTML=h;
+  el.querySelectorAll("[data-turn]").forEach(x=>x.onclick=e=>{e.preventDefault();state.turn=+x.dataset.turn;state.tab="run";render()});
+  const ir=$("#inspreq",el);if(ir)ir.onclick=()=>showRequest(a.call_id,[src?.sentence,g.expected&&typeof g.expected!=="object"?String(g.expected):null].filter(Boolean),$("#reqbox2",el));
+  $("#opend",el).onclick=async()=>{try{$("#dbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+g.deliverable_id))}</pre>`}catch(e){$("#dbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}}}
+
+/* ---------- COMPARE tab ---------- */
+const AGE_BINS=[["<20",0,19],["20-39",20,39],["40-79",40,79],["80+",80,1e9]];
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+async function viewCompare(){
+  const ids=[...state.sel].filter(i=>state.runs.some(r=>r.id===i));
+  if(ids.length<1){$("#main").innerHTML=`<div class="panel muted">Tick two or more runs on the Runs tab, then come back.</div>`;return}
+  const ds=await Promise.all(ids.map(getRun));const info=ids.map((id,i)=>({id,d:ds[i],card:state.runs.find(r=>r.id===id),D:derive(ds[i])}));
+  const groups=state.avgReps?Object.values(info.reduce((m,x)=>{(m[x.card.condition||x.id]??=[]).push(x);return m},{})):info.map(x=>[x]);
+  const label=g=>state.avgReps?(g[0].card.condition||g[0].id)+(g.length>1?` (mean of ${g.length})`:""):g[0].id;
+  const gcol=g=>colorOf(g[0].card.condition);
+  const rateOf=(rows,f)=>{const r=rows.filter(f);return r.length?r.filter(x=>x.outcome==="pass").length/r.length:null};
+  const stat=(g,f)=>mean(g.map(x=>rateOf((x.d.grades||[]).filter(r=>r.kind!=="unknown"),f)).filter(v=>v!=null));
+  const barGroup=(title,cats,fn)=>{const w=900,h=190,l=44,t=10,b=34;const y=scale(0,1,h-b,t);const gw=(w-l-10)/cats.length;const bw=Math.min(36,(gw-10)/groups.length);
+    let s=axisY(y,1,w-10,pct,l);cats.forEach((c,ci)=>{const x0=l+ci*gw+gw/2-bw*groups.length/2;s+=`<text x="${l+ci*gw+gw/2}" y="${h-b+14}" text-anchor="middle">${esc(c.label)}</text>`;
+      groups.forEach((g,gi)=>{const v=fn(g,c);if(v==null)return;s+=`<rect x="${x0+gi*bw+1}" y="${y(v)}" width="${bw-2}" height="${y(0)-y(v)}" fill="${gcol(g)}" opacity="${state.avgReps?.9:(.45+.55*((gi%3)+1)/3)}"><title>${esc(label(g))} ${esc(c.label)}: ${pct(v)}</title></rect>`;
+        s+=`<text x="${x0+gi*bw+bw/2}" y="${y(v)-3}" text-anchor="middle">${pct(v)}</text>`})});
+    return `<div class="panel"><h2>${title}</h2><svg viewBox="0 0 ${w} ${h}" width="100%">${s}</svg></div>`};
+  let h=`<div class="row" style="margin-bottom:8px"><b>Compare ${ids.length} runs</b><label><input type="checkbox" id="avg" ${state.avgReps?"checked":""}> average replicate runs of the same condition</label></div>
+   <div class="legend panel">${groups.map(g=>`<span><span class="dot" style="background:${gcol(g)}"></span>${esc(label(g))}</span>`).join("")}</div>`;
+  h+=barGroup("Pass rate by check type",[{label:"overall",f:()=>true},{label:"A: old fact",f:r=>r.tags.includes("A")},{label:"C: return to client",f:r=>r.tags.includes("C")},{label:"D: superseded",f:r=>r.tags.includes("D")},{label:"CTRL",f:r=>r.tags.includes("CTRL")},{label:"NEAR",f:r=>r.tags.includes("NEAR")}],(g,c)=>stat(g,c.f));
+  h+=barGroup("Pass rate by where the fact was said",[{label:"home (client's own visit)",f:r=>r.placement==="home"},{label:"embedded (in passing)",f:r=>r.placement==="embedded"}],(g,c)=>stat(g,c.f));
+  h+=barGroup("Pass rate by fact age (turns between the fact and the check): does accuracy degrade?",AGE_BINS.map(([l,a,b])=>({label:l+" turns",f:r=>r.age_turns!=null&&r.age_turns>=a&&r.age_turns<=b})),(g,c)=>stat(g,c.f));
+  // spend vs accuracy
+  const xv=g=>mean(g.map(x=>state.xcost==="total"?x.d.cost?.total_usd:state.xcost==="actor"?x.d.cost?.actor_usd:x.d.cost?.gatherer_usd).filter(v=>v!=null));
+  const pts=groups.map(g=>({g,x:xv(g),y:stat(g,()=>true)})).filter(p=>p.x!=null&&p.y!=null);
+  {const w=900,H=260,l=54,r=20,t=12,b=34;const xm=niceMax(Math.max(...pts.map(p=>p.x),.01)*1.1);const x=scale(0,xm,l,w-r);const y0=Math.max(0,Math.floor((Math.min(...pts.map(p=>p.y),1)-.08)*10)/10);const y=scale(y0,1,H-b,t);
+    let s=axisY(y,1,w-r,pct,l).replace(/./,m=>m);s="";for(let i=0;i<=4;i++){const v=y0+(1-y0)*i/4;s+=`<g class="grid"><line x1="${l}" x2="${w-r}" y1="${y(v)}" y2="${y(v)}"/></g><text x="${l-4}" y="${y(v)+3}" text-anchor="end">${pct(v)}</text>`}
+    for(let i=0;i<=4;i++){const v=xm*i/4;s+=`<text x="${x(v)}" y="${H-b+14}" text-anchor="middle">${usd(v)}</text>`}
+    pts.forEach((p,pi)=>{const dy=(pi%2?-12:14);s+=`<circle cx="${x(p.x)}" cy="${y(p.y)}" r="7" fill="${gcol(p.g)}" opacity=".9"><title>${esc(label(p.g))}: ${pct(p.y)} for ${usd(p.x)}</title></circle><text x="${x(p.x)+10}" y="${y(p.y)+4+dy}">${esc(label(p.g))}</text>`});
+    h+=`<div class="panel"><h2>Accuracy vs spend <label style="text-transform:none;letter-spacing:0;font-weight:400">x axis <select id="xc"><option value="total" ${state.xcost==="total"?"selected":""}>combined cost</option><option value="actor" ${state.xcost==="actor"?"selected":""}>Pi / actor cost</option><option value="gatherer" ${state.xcost==="gatherer"?"selected":""}>Gatherer cost</option></select></label></h2>
+     <svg viewBox="0 0 ${w} ${H}" width="100%">${s}</svg><p class="muted">One point per ${state.avgReps?"condition (mean of its replicates)":"run"}. Up and to the left is better. More conditions with different knob settings (say 5k, 15k, 30k keep tokens) turn this into the trade-off curve.</p></div>`}
+  // overlays
+  const n=Math.max(...info.map(x=>x.D.n));
+  const ov=(title,key,fmt,ymax)=>`<div class="panel"><h2>${title}</h2>${turnChart({id:"ov"+key,h:150,n,showSel:false,series:info.map((x,i)=>({vals:x.D[key],color:colorOf(x.card.condition),dash:(i%3)==1?"5 3":(i%3)==2?"2 2":null})),fmtY:fmt,ymax})}
+    <div class="legend">${info.map((x,i)=>`<span><span class="dot" style="background:${colorOf(x.card.condition)}"></span>${esc(x.id)}</span>`).join("")}</div></div>`;
+  h+=ov("Context size per turn","ctx",fmtTok)+ov("Rolling accuracy (last 12 checks) over the session","roll",pct,1)+ov("Cumulative cost, combined","cumT",usd);
+  // misses
+  h+=`<div class="panel"><h2>Why checks failed</h2><table><tr><th>run</th><th class="n">failures</th><th class="n">retrieval misses (fact not in view)</th><th class="n">usage misses (fact in view, wrong answer)</th><th class="n">lucky passes</th></tr>
+   ${info.map(x=>{const a=(x.d.attribution||[]).filter(r=>r.presence!=="n/a");const rm=a.filter(r=>r.verdict==="retrieval_miss").length,um=a.filter(r=>r.verdict==="usage_miss").length;
+   return `<tr><td>${esc(x.id)}</td><td class="n">${a.length?rm+um:""}</td><td class="n">${a.length?rm:'<span class="muted">run attribute.py</span>'}</td><td class="n">${a.length?um:""}</td><td class="n">${a.filter(r=>r.verdict==="lucky").length||""}</td></tr>`}).join("")}</table></div>`;
+  $("#main").innerHTML=h;
+  $("#avg").onchange=e=>{state.avgReps=e.target.checked;viewCompare()};const xc=$("#xc");if(xc)xc.onchange=e=>{state.xcost=e.target.value;viewCompare()}}
+
+async function render(){nav();try{if(state.tab==="runs")viewRuns();else if(state.tab==="run")await viewRun();else if(state.tab==="checks")await viewChecks();else await viewCompare()}catch(e){$("#main").innerHTML=`<div class="panel err">${esc(e.stack||e.message)}</div>`}}
+loadRuns().then(render).catch(e=>{$("#main").innerHTML=`<div class="panel err">${esc(e.message)}</div>`});
+</script>
+</body>
+</html>

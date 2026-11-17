@@ -99,6 +99,12 @@ request: `verbatim` (the exact source sentence from `facts.json` is in the reque
 - fail + verbatim/paraphrased: **usage miss** (it was there, the model did not use it)
 - pass + absent: the agent got it right without the fact in view (guess or leak; inspect)
 
+## Which call wrote a deliverable
+
+`analysis/attribute.py` takes, for a check on turn N, the last call of turn N whose `tool_calls` include
+a write tool (name contains write, edit or create), else the last call of that turn. Keep tool names
+in `calls.jsonl` as the harness reports them (for pi: `write`, `edit`).
+
 ## Mapping AG rows to turns
 
 AG's `events` table numbers every stored item by `row_id`. The n-th `user_message` event in the
