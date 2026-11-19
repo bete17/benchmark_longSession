@@ -70,6 +70,19 @@ def run_card(rid, d):
         if a.get("verdict") in misses:
             misses[a["verdict"]] += 1
     secs = sum(t.get("seconds") or 0 for t in turns)
+    done = run.get("turns_completed") or (max((t["turn"] for t in turns), default=0))
+    grades = jl(os.path.join(d, "grades.jsonl"))
+    if grades and run.get("status") != "complete":
+        # partial run: score only checks the session actually reached
+        rows = [g for g in grades if g.get("kind") != "unknown" and g.get("turn", 0) <= done]
+        rate = lambda rs: (sum(r["outcome"] == "pass" for r in rs) / len(rs)) if rs else None
+        tags = sorted({t for r in rows for t in r["tags"]})
+        unk = [g for g in grades if g.get("kind") == "unknown" and g.get("turn", 0) <= done]
+        summ = {"overall": {"pass": rate(rows), "n": len(rows)},
+                "by_tag": {t: {"pass": rate([r for r in rows if t in r["tags"]])} for t in tags},
+                "by_placement": {p: {"pass": rate([r for r in rows if r["placement"] == p])}
+                                 for p in sorted({r["placement"] for r in rows})},
+                "unknown_fields": {"made_up_rate": (sum(g["outcome"] == "made_up" for g in unk) / len(unk)) if unk else None}}
     return {"id": rid, "condition": run.get("condition"), "seed": run.get("seed"), "rep": run.get("rep"),
             "status": run.get("status"), "synthetic": bool(run.get("synthetic")),
             "turns_completed": run.get("turns_completed"), "actor_model": run.get("actor_model"),

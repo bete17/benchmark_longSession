@@ -154,12 +154,16 @@ function viewRuns(){
 async function viewRun(){
   if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
   const id=state.cur;const d=await getRun(id);const sess=await getSession(id);const D=derive(d);
-  const card=state.runs.find(r=>r.id===id)||{};const run=d.run||{};const S=d.summary||{};
+  const card=state.runs.find(r=>r.id===id)||{};const run=d.run||{};let S=d.summary||{};
+  const partial=run.status&&run.status!=="complete";
+  if(partial){const done=run.turns_completed||D.n;const rows=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done);
+    const rt=rs=>({n:rs.length,pass:rs.length?rs.filter(r=>r.outcome==="pass").length/rs.length:null});
+    S={overall:rt(rows),by_tag:Object.fromEntries(["A","C","D","CTRL"].map(t=>[t,rt(rows.filter(r=>r.tags.includes(t)))]))}}
   const isAG=(d.builds||[]).length||(run.condition||"").startsWith("ag");
   const totSec=(d.turns||[]).reduce((a,t)=>a+(t.seconds||0),0);
   const miss=card.misses||{};
   let h=`<div class="row" style="margin-bottom:8px"><span class="dot" style="background:${colorOf(run.condition)}"></span><b style="font-size:16px">${esc(id)}</b>
-    <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}</span></div>`;
+    <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}${partial?" | scored on the "+(run.turns_completed||"")+" turns run":""}</span></div>`;
   h+=`<div class="kpis">
    <div class="kpi"><div class="v">${pct(S.overall?.pass)}</div><div class="l">pass (n=${S.overall?.n??""})</div></div>
    ${["A","C","D","CTRL"].map(k=>`<div class="kpi"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">tag ${k} (n=${S.by_tag?.[k]?.n??""})</div></div>`).join("")}
@@ -215,9 +219,9 @@ async function renderInspector(d,sess,D,A){
     else h+=`<div style="word-break:break-word"><span class="chip">${esc(x.kind)}</span> <span class="muted">${esc(JSON.stringify(x.detail))}</span></div>`})}
   const bl=(d.builds||[]).find(b=>b.turn===t);
   if(bl){h+=`<div class="sec">AG build ${bl.build_id} (${esc(bl.status)}, ${sec(bl.seconds)})</div>
-    <div class="muted">ranking (task indices, most relevant first): ${esc((bl.ranking||[]).join(", "))}</div>
+    <div class="muted">ranking (task indices, most relevant first): ${esc((bl.ranking||[]).map(r=>typeof r==="object"?(r.task_index??JSON.stringify(r)):r).join(", "))}${bl.adopted_by_read?" | adopted from turn "+bl.adopted_by_read:""}</div>
     <div class="sec">Sections adopted for the next read</div>${(bl.sections||[]).map(s=>`<div>${esc(s.name)} <span class="muted">${fmtTok(s.tokens)}</span></div>`).join("")}
-    <div class="sec">Tasks AG has stored (${(bl.tasks||[]).length})</div><div style="max-height:170px;overflow:auto"><table>${(bl.tasks||[]).map(k=>`<tr><td>${k.index}</td><td>${esc(k.name)}<div class="muted">${esc(k.retention||k.description||"")}</div></td><td class="n">t${k.first_turn}-${k.last_turn}</td><td class="n">${fmtTok(k.tokens)}</td></tr>`).join("")}</table></div>`}
+    <div class="sec">Tasks AG has stored (${bl.tasks?bl.tasks.length:"not recorded for this build"})</div><div style="max-height:170px;overflow:auto"><table>${(bl.tasks||[]).map(k=>`<tr><td>${k.index}</td><td>${esc(k.name)}<div class="muted">${esc(k.description||(typeof k.retention==="string"?k.retention:""))}</div></td><td class="n">t${k.first_turn}-${k.last_turn}</td><td class="n">${fmtTok(k.tokens)}</td></tr>`).join("")}</table></div>`}
   const gc=(d.gatherer_calls||[]).filter(x=>x.turn===t);
   if(gc.length)h+=`<div class="sec">Gatherer model calls</div><table>${gc.map(c=>`<tr><td>${esc(c.purpose)}</td><td class="n">${fmtTok(c.input_tokens)} in / ${fmtTok(c.output_tokens)} out</td><td class="n">${sec(c.seconds)}</td><td class="n">${usd(c.usd)}</td></tr>`).join("")}</table>`;
   // context contents
