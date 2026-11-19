@@ -1,6 +1,6 @@
 # Long-session benchmark: does Actor-Gatherer beat a regular agent?
 
-Status: step 1 done (generator, grader, pilot session). Steps 2 to 4 handed to Claude Code, see CLAUDE.md. Owner: Tim.
+Status: step 1 done (generator, grader, pilot session). Generator v2 (fixed-age check schedule) added Nov 19 2026. Steps 2 to 4 handed to Claude Code, see CLAUDE.md. Owner: Tim.
 
 ## 1. Question
 
@@ -19,6 +19,7 @@ We test where AG helps, where it hurts, and what it costs, against the same harn
 | C | Returning to a workstream after others: the summary is dominated by recent work | Ranking is driven by the current task, not recency | Fact from the workstream's earlier visits appears correctly |
 | D | A superseded fact: old and new versions both survive | Time-aware selection should prefer the latest | The new value appears and the old one does not. Risk test: AG may page the old one back in |
 | E | Context and cost grow until compaction | Context stays bounded | Tokens and dollars per turn |
+| S | The agent degrades as the session gets long (more context, more compactions), independent of how old any fact is | Context stays bounded, so late turns should look like early ones | Accuracy on fresh facts (2 to 10 turns old) by session position: if it falls late in the session, length itself hurts. Fact-age effects are read separately, at a fixed session position |
 | CTRL | Fact is in the current prompt | Nothing to gain | Regression check: AG must not make these worse |
 | UNK | A field is requested before its fact was ever stated | Nothing to page in | The right answer is null. A value counts as made up. Reported separately, not in the main pass rate |
 
@@ -58,7 +59,10 @@ Two fact placements, tagged separately:
 - **embedded**: the fact is mentioned in passing during another client's visit ("btw, Acme called,
   their CFO is now Dana"). This is harder for task-based ranking and is realistic.
 
-### Pilot size
+### Pilot size (v1, `sessions/pilot_seed0`)
+
+Superseded for the main runs by schedule v2 (next section). Kept for the step 2 smoke runs.
+
 
 Generated (`sessions/pilot_seed0`, seed 0): 4 clients, 48 visits (balanced across clients), 145 user messages, 32 deliverables,
 163 checks: 129 on stated facts (A 86, C 80, D 14, CTRL 6, NEAR 5; home 102, embedded 27) and 34 UNK. User text is about 240k
@@ -69,6 +73,44 @@ real size in the smoke test and regenerates with a larger `--report-rows` if nee
 Known limits of v0 text: fact sentences are crisp and templated, filler repeats across call notes.
 An LLM paraphrase pass is a later improvement. CTRL has few checks; contrast comes mostly from the
 age curve .
+
+### Schedule v2: fixed-age checks (decision, Nov 19 2026)
+
+Problem with v1: fact age and session position were confounded. 25 of 42 facts were planted in the first
+45 turns, so late checkpoints only tested old facts (median fact age 22 at turns 1 to 30, 32 at 31 to 60,
+53 at 61 to 90, 77 at 91 to 120, 98 at 121 to 145; almost no fact under 20 turns old after turn 60) and
+only 4 checks fell in turns 1 to 30. "The agent degrades as the session gets long" could not be told apart
+from "late checks ask about older facts". A smoke run also showed pi's compaction summary kept all 27 facts
+said so far, so v1 was easy for a good summarizer.
+
+Decision: `generate.py --schedule v2` (the default; `--schedule v1` reproduces the old session byte for byte).
+- Facts are planted throughout the session: 80 to 100 statements, at most 40% in the first third, at least 25
+  supersessions spread over all thirds, 25 to 30% embedded in another client's visit.
+- About 30% of facts are buried: a bullet inside pasted call notes, or a line in a forwarded client email
+  (`form: "buried"` in facts.json and checks.jsonl), the rest are stated outright (`form: "sentence"`).
+  Summaries tend to keep headline numbers and drop fine print, which is the point.
+- 38 deliverables, the first by turn 11, spread evenly to the end (about 8 per 30-turn window). Every
+  deliverable header holds fields of three age bins (age = turns between the statement of the current value
+  and the checkpoint):
+  - fresh, 2 to 10 turns: at least one per deliverable. Stated earlier in the same visit (not in the request
+    message) or in the immediately preceding visit.
+  - medium, 15 to 45 turns: at least one per deliverable from turn 20.
+  - old, 60+ turns: at least one per deliverable from turn 66.
+  - other (0 to 1, 11 to 14, 46 to 59): allowed for the remaining fields.
+- Each check carries `age_bin` (null for UNK), `session_bin` (0-based 30-turn window of the checkpoint turn)
+  and `form`. CTRL stays about 1 deliverable in 4, UNK stays. The grader reports `by_age_bin`,
+  `by_session_bin`, `by_session_bin_x_age_bin` and `by_form`, leaving out CTRL and UNK.
+- Reading it: S is the fresh column across session bins. Fact-age effects are the age columns within one
+  session bin. `python gen/report.py --session sessions/pilot_v2_seed0` prints the counts and confirms the
+  schedule.
+- Size is held near v1 so cost does not grow. The v2 header types are wider than v1 (6 or 7 fields each) so
+  every type can carry all three ages.
+- Known confound: old checks fall mostly on stable fields (currency, term, concession reference, style rule),
+  which are never superseded; fresh checks fall on fields that change. Read `by_field` next to the age bins.
+
+`sessions/pilot_v2_seed0` (seed 0): 4 clients, 49 visits (2 to 4 messages), 149 user messages, 38 deliverables,
+254 checks: 226 on stated facts (A 84, C 134, D 89, CTRL 10, NEAR 20; home 173, embedded 53) and 28 UNK; 91 fact
+statements, 57 of them supersessions, 27 embedded, 28 buried; 240k user characters (v1: 244k, 145 messages).
 
 ## 4. Generation
 
@@ -141,4 +183,5 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 - Which Gemini model for the Actor and for the Gatherer (they can differ; using the same is simpler to explain).
 - Spend cap for the pilot.
 - Pi's compaction setting name and whether its summary prompt can be logged.
+- Compaction ceiling (100k now): to be decided after a free "facts still in view" check (analysis/coverage.py) on a short v2 run. If a good summarizer still keeps every fact, lower the ceiling.
 - Whether condition 1 is worth including or replaced by reporting where condition 2 first compacts.

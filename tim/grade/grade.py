@@ -98,6 +98,13 @@ def age_bin(a):
             return f"{lo}-{hi - 1 if hi < 10**9 else ''}"
 
 
+def age_bin_v2(a):
+    """fresh 2-10, medium 15-45, old 60+, other (same thresholds as gen/generate.py)"""
+    if a is None:
+        return None
+    return "fresh" if 2 <= a <= 10 else "medium" if 15 <= a <= 45 else "old" if a >= 60 else "other"
+
+
 def summarize(all_rows):
     """Main metrics use checks on facts that were stated (kind field or style). UNK checks (fields
     asked for before their fact was stated) are reported separately as a made-up-value rate."""
@@ -106,7 +113,32 @@ def summarize(all_rows):
         return {"n": n, "pass": sum(r["outcome"] == "pass" for r in rs) / n if n else None}
     rows = [r for r in all_rows if r["kind"] != "unknown"]
     unk = [r for r in all_rows if r["kind"] == "unknown"]
+    # Binned views (age bin, session bin, form) leave out CTRL checks: their value is restated in the
+    # request, so their pass rate says nothing about memory at that age. v1 sessions carry no age_bin,
+    # so it is derived from age_turns.
+    binned = [r for r in rows if "CTRL" not in r["tags"]]
+    for r in binned:
+        if r.get("age_bin") is None:
+            r["age_bin"] = age_bin_v2(r["age_turns"])
+        if r.get("session_bin") is None:
+            r["session_bin"] = (r["turn"] - 1) // 30
+
+    def by(keyf):
+        b = defaultdict(list)
+        for r in binned:
+            b[keyf(r)].append(r)
+        return {k: rate(v) for k, v in sorted(b.items(), key=lambda kv: str(kv[0]))}
+
+    cross = defaultdict(lambda: defaultdict(list))
+    for r in binned:
+        cross[str(r["session_bin"])][r["age_bin"]].append(r)
     out = {"overall": rate(rows),
+           "by_age_bin": by(lambda r: r["age_bin"]),
+           "by_session_bin": by(lambda r: str(r["session_bin"])),
+           "by_session_bin_x_age_bin": {sb: {ab: rate(v) for ab, v in sorted(d.items())}
+                                        for sb, d in sorted(cross.items())},
+           "by_form": by(lambda r: r.get("form") or "n/a"),
+           "bin_tables_note": "age_bin, session_bin and form tables exclude CTRL and UNK checks",
            "unknown_fields": {"n": len(unk), "null_rate": rate(unk)["pass"],
                               "made_up_rate": (sum(r["outcome"] == "made_up" for r in unk) / len(unk)) if unk else None}}
     groups = {"by_tag": lambda r: r["tags"], "by_placement": lambda r: [r["placement"]],
@@ -144,6 +176,8 @@ def main():
         rows.append({**{k: chk[k] for k in ("check_id", "deliverable_id", "client", "field", "kind",
                                               "turn", "age_turns", "placement", "tags",
                                               "visits_since_client_last_seen")},
+                     "age_bin": chk.get("age_bin"), "session_bin": chk.get("session_bin"),
+                     "form": chk.get("form"),
                      "expected": chk["expected"],
                      "got": (hdr or {}).get(chk["field"]) if chk["kind"] in ("field", "unknown") else None,
                      "outcome": grade_check(chk, hdr, body, err)})
@@ -155,8 +189,10 @@ def main():
     with open(os.path.join(a.run, "summary.json"), "w") as f:
         json.dump(s, f, indent=1)
     print(f"{s['label']}: overall {s['overall']['pass']:.3f} (n={s['overall']['n']})")
-    for g in ("by_tag", "by_placement", "by_age_turns"):
+    for g in ("by_tag", "by_placement", "by_age_turns", "by_age_bin", "by_session_bin", "by_form"):
         print(f"  {g}: " + ", ".join(f"{k}={v['pass']:.2f}({v['n']})" for k, v in s[g].items()))
+    for sb, d in s["by_session_bin_x_age_bin"].items():
+        print(f"  session_bin {sb}: " + ", ".join(f"{k}={v['pass']:.2f}({v['n']})" for k, v in d.items()))
     print(f"  outcomes: {s['by_outcome']}")
     u = s["unknown_fields"]
     if u["n"]:

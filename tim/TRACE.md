@@ -27,7 +27,7 @@ tim/results/<run_id>/                  run_id = <condition>_seed<k>_rep<r>, e.g.
     requests/<call_id>.json            the exact request each Actor model call sent (see below)
 ```
 
-`turn` everywhere is the session's user-message number from `session.jsonl` (1 to 145).
+`turn` everywhere is the session's user-message number from `session.jsonl` (1 to 149 for pilot_v2_seed0, 1 to 145 for pilot_seed0).
 
 ## run.json
 

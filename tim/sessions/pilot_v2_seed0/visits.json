@@ -1,0 +1,1029 @@
+[
+ {
+  "visit": 0,
+  "client": "Cobalt Freight",
+  "kind": "debrief",
+  "first_turn": 1,
+  "last_turn": 2,
+  "deliverable": null,
+  "planted": [
+   [
+    "Cobalt Freight",
+    "concession_ref",
+    "home",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "currency",
+    "home",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "seats",
+    "home",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "style_rule",
+    "home",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "term_months",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 1,
+  "client": "Delta Learning",
+  "kind": "debrief",
+  "first_turn": 3,
+  "last_turn": 4,
+  "deliverable": null,
+  "planted": [
+   [
+    "Delta Learning",
+    "contact_name",
+    "home",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "currency",
+    "home",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "discount_pct",
+    "home",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "seats",
+    "home",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "term_months",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 2,
+  "client": "Acme Robotics",
+  "kind": "debrief",
+  "first_turn": 5,
+  "last_turn": 6,
+  "deliverable": null,
+  "planted": [
+   [
+    "Acme Robotics",
+    "cc_name",
+    "home",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "discount_pct",
+    "home",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "home",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "seats",
+    "home",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "term_months",
+    "home",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 3,
+  "client": "Beta Health",
+  "kind": "debrief",
+  "first_turn": 7,
+  "last_turn": 8,
+  "deliverable": null,
+  "planted": [
+   [
+    "Beta Health",
+    "cc_name",
+    "home",
+    "buried"
+   ],
+   [
+    "Beta Health",
+    "concession_ref",
+    "home",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "currency",
+    "home",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "seats",
+    "home",
+    "buried"
+   ],
+   [
+    "Beta Health",
+    "term_months",
+    "home",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "embedded",
+    "buried"
+   ],
+   [
+    "Beta Health",
+    "style_rule",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 4,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 9,
+  "last_turn": 11,
+  "deliverable": "D01",
+  "planted": []
+ },
+ {
+  "visit": 5,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 12,
+  "last_turn": 15,
+  "deliverable": "D02",
+  "planted": [
+   [
+    "Beta Health",
+    "renewal_deadline",
+    "home",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 6,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 16,
+  "last_turn": 18,
+  "deliverable": "D03",
+  "planted": [
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "contact_name",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 7,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 19,
+  "last_turn": 22,
+  "deliverable": "D04",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "discount_pct",
+    "home",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 8,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 23,
+  "last_turn": 24,
+  "deliverable": "D05",
+  "planted": []
+ },
+ {
+  "visit": 9,
+  "client": "Beta Health",
+  "kind": "debrief",
+  "first_turn": 25,
+  "last_turn": 28,
+  "deliverable": null,
+  "planted": [
+   [
+    "Beta Health",
+    "cc_name",
+    "home-supersede",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 10,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 29,
+  "last_turn": 31,
+  "deliverable": "D06",
+  "planted": []
+ },
+ {
+  "visit": 11,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 32,
+  "last_turn": 35,
+  "deliverable": "D07",
+  "planted": [
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 12,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 36,
+  "last_turn": 39,
+  "deliverable": "D08",
+  "planted": [
+   [
+    "Beta Health",
+    "renewal_deadline",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "contact_name",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 13,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 40,
+  "last_turn": 41,
+  "deliverable": "D09",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 14,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 42,
+  "last_turn": 43,
+  "deliverable": "D10",
+  "planted": []
+ },
+ {
+  "visit": 15,
+  "client": "Delta Learning",
+  "kind": "debrief",
+  "first_turn": 44,
+  "last_turn": 46,
+  "deliverable": null,
+  "planted": [
+   [
+    "Delta Learning",
+    "style_rule",
+    "home",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "seats",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 16,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 47,
+  "last_turn": 49,
+  "deliverable": "D11",
+  "planted": []
+ },
+ {
+  "visit": 17,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 50,
+  "last_turn": 53,
+  "deliverable": "D12",
+  "planted": [
+   [
+    "Acme Robotics",
+    "currency",
+    "home",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "cc_name",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 18,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 54,
+  "last_turn": 56,
+  "deliverable": "D13",
+  "planted": []
+ },
+ {
+  "visit": 19,
+  "client": "Acme Robotics",
+  "kind": "debrief",
+  "first_turn": 57,
+  "last_turn": 59,
+  "deliverable": null,
+  "planted": [
+   [
+    "Acme Robotics",
+    "contact_name",
+    "home",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "discount_pct",
+    "home-supersede",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 20,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 60,
+  "last_turn": 62,
+  "deliverable": "D14",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "renewal_deadline",
+    "embedded",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Acme Robotics",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 21,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 63,
+  "last_turn": 64,
+  "deliverable": "D15",
+  "planted": []
+ },
+ {
+  "visit": 22,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 65,
+  "last_turn": 68,
+  "deliverable": "D16",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "cc_name",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 23,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 69,
+  "last_turn": 71,
+  "deliverable": "D17",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 24,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 72,
+  "last_turn": 75,
+  "deliverable": "D18",
+  "planted": [
+   [
+    "Beta Health",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "contact_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 25,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 76,
+  "last_turn": 78,
+  "deliverable": "D19",
+  "planted": [
+   [
+    "Beta Health",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 26,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 79,
+  "last_turn": 82,
+  "deliverable": "D20",
+  "planted": [
+   [
+    "Acme Robotics",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 27,
+  "client": "Cobalt Freight",
+  "kind": "debrief",
+  "first_turn": 83,
+  "last_turn": 85,
+  "deliverable": null,
+  "planted": [
+   [
+    "Cobalt Freight",
+    "renewal_deadline",
+    "home-supersede",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 28,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 86,
+  "last_turn": 88,
+  "deliverable": "D21",
+  "planted": [
+   [
+    "Acme Robotics",
+    "cc_name",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "seats",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 29,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 89,
+  "last_turn": 90,
+  "deliverable": "D22",
+  "planted": []
+ },
+ {
+  "visit": 30,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 91,
+  "last_turn": 94,
+  "deliverable": "D23",
+  "planted": [
+   [
+    "Beta Health",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "discount_pct",
+    "home",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 31,
+  "client": "Delta Learning",
+  "kind": "debrief",
+  "first_turn": 95,
+  "last_turn": 97,
+  "deliverable": null,
+  "planted": [
+   [
+    "Delta Learning",
+    "cc_name",
+    "home",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "seats",
+    "home-supersede",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 32,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 98,
+  "last_turn": 101,
+  "deliverable": "D24",
+  "planted": [
+   [
+    "Delta Learning",
+    "discount_pct",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Beta Health",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 33,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 102,
+  "last_turn": 103,
+  "deliverable": "D25",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "renewal_deadline",
+    "embedded-supersede",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 34,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 104,
+  "last_turn": 106,
+  "deliverable": "D26",
+  "planted": [
+   [
+    "Delta Learning",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 35,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 107,
+  "last_turn": 109,
+  "deliverable": "D27",
+  "planted": [
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 36,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 110,
+  "last_turn": 112,
+  "deliverable": "D28",
+  "planted": []
+ },
+ {
+  "visit": 37,
+  "client": "Cobalt Freight",
+  "kind": "debrief",
+  "first_turn": 113,
+  "last_turn": 114,
+  "deliverable": null,
+  "planted": [
+   [
+    "Cobalt Freight",
+    "seats",
+    "home-supersede",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 38,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 115,
+  "last_turn": 117,
+  "deliverable": "D29",
+  "planted": [
+   [
+    "Beta Health",
+    "cc_name",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 39,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 118,
+  "last_turn": 119,
+  "deliverable": "D30",
+  "planted": [
+   [
+    "Delta Learning",
+    "contact_name",
+    "embedded-supersede",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 40,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 120,
+  "last_turn": 122,
+  "deliverable": "D31",
+  "planted": [
+   [
+    "Delta Learning",
+    "seats",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 41,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 123,
+  "last_turn": 126,
+  "deliverable": "D32",
+  "planted": [
+   [
+    "Acme Robotics",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 42,
+  "client": "Beta Health",
+  "kind": "debrief",
+  "first_turn": 127,
+  "last_turn": 129,
+  "deliverable": null,
+  "planted": [
+   [
+    "Beta Health",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "seats",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "concession_ref",
+    "embedded",
+    "sentence"
+   ],
+   [
+    "Delta Learning",
+    "contact_name",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Beta Health",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 43,
+  "client": "Delta Learning",
+  "kind": "deliverable",
+  "first_turn": 130,
+  "last_turn": 132,
+  "deliverable": "D33",
+  "planted": [
+   [
+    "Cobalt Freight",
+    "cc_name",
+    "embedded-supersede",
+    "buried"
+   ]
+  ]
+ },
+ {
+  "visit": 44,
+  "client": "Cobalt Freight",
+  "kind": "deliverable",
+  "first_turn": 133,
+  "last_turn": 135,
+  "deliverable": "D34",
+  "planted": [
+   [
+    "Beta Health",
+    "seats",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Cobalt Freight",
+    "seats",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 45,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 136,
+  "last_turn": 138,
+  "deliverable": "D35",
+  "planted": [
+   [
+    "Beta Health",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 46,
+  "client": "Acme Robotics",
+  "kind": "deliverable",
+  "first_turn": 139,
+  "last_turn": 142,
+  "deliverable": "D36",
+  "planted": [
+   [
+    "Beta Health",
+    "renewal_deadline",
+    "embedded-supersede",
+    "buried"
+   ],
+   [
+    "Delta Learning",
+    "renewal_deadline",
+    "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "renewal_deadline",
+    "home-supersede",
+    "sentence"
+   ],
+   [
+    "Acme Robotics",
+    "cc_name",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 47,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 143,
+  "last_turn": 146,
+  "deliverable": "D37",
+  "planted": [
+   [
+    "Beta Health",
+    "contact_name",
+    "home",
+    "sentence"
+   ],
+   [
+    "Cobalt Freight",
+    "seats",
+    "embedded-supersede",
+    "sentence"
+   ]
+  ]
+ },
+ {
+  "visit": 48,
+  "client": "Beta Health",
+  "kind": "deliverable",
+  "first_turn": 147,
+  "last_turn": 149,
+  "deliverable": "D38",
+  "planted": [
+   [
+    "Beta Health",
+    "discount_pct",
+    "home-supersede",
+    "sentence"
+   ]
+  ]
+ }
+]

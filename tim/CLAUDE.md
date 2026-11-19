@@ -25,7 +25,12 @@ tim/
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
   TRACE.md                     the trace format every run must produce (read before writing run code)
   run/system_prompt.md         the system prompt for the Actor in EVERY condition (replaces pi's coding prompt)
-  sessions/pilot_seed0/        the generated pilot session
+  gen/report.py                prints the v2 schedule report (counts, session_bin x age_bin table, per-deliverable bins)
+  gen/test_generate.py         invariant tests (each fact sentence is verbatim in its turn's message, bins, size)
+  sessions/pilot_v2_seed0/     the v2 session (fixed-age check schedule, see DESIGN.md): 149 user messages,
+                               254 checks over 38 deliverables (226 on stated facts: A 84 / C 134 / D 89 /
+                               CTRL 10 / NEAR 20; 28 UNK); checks also carry age_bin, session_bin, form
+  sessions/pilot_seed0/        the v1 pilot session (kept for the step 2 smoke runs)
     session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
     checks.jsonl               163 checks over 32 deliverables: 129 on stated facts, tagged A / C / D /
                                CTRL / NEAR, plus 34 UNK checks (field asked before its fact was stated;
@@ -35,7 +40,7 @@ tim/
     meta.json                  counts and a character-based size estimate (~60k user tokens)
 ```
 
-Verified before handoff: `make_oracle.py --mode perfect` grades 100% (and null on all 34 UNK fields), `--mode stale` fails exactly
+Verified before handoff (v1): `make_oracle.py --mode perfect` grades 100% (and null on all 34 UNK fields), `--mode stale` fails exactly
 the 14 D checks as "stale", `--mode empty` grades 0%.
 
 The agent under test sees only each message's `text`, sent in order. Deliverables are files the agent
@@ -112,6 +117,8 @@ push after each step (`git push origin main`; small commits). Stop at every gate
 ASK TIM: report model choice, measured cost of the smoke run, and projected pilot cost, before step 3.
 
 ### Step 3: granularity check
+Use `sessions/pilot_v2_seed0` (the step 2 smoke runs used v1, `sessions/pilot_seed0`).
+
 Check that AG's task segmentation and boundary check cut the session where `visits.json` intends.
 Preferred: a script `tim/run/granularity.py` that feeds the scripted user messages (with short
 placeholder assistant replies) through AG's own segmentation and boundary tools
@@ -122,6 +129,8 @@ ASK TIM if fewer than about 80% of visit switches are detected, with examples, b
 generator.
 
 ### Step 4: pilot runs
+Run on `sessions/pilot_v2_seed0`; before the full runs, do a short v2 run and check fact coverage (`analysis/coverage.py`) to settle the compaction ceiling (DESIGN.md open items).
+
 Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
 - `pi_compact`: pi alone, compaction at 100k.
 - `pi_per_client`: one pi session per client (route each visit's messages to that client's session),
@@ -135,7 +144,7 @@ Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
   (One knob variant for the spend curve; more later.)
 - `pi_full`: pi alone, compaction off, model registered with its real window (1,048,576), full
   session, 1 run. Context-rot reference (added 2026-11-19; the session fits, so no truncation).
-Grade each run: `python grade/grade.py --session sessions/pilot_seed0 --run results/<run>`.
+Grade each run: `python grade/grade.py --session sessions/pilot_v2_seed0 --run results/<run>`.
 ASK TIM before any spend beyond the cap he gives you.
 
 ## What to hand back

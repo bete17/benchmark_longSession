@@ -51,7 +51,7 @@ def find_runs():
         for dp, dn, fn in os.walk(root):
             if "run.json" in fn:
                 rid = os.path.basename(dp)
-                key = rid if rid not in runs else f"{rid} [{os.path.relpath(dp, root)}]"
+                key = rid if rid not in runs else f"{rid}@{os.path.relpath(os.path.dirname(dp), root).replace(os.sep, '.')}"
                 runs[key] = dp
                 dn[:] = []
             else:

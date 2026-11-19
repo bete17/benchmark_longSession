@@ -254,3 +254,23 @@ session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197
   the key itself is accepted (model metadata call 200). Conclusion: this key's project is on the free tier
   (20 generate requests per day per model), not paid. Both runs stopped; nothing usable. Implication for
   cost: the USD figures in this log are list prices computed from token counts, not what was billed.
+
+## 2026-11-19: generator v2, fixed-age check schedule
+
+- Why: in sessions/pilot_seed0 fact age and session position are confounded (25 of 42 facts in the first 45
+  turns; no fresh facts late; 4 checks in turns 1 to 30), and pi's compaction summary kept all 27 facts in a
+  smoke run. See DESIGN.md, "Schedule v2".
+- gen/generate.py: new `--schedule v1|v2` (default v2). v1 untouched: regenerating it matches sessions/pilot_seed0
+  byte for byte (session, checks, facts, visits, readable; meta only gains `schedule` and `report_rows`).
+  v2 builds a skeleton of visits (first deliverable at turn 11), then a statement plan per (client, field) with a
+  local search that adds statements until every deliverable has fresh, medium and old checks, then extras to
+  reach 80 to 100 statements. Retries with derived seeds until all constraints hold (seed 0: attempt 24).
+  New v2 header types (6 or 7 fields). New check fields `age_bin`, `session_bin`, `form`; facts.json gains `form`.
+- grade/grade.py: summary.json gains by_age_bin, by_session_bin, by_session_bin_x_age_bin, by_form (CTRL and UNK
+  left out of these four); grades.jsonl rows carry age_bin, session_bin, form. v1 sessions get the bins derived.
+- grade/make_oracle.py: stale mode now changes only checks tagged D (before, a CTRL check on a superseded field
+  would also have been made stale; v1 output is unchanged).
+- New gen/report.py and gen/test_generate.py. Generated sessions/pilot_v2_seed0 (v1 left untouched).
+- Verified: oracle perfect 1.000 with null on all 28 UNK; stale fails exactly the 89 D checks; empty 0.000.
+  Tests pass. viewer/make_synthetic.py ran unchanged on v2 (results/_synthetic_v2); analysis/coverage.py and
+  attribute.py ran on it. Open: compaction ceiling to be decided after a coverage check on a short v2 run.

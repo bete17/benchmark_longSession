@@ -1,0 +1,50 @@
+{
+ "seed": 0,
+ "schedule": "v2",
+ "clients": 4,
+ "visits": 49,
+ "notes_scale": 1.0,
+ "report_rows": 420,
+ "user_messages": 149,
+ "deliverables": 38,
+ "checks": 254,
+ "checks_by_tag": {
+  "C": 134,
+  "CTRL": 10,
+  "UNK": 28,
+  "NEAR": 20,
+  "D": 89,
+  "A": 84
+ },
+ "checks_by_placement": {
+  "home": 173,
+  "embedded": 53,
+  "none": 28
+ },
+ "user_text_chars": 240449,
+ "user_text_tokens_est": 60112,
+ "plan_attempt": 24,
+ "fact_statements": 91,
+ "supersessions": 57,
+ "embedded_statements": 27,
+ "buried_statements": 28,
+ "statements_by_third": [
+  36,
+  28,
+  27
+ ],
+ "checks_by_age_bin": {
+  "fresh": 59,
+  "None": 28,
+  "other": 33,
+  "medium": 68,
+  "old": 66
+ },
+ "checks_by_session_bin": {
+  "0": 33,
+  "1": 55,
+  "2": 61,
+  "3": 54,
+  "4": 51
+ }
+}

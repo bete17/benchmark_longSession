@@ -6,3 +6,4 @@ tim/results/_synthetic/
 .env.*
 *.pem
 tim/results/**/*.log
+tim/results/_synthetic_v2/

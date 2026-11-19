@@ -9,6 +9,12 @@ Deterministic for a given seed. Writes, into --out:
 
 The agent under test only ever sees the "text" of session.jsonl, in order, in one session.
 
+Two schedules (--schedule, default v2):
+  v1  the original pilot design: facts front-loaded, checks at whatever age the visit order gives.
+  v2  fixed-age check schedule: facts planted throughout the session, some buried in pasted material,
+      and every deliverable carries at least one fresh (2 to 10 turns old), one medium (15 to 45) and
+      one old (60+) fact check, so fact age and session position can be separated. See DESIGN.md.
+
 Design notes (see ../DESIGN.md):
   * The session is built from VISITS: 2 to 4 consecutive user messages about one client with one
     objective. AG's boundary check only fires after 2 messages into a task, so a visit is never 1.
@@ -543,47 +549,768 @@ def readable(messages, visits_meta, clients):
     return "\n".join(out)
 
 
+# =============================================================================================
+# Schedule v2: fixed-age check schedule
+#
+# The plan is built in two layers. First the SKELETON: visits (client, kind, length) and which
+# visits end in a deliverable, so every checkpoint turn is known up front. Then the STATEMENT PLAN:
+# for every (client, field) the turns at which a value is stated. Values and sentences are filled in
+# afterwards, in time order, so inserting a statement into the plan never invalidates another one.
+# A deliverable is "satisfied" when its header holds at least one fresh, one medium and one old fact
+# (the medium and old bins only once the session is long enough). A local search adds statements
+# until every deliverable is satisfied, then adds extra statements to reach the target totals.
+# =============================================================================================
+
+from bisect import bisect_left
+from collections import defaultdict
+
+V2_TYPES = {
+    # Wider headers than v1 so that every type holds fields of all three ages.
+    "renewal_quote": (["contact_name", "cc_name", "currency", "seats", "term_months",
+                       "discount_pct", "concession_ref"], True),
+    "followup_email": (["contact_name", "cc_name", "renewal_deadline", "seats", "currency",
+                        "concession_ref"], True),
+    "meeting_brief": (["contact_name", "seats", "term_months", "renewal_deadline",
+                       "discount_pct", "currency"], False),
+    "discount_approval": (["discount_pct", "seats", "currency", "term_months", "renewal_deadline",
+                           "cc_name"], False),
+}
+CHURN = ["contact_name", "cc_name", "seats", "discount_pct", "renewal_deadline"]
+STABLE = ["currency", "term_months", "concession_ref", "style_rule"]   # stated once, never changed
+
+FRESH = (2, 10)
+MEDIUM = (15, 45)
+OLD_MIN = 60
+MEDIUM_REQUIRED_FROM = 20   # deliverables at turn >= this must carry a medium check
+OLD_REQUIRED_FROM = 66      # deliverables at turn >= this must carry an old check
+MIN_GAP = 6                 # turns between two statements of the same field
+CTRL_SHARE = 0.25
+BURIED_SHARE = 0.31
+
+
+def age_bin_of(age):
+    if age is None:
+        return None
+    if FRESH[0] <= age <= FRESH[1]:
+        return "fresh"
+    if MEDIUM[0] <= age <= MEDIUM[1]:
+        return "medium"
+    if age >= OLD_MIN:
+        return "old"
+    return "other"
+
+
+def session_bin_of(turn):
+    return (turn - 1) // 30
+
+
+@dataclass
+class FactValueV2(FactValue):
+    form: str = "sentence"   # "sentence" (stated outright) | "buried" (inside pasted notes or a thread)
+
+
+EMAIL_LEADS = ["Please note: ", "One more thing: ", "FYI, ", "Quick update from our side: "]
+
+
+def email_sentence(rng, client, f, v, old=None):
+    """The same fact as it would read inside an email from the client's side (buried form)."""
+    c = client
+    if f == "contact_name":
+        if old:
+            return rng.choice([f"{old} has moved to another team, so {v} will be your contact at {c} from now on.",
+                               f"Please address the renewal to {v} instead of {old}."])
+        return rng.choice([f"Please address everything on the renewal to {v}, who owns it for us.",
+                           f"{v} is your contact for the renewal on our side."])
+    if f == "cc_name":
+        if old:
+            return f"{old} no longer handles procurement here, please cc {v} on anything about pricing."
+        return rng.choice([f"Please keep {v} from procurement in copy on anything about pricing.",
+                           f"Our procurement lead is {v}, copy them on pricing emails."])
+    if f == "currency":
+        return rng.choice([f"Just a reminder that we pay in {v}, so please quote everything in {v}.",
+                           f"Our finance team can only process invoices in {v}."])
+    if f == "seats":
+        if old:
+            return f"We have revised our seat count for the renewal from {old} to {v}."
+        return rng.choice([f"We are planning to renew with {v} seats.", f"Our headcount plan comes to {v} seats."])
+    if f == "term_months":
+        return rng.choice([f"We would like a {v}-month term this time.", f"Legal prefers a {v}-month term."])
+    if f == "discount_pct":
+        if old:
+            return f"Our procurement team has updated its working assumption on the discount from {old}% to {v}%."
+        return rng.choice([f"Our procurement team is working on the basis of a {v}% discount.",
+                           f"Finance has penciled in a {v}% discount for the renewal."])
+    if f == "renewal_deadline":
+        if old:
+            return f"Our signing date has moved from {old} to {v}."
+        return rng.choice([f"We need the paperwork signed by {v}.", f"Our approval window closes on {v}."])
+    if f == "concession_ref":
+        return (f"For reference, the onboarding concession promised on the last call is logged on our side "
+                f"as {v}; please reference it on the quote.")
+    if f == "style_rule":
+        bad, good = v
+        return f"A note from our comms team: please never use the word \"{bad}\" with us, say \"{good}\" instead."
+    raise ValueError(f)
+
+
+def new_value_v2(rng, f, prev, used):
+    """A fresh value for field f, different from every earlier value (prev: list of them)."""
+    for _ in range(200):
+        if f in ("contact_name", "cc_name"):
+            v = name(rng, used)
+        elif f == "seats":
+            v = max(20, prev[-1] + rng.choice([-40, -25, -15, 20, 30, 50, 60, 80]))
+        elif f == "discount_pct":
+            v = max(3, min(30, prev[-1] + rng.choice([-5, -3, -2, 2, 3, 4, 6])))
+        elif f == "renewal_deadline":
+            v = f"2027-0{rng.randint(1, 9)}-{rng.randint(10, 28)}"
+        elif f == "term_months":
+            v = rng.choice(TERMS)
+        else:
+            raise ValueError(f)
+        if v not in prev:
+            return v
+    raise RuntimeError("could not draw a new value for " + f)
+
+
+@dataclass
+class Visit:
+    idx: int
+    client: str
+    kind: str            # "debrief" | "deliverable"
+    n: int               # messages
+    first: int = 0
+    last: int = 0
+    dtype: Optional[str] = None
+    did: Optional[str] = None
+    hdr: Optional[list] = None
+    facing: bool = False
+    ctrl_field: Optional[str] = None
+
+
+def build_skeleton(rng, names, n_deliv, n_debriefs, msg_range=(146, 150)):
+    n_open = len(names)
+    extra = n_debriefs - n_open
+    for _ in range(5000):
+        ins = sorted({int((j + 1) * n_deliv / (extra + 1) + rng.uniform(-1.2, 1.2)) for j in range(extra)})
+        if len(ins) != extra or ins[0] < 1 or ins[-1] >= n_deliv:
+            continue
+        kinds = ["debrief"] * n_open
+        for i in range(n_deliv):
+            kinds.append("deliverable")
+            if (i + 1) in ins:
+                kinds.append("debrief")
+        sizes = []
+        for i, k in enumerate(kinds):
+            if k == "debrief":
+                sizes.append(2 if i < n_open else rng.choice([2, 3, 3, 4]))
+            else:
+                sizes.append(rng.choice([2, 3, 3, 3, 4, 4]))
+        if not msg_range[0] <= sum(sizes) <= msg_range[1]:
+            continue
+        # clients
+        order = names[:]
+        rng.shuffle(order)
+        clients = order[:]
+        dcount = {c: 0 for c in names}
+        bcount = {c: 0 for c in names}
+        for i in range(n_open, len(kinds)):
+            prev, pk = clients[-1], kinds[i - 1]
+            k = kinds[i]
+            cnt = dcount if k == "deliverable" else bcount
+            stay = 0.35 if (pk == "debrief" and k == "deliverable") else 0.08
+            if rng.random() < stay:
+                c = prev
+            else:
+                cands = [c for c in names if c != prev]
+                low = min(cnt[c] for c in cands)
+                c = rng.choice([c for c in cands if cnt[c] == low])
+            cnt[c] += 1
+            clients.append(c)
+        types = list(V2_TYPES)
+        tlist = []
+        while len(tlist) < n_deliv:
+            blk = types[:]
+            rng.shuffle(blk)
+            tlist += blk
+        visits, turn, dn = [], 0, 0
+        for i, (k, n, c) in enumerate(zip(kinds, sizes, clients)):
+            v = Visit(i, c, k, n, turn + 1, turn + n)
+            turn += n
+            if k == "deliverable":
+                v.dtype = tlist[dn]
+                dn += 1
+                v.did = f"D{dn:02d}"
+                v.hdr, v.facing = V2_TYPES[v.dtype]
+            visits.append(v)
+        first_d = next(v for v in visits if v.kind == "deliverable")
+        if first_d.last > 12:
+            continue
+        return visits
+    raise RuntimeError("no skeleton")
+
+
+class Plan:
+    """Statement plan: stm[(client, field)] = sorted turns at which a value of that field is stated."""
+
+    def __init__(self, rng, names, visits):
+        self.rng, self.names, self.visits = rng, names, visits
+        self.n_turns = visits[-1].last
+        self.vis = {}
+        for v in visits:
+            for t in range(v.first, v.last + 1):
+                self.vis[t] = v
+        self.delivs = [v for v in visits if v.kind == "deliverable"]
+        self.by_client = defaultdict(list)
+        for d in self.delivs:
+            self.by_client[d.client].append(d)
+        self.stm = defaultdict(list)
+        self.cap = defaultdict(lambda: [0, 0])      # turn -> [home, embedded] statements
+
+    # ---- slots
+    def pos(self, t):
+        return t - self.vis[t].first + 1
+
+    def is_home(self, t, c):
+        return self.vis[t].client == c
+
+    def buried_capable(self, t, c):
+        v, p = self.vis[t], self.pos(t)
+        return p == 1 and (v.kind == "debrief" or v.client != c)
+
+    def slot_ok(self, t, c, f):
+        v, p = self.vis[t], self.pos(t)
+        if v.kind == "deliverable":
+            if p == v.n:
+                return False        # the final "write the file" message states nothing
+            if p == 1 and c == v.client:
+                return False        # a client's own fact never rides in its deliverable's request
+        home = v.client == c
+        h, e = self.cap[t]
+        cap_h, cap_e = (5, 2) if (v.kind == "debrief" and p == 1) else (1, 2)
+        if (home and h >= cap_h) or (not home and e >= cap_e):
+            return False
+        return all(abs(x - t) >= MIN_GAP for x in self.stm[(c, f)])
+
+    # ---- mutation
+    def add(self, c, f, t):
+        self.stm[(c, f)].append(t)
+        self.stm[(c, f)].sort()
+        self.cap[t][0 if self.is_home(t, c) else 1] += 1
+
+    def remove(self, c, f, t):
+        self.stm[(c, f)].remove(t)
+        self.cap[t][0 if self.is_home(t, c) else 1] -= 1
+
+    # ---- evaluation
+    def bins(self, d, exclude=None):
+        out = set()
+        for f in d.hdr:
+            if f == exclude:
+                continue
+            ts = self.stm.get((d.client, f))
+            if not ts:
+                continue
+            i = bisect_left(ts, d.last) - 1
+            if i >= 0:
+                b = age_bin_of(d.last - ts[i])
+                # a fresh fact must come from this visit (not its request) or the one just before
+                if b == "fresh" and (self.vis[ts[i]].idx not in (d.idx, d.idx - 1) or ts[i] == d.first):
+                    b = "other"
+                out.add(b)
+        return out
+
+    @staticmethod
+    def required(d):
+        r = {"fresh"}
+        if d.last >= MEDIUM_REQUIRED_FROM:
+            r.add("medium")
+        if d.last >= OLD_REQUIRED_FROM:
+            r.add("old")
+        return r
+
+    def missing(self, d, exclude=None):
+        return self.required(d) - self.bins(d, exclude)
+
+    def client_missing(self, c, upto=10 ** 9):
+        return sum(len(self.missing(d)) for d in self.by_client[c] if d.last <= upto)
+
+    def all_ok(self):
+        return all(not self.missing(d) for d in self.delivs)
+
+    def count(self):
+        return sum(len(v) for v in self.stm.values())
+
+    def supersessions(self):
+        return sum(max(0, len(v) - 1) for v in self.stm.values())
+
+    def thirds(self):
+        out = [0, 0, 0]
+        for (c, f), ts in self.stm.items():
+            for t in ts:
+                out[min(2, (t - 1) * 3 // self.n_turns)] += 1
+        return out
+
+    def embedded(self):
+        return sum(1 for (c, f), ts in self.stm.items() for t in ts if not self.is_home(t, c))
+
+    def can_insert(self, c, f, t, lo=None, hi=None):
+        """t must be the newest statement of (c, f) below `hi` (so it is the value a checkpoint sees)."""
+        ts = self.stm[(c, f)]
+        if f in STABLE and ts:
+            return False
+        if hi is not None and any(t < x < hi for x in ts):
+            return False
+        return self.slot_ok(t, c, f)
+
+    def weight(self, t, c, f):
+        w = 1.0
+        if not self.is_home(t, c):
+            w *= 0.12
+        if self.buried_capable(t, c):
+            w *= 1.5
+        if f in CHURN and any(x < t for x in self.stm[(c, f)]):
+            w *= 1.8        # prefer a supersession over a first statement
+        return w
+
+    def window(self, d, bin_):
+        T = d.last
+        if bin_ == "fresh":
+            ts = range(max(1, T - FRESH[1]), T - FRESH[0] + 1)
+            return [t for t in ts if self.vis[t].idx in (d.idx, d.idx - 1)]
+        if bin_ == "medium":
+            return list(range(max(1, T - MEDIUM[1]), T - MEDIUM[0] + 1))
+        return list(range(1, T - OLD_MIN + 1))
+
+    def fix(self, d, bin_):
+        """Add one statement that makes `bin_` available at deliverable d without breaking an earlier one."""
+        c = d.client
+        before = self.client_missing(c, d.last)
+        cands = []
+        for f in d.hdr:
+            for t in self.window(d, bin_):
+                if not self.can_insert(c, f, t, hi=d.last):
+                    continue
+                self.add(c, f, t)
+                after = self.client_missing(c, d.last)
+                ok = bin_ not in self.missing(d)
+                self.remove(c, f, t)
+                if ok and after < before:
+                    cands.append((after, self.weight(t, c, f), f, t))
+        if not cands:
+            return False
+        best = min(a for a, *_ in cands)
+        pool = [x for x in cands if x[0] == best]
+        _, _, f, t = self.rng.choices(pool, weights=[x[1] for x in pool])[0]
+        self.add(c, f, t)
+        return True
+
+
+def plan_statements(rng, names, visits, n_target):
+    plan = Plan(rng, names, visits)
+    opening = {}
+    for v in visits:
+        if v.kind == "debrief" and v.client not in opening:
+            opening[v.client] = v
+    # Seeds: opening debriefs state most stable fields and some others.
+    def seed_later(c, f, hi):
+        home = rng.random() < 0.9
+        for _ in range(60):
+            t = rng.randint(9, hi)
+            if t <= plan.n_turns and plan.is_home(t, c) == home and plan.slot_ok(t, c, f):
+                plan.add(c, f, t)
+                return
+
+    for c in names:
+        ov = opening[c]
+        for f in FIELDS:
+            p_open = 0.85 if f in ("currency", "term_months") else (0.5 if f in STABLE else 0.4)
+            if rng.random() < p_open:
+                for t in (ov.first, ov.first + 1):
+                    if plan.slot_ok(t, c, f):
+                        plan.add(c, f, t)
+                        break
+    # Local search: make every deliverable carry fresh, medium and old checks.
+    for d in plan.delivs:
+        for bin_ in ("old", "medium", "fresh"):
+            while bin_ in plan.missing(d):
+                if not plan.fix(d, bin_):
+                    return None
+    # Later first statements (a field can stay unknown for a while: UNK checks).
+    for c in names:
+        for f in FIELDS:
+            if not plan.stm[(c, f)] and rng.random() < 0.6:
+                seed_later(c, f, 50 if f in STABLE else 95)
+                if plan.client_missing(c) > 0:
+                    t = plan.stm[(c, f)].pop() if plan.stm[(c, f)] else None
+                    if t is not None:
+                        plan.cap[t][0 if plan.is_home(t, c) else 1] -= 1
+    # Extras: reach the target count, supersessions spread over the whole session.
+    desired = [0.30, 0.34, 0.36]
+    tries = 0
+    while plan.count() < n_target and tries < 6000:
+        tries += 1
+        th = plan.thirds()
+        deficits = [max(0.05, desired[i] * n_target - th[i]) for i in range(3)]
+        i = rng.choices(range(3), weights=deficits)[0]
+        lo, hi = i * plan.n_turns // 3 + 1, (i + 1) * plan.n_turns // 3
+        c = rng.choice(names)
+        f = rng.choice(CHURN)
+        home = rng.random() > 0.10
+        pool = [t for t in range(lo, hi + 1) if plan.is_home(t, c) == home]
+        if not pool:
+            continue
+        t = rng.choice(pool)
+        if not plan.can_insert(c, f, t):
+            continue
+        plan.add(c, f, t)
+        if plan.client_missing(c) > 0:
+            plan.remove(c, f, t)
+    return plan
+
+
+def valid_plan(plan, n_range=(80, 100)):
+    n = plan.count()
+    th = plan.thirds()
+    if not n_range[0] <= n <= n_range[1] or not plan.all_ok():
+        return False
+    if plan.supersessions() < 25 or th[0] / n > 0.40:
+        return False
+    emb = plan.embedded() / n
+    if not 0.24 <= emb <= 0.32:
+        return False
+    # supersessions spread over the session
+    sup_by_third = [0, 0, 0]
+    for (c, f), ts in plan.stm.items():
+        for t in ts[1:]:
+            sup_by_third[min(2, (t - 1) * 3 // plan.n_turns)] += 1
+    return min(sup_by_third) >= 6
+
+
+def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0, report_rows=420,
+                thread_prob=0.5, max_attempts=400):
+    names = CLIENTS[:n_clients]
+    for attempt in range(max_attempts):
+        rng = random.Random(seed * 1_000_003 + attempt)
+        visits = build_skeleton(rng, names, n_deliv, n_debriefs)
+        n_target = rng.randint(84, 92)
+        plan = plan_statements(rng, names, visits, n_target)
+        if plan is None or not valid_plan(plan):
+            continue
+        # Forms: which statements are buried in pasted material.
+        stmts = sorted((t, c, f) for (c, f), ts in plan.stm.items() for t in ts)
+        eligible = [s for s in stmts if plan.buried_capable(s[0], s[1])]
+        want = round(BURIED_SHARE * len(stmts))
+        if len(eligible) < want:
+            continue
+        buried = set(rng.sample(eligible, want))
+        out = _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob)
+        if out is None:
+            continue
+        return out + (attempt,)
+    raise RuntimeError("generate_v2: no valid plan in %d attempts" % max_attempts)
+
+
+def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob):
+    used = set()
+    style_pool = rng.sample(STYLE_RULES, len(names))
+    init = {}
+    for i, c in enumerate(names):
+        init[c] = {
+            "contact_name": name(rng, used), "cc_name": name(rng, used),
+            "currency": rng.choice(CURRENCIES), "seats": rng.randrange(40, 400, 5),
+            "term_months": rng.choice(TERMS), "discount_pct": rng.randrange(5, 26),
+            "renewal_deadline": f"2027-0{rng.randint(1, 6)}-{rng.randint(10, 28)}",
+            "concession_ref": f"CX-{rng.randint(1000, 9999)}", "style_rule": style_pool[i]}
+    clients = {c: Client(c, dict(init[c])) for c in names}
+
+    # Values, in time order per field.
+    stm_obj = {}      # (turn, client, field) -> dict(value, old, form, placement, visit)
+    for (c, f), ts in sorted(plan.stm.items()):
+        vals = []
+        for k, t in enumerate(ts):
+            v = init[c][f] if k == 0 else new_value_v2(rng, f, vals, used)
+            old = vals[-1] if vals else None
+            vals.append(v)
+            stm_obj[(t, c, f)] = {"value": v, "old": old,
+                                  "placement": "home" if plan.is_home(t, c) else "embedded",
+                                  "form": "buried" if (t, c, f) in buried else "sentence",
+                                  "visit": plan.vis[t].idx}
+    # Sentences.
+    by_turn = defaultdict(list)
+    for (t, c, f), o in sorted(stm_obj.items()):
+        v = plan.vis[t]
+        email_voice = o["form"] == "buried" and v.kind == "deliverable"
+        fn = email_sentence if email_voice else fact_sentence
+        o["sentence"] = fn(rng, c, f, o["value"], o["old"])
+        o["email_voice"] = email_voice
+        by_turn[t].append((c, f, o))
+    # Facts history.
+    for (t, c, f), o in sorted(stm_obj.items()):
+        clients[c].history.setdefault(f, []).append(
+            FactValueV2(o["value"], t, o["visit"], o["placement"], o["sentence"], o["form"]))
+
+    def cur_at(c, f, T):
+        h = [x for x in clients[c].history.get(f, []) if x.turn < T]
+        return h[-1] if h else None
+
+    # CTRL deliverables: restate one field in the request, never the one a bin relies on.
+    delivs = plan.delivs
+    n_ctrl = round(CTRL_SHARE * len(delivs))
+    order = delivs[:]
+    rng.shuffle(order)
+    ctrl = 0
+    for d in order:
+        if ctrl >= n_ctrl:
+            break
+        cands = []
+        for f in d.hdr:
+            if f == "concession_ref":
+                continue
+            cur = cur_at(d.client, f, d.last)
+            if cur is None or cur.turn >= d.first:
+                continue
+            if not plan.missing(d, exclude=f):
+                cands.append(f)
+        if cands:
+            d.ctrl_field = rng.choice(cands)
+            ctrl += 1
+
+    # Messages.
+    messages, checks, visits_meta = [], [], []
+    last_visit_of = {}
+    seq = [(v.client, v.kind) for v in visits]
+    for v in visits:
+        c = v.client
+        texts, planted = [], []
+        stated = {p: by_turn.get(v.first + p - 1, []) for p in range(1, v.n + 1)}
+        for p in range(1, v.n + 1):
+            for (cc, f, o) in stated[p]:
+                tag = o["placement"] + ("-supersede" if o["old"] is not None else "")
+                planted.append((cc, f, tag, o["form"]))
+
+        def lead_for(o):
+            return rng.choice(["Unrelated, but before I forget: ", "Side note: ",
+                               "Oh, and separately, ", "Quick aside, not about this: "])
+
+        if v.kind == "debrief":
+            heads, bullets, tail = [], [], []
+            for (cc, f, o) in stated[1]:
+                if o["form"] == "buried":
+                    bullets.append(o["sentence"] if cc == c else "Side note: " + o["sentence"])
+                elif cc == c:
+                    heads.append(o["sentence"])
+                else:
+                    tail.append(lead_for(o) + o["sentence"])
+            notes = call_notes(rng, c, bullets, notes_scale)
+            body = notes + "\n\nCan you pull out the action items with an owner for each?"
+            if heads:
+                body = rng.choice(["Headlines from the call first: ", "Main takeaways before the notes: "]) \
+                    + " ".join(heads) + "\n\n" + body
+            if report_rows:
+                body += "\n\n" + usage_report(rng, c, int(report_rows * notes_scale))
+            if tail:
+                body += "\n\n" + "\n\n".join(tail)
+            texts.append(body)
+            follow = ["Group them by who owns them.", "Which of these are blocking the renewal?",
+                      "Turn that into a short checklist I can paste into our CRM.",
+                      "Anything in there I should flag to my manager?"]
+            for k, m in enumerate(rng.sample(follow, v.n - 1)):
+                extra = []
+                for (cc, f, o) in stated[k + 2]:
+                    if cc == c:
+                        extra.append(rng.choice(["One more thing from the call: ", "Also from the call: "]) + o["sentence"])
+                    else:
+                        extra.append(lead_for(o) + o["sentence"])
+                texts.append(m + ("\n\n" + "\n\n".join(extra) if extra else ""))
+        else:
+            hdr, facing = v.hdr, v.facing
+            opener = rng.choice(REQUEST_OPENERS[v.dtype]).format(c=c, cp=poss(c))
+            if v.ctrl_field:
+                cv = cur_at(c, v.ctrl_field, v.last).value
+                opener += f" (Reminder: {v.ctrl_field.replace('_', ' ')} is {fmt_value(v.ctrl_field, cv)}.)"
+            if facing:
+                opener += f" Please {STYLE_TRIGGERS[clients[c].truth['style_rule'][0]]}."
+            if rng.random() < thread_prob:
+                opener += "\n\n" + email_thread(rng, c, int(rng.randint(6, 14) * notes_scale))
+            for (cc, f, o) in stated[1]:            # always another client's fact (embedded)
+                if o["form"] == "buried":
+                    who = f"{rng.choice(FIRST)} ({cc})"
+                    pre = " ".join(rng.sample(THREAD_LINES, rng.randint(1, 2)))
+                    post = " ".join(rng.sample(THREAD_LINES, rng.randint(1, 2)))
+                    opener += (f"\n\nAlso, forwarding a note {poss(cc)} side just sent me, nothing to do with "
+                               f"this one:\n> From: {who}\n> {pre} {o['sentence']} {post}")
+                else:
+                    opener += "\n\n" + lead_for(o) + o["sentence"]
+            texts.append(opener)
+            refs = rng.sample(REFINEMENTS[facing], v.n - 2)
+            for k, r in enumerate(refs):
+                extra = []
+                for (cc, f, o) in stated[k + 2]:
+                    if cc == c:
+                        extra.append(rng.choice(["Oh, and an update from the client side: ",
+                                                 "Also, they just told me: ",
+                                                 "One more thing before you finalize: "]) + o["sentence"])
+                    else:
+                        extra.append(lead_for(o) + o["sentence"])
+                texts.append(r + ("\n\n" + "\n\n".join(extra) if extra else ""))
+            keys = ["deliverable_id", "client", "type"] + hdr
+            texts.append(
+                f"Good. Write the final version to deliverables/{v.did}.md. The file must start with a "
+                f"```json block containing exactly these keys: {', '.join(keys)} "
+                f"(deliverable_id is \"{v.did}\", type is \"{v.dtype}\", discount_pct and seats and "
+                f"term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), "
+                f"then the body below it.")
+        assert len(texts) == v.n, (v.idx, len(texts), v.n)
+        for k, t in enumerate(texts):
+            messages.append({"turn": v.first + k, "visit": v.idx, "client": c, "visit_kind": v.kind, "text": t})
+        # verbatim invariant
+        for p in range(1, v.n + 1):
+            for (cc, f, o) in stated[p]:
+                if o["sentence"] not in texts[p - 1]:
+                    return None
+        if v.kind == "deliverable":
+            T = v.last
+            vidx = v.idx
+            for f in v.hdr:
+                cur = cur_at(c, f, T)
+                prev_vis = last_visit_of.get(c)
+                away = (vidx - prev_vis - 1) if prev_vis is not None else None
+                base = {"check_id": f"{v.did}.{f}", "deliverable_id": v.did, "client": c, "type": v.dtype,
+                        "field": f, "turn": T, "session_bin": session_bin_of(T),
+                        "visits_since_client_last_seen": away}
+                if cur is None:
+                    checks.append({**base, "kind": "unknown", "expected": None, "superseded_values": [],
+                                   "stated_turn": None, "age_turns": None, "placement": "none",
+                                   "other_visits_since_stated": None, "tags": ["UNK"],
+                                   "age_bin": None, "form": None})
+                    continue
+                hist = [h for h in clients[c].history[f] if h.turn < T]
+                other_visits = sum(1 for (cc, _) in seq[cur.visit + 1:vidx] if cc != c)
+                age = T - cur.turn
+                checks.append({**base, "kind": "field", "expected": cur.value,
+                               "superseded_values": [h.value for h in hist[:-1] if h.value != cur.value],
+                               "stated_turn": cur.turn, "age_turns": age, "placement": cur.placement,
+                               "other_visits_since_stated": other_visits,
+                               "tags": tags_for(f == v.ctrl_field, len(hist) > 1, age, away),
+                               "age_bin": age_bin_of(age), "form": cur.form})
+            if v.facing and cur_at(c, "style_rule", T) is not None:
+                cur = cur_at(c, "style_rule", T)
+                bad, good = cur.value
+                prev_vis = last_visit_of.get(c)
+                away = (vidx - prev_vis - 1) if prev_vis is not None else None
+                age = T - cur.turn
+                checks.append({
+                    "check_id": f"{v.did}.style", "deliverable_id": v.did, "client": c, "type": v.dtype,
+                    "kind": "style", "field": "style_rule", "expected": {"include": good, "exclude": bad},
+                    "superseded_values": [], "turn": T, "stated_turn": cur.turn, "age_turns": age,
+                    "placement": cur.placement,
+                    "other_visits_since_stated": sum(1 for (cc, _) in seq[cur.visit + 1:vidx] if cc != c),
+                    "visits_since_client_last_seen": away,
+                    "tags": tags_for(False, False, age, away),
+                    "session_bin": session_bin_of(T), "age_bin": age_bin_of(age), "form": cur.form})
+        visits_meta.append({"visit": v.idx, "client": c, "kind": v.kind, "first_turn": v.first,
+                            "last_turn": v.last, "deliverable": v.did, "planted": planted})
+        last_visit_of[c] = v.idx
+    return clients, messages, checks, visits_meta
+
+
+def readable_v2(messages, visits_meta):
+    out = ["# Scripted session (readable view, schedule v2)\n",
+           "Planted facts are listed under each visit: client field [placement, form]. "
+           "The agent sees only the message text.\n"]
+    by_visit = defaultdict(list)
+    for m in messages:
+        by_visit[m["visit"]].append(m)
+    for v in visits_meta:
+        out.append(f"\n## Visit {v['visit']}: {v['client']} ({v['kind']}"
+                   + (f", writes {v['deliverable']}" if v['deliverable'] else "") + ")\n")
+        if v["planted"]:
+            out.append("Planted: " + "; ".join(f"{c} {f} [{p}, {fm}]" for c, f, p, fm in v["planted"]) + "\n")
+        for m in by_visit[v["visit"]]:
+            out.append(f"\n**Turn {m['turn']}**\n\n{m['text']}\n")
+    return "\n".join(out)
+
+
+def write_session(out, messages, checks, clients, visits, readable_text, meta):
+    os.makedirs(out, exist_ok=True)
+    with open(os.path.join(out, "session.jsonl"), "w") as f:
+        for m in messages:
+            f.write(json.dumps(m) + "\n")
+    with open(os.path.join(out, "checks.jsonl"), "w") as f:
+        for c in checks:
+            f.write(json.dumps(c) + "\n")
+    with open(os.path.join(out, "facts.json"), "w") as f:
+        json.dump({c: {k: [vars(h) for h in v] for k, v in cl.history.items()}
+                   for c, cl in clients.items()}, f, indent=1)
+    with open(os.path.join(out, "visits.json"), "w") as f:
+        json.dump(visits, f, indent=1)
+    with open(os.path.join(out, "readable.md"), "w") as f:
+        f.write(readable_text)
+    with open(os.path.join(out, "meta.json"), "w") as f:
+        json.dump(meta, f, indent=1)
+
+
+def count_by(checks, key):
+    out = {}
+    for c in checks:
+        vals = c[key] if isinstance(c[key], list) else [c[key]]
+        for t in vals:
+            out[str(t)] = out.get(str(t), 0) + 1
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--schedule", choices=["v1", "v2"], default="v2",
+                    help="v1: original pilot design; v2: fixed-age check schedule (default)")
     ap.add_argument("--clients", type=int, default=4)
-    ap.add_argument("--visits", type=int, default=48)
+    ap.add_argument("--visits", type=int, default=48, help="v1 only: number of visits")
+    ap.add_argument("--deliverables", type=int, default=38, help="v2 only: number of deliverables")
+    ap.add_argument("--debriefs", type=int, default=11, help="v2 only: number of debrief visits")
     ap.add_argument("--notes-scale", type=float, default=1.0,
                     help="multiplies filler lines in call notes, to tune session size")
-    ap.add_argument("--report-rows", type=int, default=300,
-                    help="rows in each pasted usage export (main lever for session size)")
+    ap.add_argument("--report-rows", type=int, default=None,
+                    help="rows in each pasted usage export (main lever for session size); "
+                         "default 300 for v1, 420 for v2")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    clients, messages, checks, visits = generate(a.seed, a.clients, a.visits, a.notes_scale,
-                                                report_rows=a.report_rows)
-    os.makedirs(a.out, exist_ok=True)
-    with open(os.path.join(a.out, "session.jsonl"), "w") as f:
-        for m in messages:
-            f.write(json.dumps(m) + "\n")
-    with open(os.path.join(a.out, "checks.jsonl"), "w") as f:
-        for c in checks:
-            f.write(json.dumps(c) + "\n")
-    with open(os.path.join(a.out, "facts.json"), "w") as f:
-        json.dump({c: {k: [vars(h) for h in v] for k, v in cl.history.items()}
-                   for c, cl in clients.items()}, f, indent=1)
-    with open(os.path.join(a.out, "visits.json"), "w") as f:
-        json.dump(visits, f, indent=1)
-    with open(os.path.join(a.out, "readable.md"), "w") as f:
-        f.write(readable(messages, visits, clients))
+    if a.schedule == "v1":
+        rows = 300 if a.report_rows is None else a.report_rows
+        clients, messages, checks, visits = generate(a.seed, a.clients, a.visits, a.notes_scale,
+                                                    report_rows=rows)
+        readable_text = readable(messages, visits, clients)
+        extra = {}
+    else:
+        rows = 420 if a.report_rows is None else a.report_rows
+        clients, messages, checks, visits, attempt = generate_v2(
+            a.seed, a.clients, a.deliverables, a.debriefs, a.notes_scale, report_rows=rows)
+        readable_text = readable_v2(messages, visits)
+        facts = [h for cl in clients.values() for hs in cl.history.values() for h in hs]
+        n_turns = len(messages)
+        third = lambda t: min(2, (t - 1) * 3 // n_turns)
+        extra = {
+            "schedule": "v2", "plan_attempt": attempt,
+            "fact_statements": len(facts),
+            "supersessions": sum(max(0, len(hs) - 1) for cl in clients.values() for hs in cl.history.values()),
+            "embedded_statements": sum(h.placement == "embedded" for h in facts),
+            "buried_statements": sum(h.form == "buried" for h in facts),
+            "statements_by_third": [sum(third(h.turn) == i for h in facts) for i in range(3)],
+            "checks_by_age_bin": count_by(checks, "age_bin"),
+            "checks_by_session_bin": count_by(checks, "session_bin"),
+        }
     chars = sum(len(m["text"]) for m in messages)
-    tagc = {}
-    for c in checks:
-        for t in c["tags"]:
-            tagc[t] = tagc.get(t, 0) + 1
-    plc = {}
-    for c in checks:
-        plc[c["placement"]] = plc.get(c["placement"], 0) + 1
-    meta = {"seed": a.seed, "clients": a.clients, "visits": a.visits, "notes_scale": a.notes_scale,
+    plc = count_by(checks, "placement")
+    meta = {"seed": a.seed, "schedule": a.schedule, "clients": a.clients,
+            "visits": len(visits), "notes_scale": a.notes_scale, "report_rows": rows,
             "user_messages": len(messages), "deliverables": len({c["deliverable_id"] for c in checks}),
-            "checks": len(checks), "checks_by_tag": tagc, "checks_by_placement": plc,
+            "checks": len(checks), "checks_by_tag": count_by(checks, "tags"), "checks_by_placement": plc,
             "user_text_chars": chars, "user_text_tokens_est": chars // 4}
-    with open(os.path.join(a.out, "meta.json"), "w") as f:
-        json.dump(meta, f, indent=1)
+    if a.schedule == "v1":
+        meta["visits"] = a.visits
+    meta.update(extra)
+    write_session(a.out, messages, checks, clients, visits, readable_text, meta)
     print(json.dumps(meta, indent=1))
 
 

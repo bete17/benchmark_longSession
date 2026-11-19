@@ -95,7 +95,7 @@ const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
 const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",ag_half:"var(--c2)",ag_quarter:"var(--c3)",pi_full:"var(--c4)"};
 const colorOf=c=>COND_COLOR[c]||"var(--c5)";
 const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
-const state={onlyFail:false,onlyEv:false,openVisit:null,visitMode:"convo",tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
+const state={onlyFail:false,onlyEv:false,openVisit:null,visitMode:"convo",tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:"",age:""},checkSel:null};
 
 async function api(p,opt){if(window.SNAPSHOT)return snapApi(p);const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
   const t=r.headers.get("content-type")||"";return t.includes("json")?r.json():r.text()}
@@ -151,6 +151,34 @@ function derive(d){const turns=d.turns||[];const n=Math.max(turns.length,d.run?.
   let last=null;for(let i=0;i<n;i++){if(roll[i]==null)roll[i]=last;else last=roll[i]}
   return {n,tb,ctx:arr(t=>t.context_tokens),secA:arr(t=>Math.max(0,(t.seconds||0)-(t.gatherer_seconds||0))),secG:arr(t=>t.gatherer_seconds||0),
     cumA,cumG,cumT:cumA.map((v,i)=>v+cumG[i]),roll,gr}}
+/* ---------- fact-age bins (one place for the edges) ---------- */
+const AGE_EDGES={fresh:[2,10],medium:[15,45],old:[60,1e9]};  /* inclusive turn ranges; anything else is "other" */
+const AGE_NAMES=["fresh","medium","old"];
+const AGE_COLOR={fresh:"var(--c1)",medium:"var(--c2)",old:"var(--c3)",other:"var(--c4)"};
+const AGE_TEXT={fresh:"fact was said 2 to 10 turns before the check",medium:"15 to 45 turns before",old:"60 or more turns before",other:"some other age (not in the fixed mix)"};
+const SESSION_WINDOW=30;   /* turns per session window */
+const MIN_N=3;             /* points with fewer checks than this are drawn hollow */
+function ageBinOf(g){
+  if(g.age_bin!==undefined&&g.age_bin!==null)return g.age_bin;
+  if(g.kind==="unknown"||g.age_turns==null)return null;
+  for(const k of AGE_NAMES){const [a,b]=AGE_EDGES[k];if(g.age_turns>=a&&g.age_turns<=b)return k}
+  return "other"}
+const sessionBinOf=g=>g.session_bin!=null?g.session_bin:Math.floor((g.turn-1)/SESSION_WINDOW);
+const winLabel=i=>(i*SESSION_WINDOW+1)+"-"+((i+1)*SESSION_WINDOW);
+/* rows: grade rows (stated facts only). returns {n,pass} per [ageBin][window] */
+function ageGrid(rows){const m={};rows.forEach(g=>{const a=ageBinOf(g);if(!a)return;const w=sessionBinOf(g);((m[a]??={})[w]??={n:0,pass:0}).n++;if(g.outcome==="pass")m[a][w].pass++});return m}
+/* small line chart: x = session window, y = pass rate. lines: [{label,color,dash,pts:{window:{n,v}}}] */
+function windowChart(lines,nw,{w=300,h=170,title=""}={}){
+  const l=34,r=8,t=8,b=30,x=scale(0,Math.max(nw-1,1),l+8,w-r-8),y=scale(0,1,h-b,t);
+  let g=axisY(y,1,w-r,pct,l);
+  for(let i=0;i<nw;i++)g+=`<text x="${x(i)}" y="${h-b+12}" text-anchor="middle" style="font-size:9px">${winLabel(i)}</text>`;
+  g+=`<text x="${(l+w-r)/2}" y="${h-3}" text-anchor="middle" style="font-size:9px">session window (turns)</text>`;
+  lines.forEach(L=>{let d="",prev=false;
+    for(let i=0;i<nw;i++){const p=L.pts[i];if(!p||p.v==null||p.n<MIN_N){prev=false;continue}d+=(prev?"L":"M")+x(i).toFixed(1)+" "+y(p.v).toFixed(1);prev=true}
+    g+=`<path d="${d}" fill="none" stroke="${L.color}" stroke-width="1.8" ${L.dash?`stroke-dasharray="${L.dash}"`:""}/>`;
+    for(let i=0;i<nw;i++){const p=L.pts[i];if(!p||p.v==null)continue;const ok=p.n>=MIN_N;
+      g+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3.6" fill="${ok?L.color:"var(--panel)"}" stroke="${L.color}" stroke-width="1.5"><title>${esc(L.label)} | turns ${winLabel(i)} | ${pct(p.v)} correct | n=${p.n}${ok?"":" (too few, not joined)"}</title></circle>`}});
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block" role="img" aria-label="${esc(title)}">${g}</svg>`}
 const attrBy=d=>{const m={};(d.attribution||[]).forEach(a=>m[a.check_id]=a);return m};
 
 /* ---------- RUNS tab ---------- */
@@ -260,6 +288,7 @@ async function viewRun(){
    ${isAG?`<div class="kpi"><div class="v">${usd(d.cost?.gatherer_usd)}</div><div class="l">Gatherer</div></div>`:""}
    <div class="kpi"><div class="v">${usd(d.cost?.total_usd)}</div><div class="l">combined</div></div>
    <div class="kpi"><div class="v">${sec(totSec)}</div><div class="l">total latency</div></div>
+   ${AGE_NAMES.map(k=>{const rs=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done&&ageBinOf(g)===k);return `<div class="kpi" title="${esc(AGE_TEXT[k])}"><div class="v">${rs.length?pct(rs.filter(r=>r.outcome==="pass").length/rs.length):"n/a"}</div><div class="l"><span class="dot" style="background:${AGE_COLOR[k]}"></span>${k} facts (n=${rs.length})</div></div>`}).join("")}
    ${card.has_attribution?`<div class="kpi" title="failed because the fact was missing / failed although it was there"><div class="v">${miss.retrieval_miss||0} / ${miss.usage_miss||0}</div><div class="l">memory / usage failures</div></div>`:""}</div>`;
   // overview chart
   const ev=[];(d.turns||[]).forEach(t=>(t.events||[]).forEach(e=>ev.push({turn:t.turn,e})));
@@ -287,6 +316,11 @@ async function viewRun(){
    <div class="muted small">seconds per turn: actor (blue) plus gatherer (orange)</div>
    ${turnChart({id:"c4",h:110,n:D.n,series:[{vals:D.cumA,color:"var(--c0)"},...(isAG?[{vals:D.cumG,color:"var(--c2)"},{vals:D.cumT,color:"var(--ink)",w:1.2}]:[])],fmtY:usd,showSel:false})}
    <div class="muted small">cumulative cost: actor, gatherer, combined</div></details></div>`;
+  {const rows=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done);const grid=ageGrid(rows);const nw=Math.max(1,Math.ceil(D.n/SESSION_WINDOW));
+   const lines=AGE_NAMES.map(k=>({label:k,color:AGE_COLOR[k],pts:Object.fromEntries(Object.entries(grid[k]||{}).map(([i,c])=>[i,{n:c.n,v:c.pass/c.n}]))}));
+   h+=`<div class="panel"><h2>Accuracy by fact age over the session</h2><div class="row" style="align-items:flex-start;gap:20px"><div style="width:380px;max-width:100%">${windowChart(lines,nw,{w:380,h:190,title:"pass rate by fact age and session window"})}</div>
+    <div class="small" style="flex:1;min-width:240px"><div class="legend">${AGE_NAMES.map(k=>`<span><span class="dot" style="background:${AGE_COLOR[k]}"></span>${k} (${AGE_TEXT[k]})</span>`).join("<br>")}</div>
+    <p class="muted">Each dot is the share of correct checks of that age inside a 30-turn window of the session. Hollow dots have fewer than ${MIN_N} checks and are not joined. Hover a dot for n.</p></div></div></div>`}
   // visit list
   const grByTurn={};(d.grades||[]).forEach(g=>(grByTurn[g.turn]??=[]).push(g));
   const decBy={};(d.decisions||[]).forEach(x=>(decBy[x.turn]??=[]).push(x));
@@ -425,6 +459,8 @@ function viewGuide(){$("#main").innerHTML=`<div class="panel" style="max-width:9
 <tr><td><b>Latency</b></td><td>Wall time per user turn, actor plus gatherer time on top.</td></tr>
 <tr><td><b>Facts still in view</b></td><td>On each turn, of everything said so far about the clients (latest value of each fact), the share present in the model's input. Drops show exactly where compaction or AG lost facts, before looking at any grade. This is the direct test of whether degradation is even possible.</td></tr>
 <tr><td><b>Context per turn</b></td><td>Tokens in the largest actor call. Shows compaction drops and whether AG keeps context small.</td></tr></table>
+<h2>Fixed fact ages: two separate questions</h2>
+<p>Each deliverable now asks about a fixed mix of fact ages: <b>fresh</b> (said 2 to 10 turns earlier), <b>medium</b> (15 to 45 turns earlier) and <b>old</b> (60 or more turns earlier). That lets us pull apart two things that used to be tangled. <b>Curve 1, over the session:</b> look only at fresh facts and follow their pass rate from the start of the session to the end. Fresh facts are equally easy everywhere, so a falling line means the agent itself gets worse as the session gets long. <b>Curve 2, by age:</b> pick one stretch of the session and compare fresh, medium and old facts there. A gap means facts get lost as they get older, even when the agent is otherwise working fine. A fact marked "buried" was inside pasted notes or a thread instead of a standalone sentence.</p>
 <h2>How to read each tab</h2>
 <p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: the session at a glance (context size with compactions and AG decisions, every check as a dot, and the share of facts still in the model's view), then a list of the 48 client visits. Open a visit to read it as a conversation, or flip to what the model saw on each turn; context-manager decisions appear inline where they happened, and each check has a short story. <b>Checks</b>: every graded field in plain words, filterable; the story card says where the fact was said, what happened in between, and what the agent wrote, with both bits of conversation. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
 <h2>What would count as AG helping</h2>
@@ -439,22 +475,25 @@ async function viewChecks(){
   if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
   const id=state.cur,d=await getRun(id),sess=await getSession(id),A=attrBy(d);const F=state.checkFilter;
   const done=d.run?.turns_completed||Infinity;
-  const rows=(d.grades||[]).filter(g=>g.turn<=done&&(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||(F.outcome==="wrong (any)"?g.outcome!=="pass":g.outcome===F.outcome))&&(!F.placement||g.placement===F.placement)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
+  const rows=(d.grades||[]).filter(g=>g.turn<=done&&(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||(F.outcome==="wrong (any)"?g.outcome!=="pass":g.outcome===F.outcome))&&(!F.placement||g.placement===F.placement)&&(!F.age||ageBinOf(g)===F.age)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
   const opts=(arr,cur,lab=x=>x)=>`<option value="">all</option>`+arr.map(x=>`<option value="${x}" ${x===cur?"selected":""}>${lab(x)}</option>`).join("");
   let h=`<div class="panel small" style="line-height:1.55"><b>How checks work.</b> Each time the user asks for a deliverable (a quote, an email, an approval request), the agent writes a file that starts with a small JSON header. Every header field is compared by code to the true current fact, for example <i>discount_pct should be 12</i>. One field is one check. Tags say what makes a check hard; click a check to read its story: where the fact was said, what happened in between, and what the agent wrote.</div>
    <div class="row" style="margin-bottom:8px"><b>${esc(id)}</b>
    <label>tag <select data-f="tag">${opts(["A","C","D","CTRL","NEAR","UNK"],F.tag,t=>t+": "+TAG_TEXT[t])}</select></label>
    <label>result <select data-f="outcome">${opts(["pass","wrong (any)","stale","wrong","missing_key","missing_file","made_up"],F.outcome,o=>OUTCOME_TEXT[o]||o)}</select></label>
    <label>where said <select data-f="placement">${opts(["home","embedded","none"],F.placement,p=>({home:"in the client's own visit",embedded:"in passing, in another client's visit",none:"never said"})[p])}</select></label>
+   <label>age <select data-f="age">${opts(["fresh","medium","old","other"],F.age)}</select></label>
    <label>in view? <select data-f="verdict">${opts(["ok","lucky","retrieval_miss","usage_miss","made_up"],F.verdict,v=>({ok:"right, fact in view",lucky:"right, fact not in view",retrieval_miss:"wrong, fact not in view",usage_miss:"wrong, fact in view",made_up:"made up"})[v])}</select></label><span class="muted">${rows.length} checks</span></div>`;
-  h+=`<div class="grid"><div class="panel"><table><tr><th>deliverable</th><th>client · field</th><th>tags</th><th class="n">turns since said</th><th>result</th><th>fact in view?</th></tr>
-   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click ${state.checkSel===g.check_id?"sel":""}" data-chk="${esc(g.check_id)}"><td>${esc(g.deliverable_id)} <span class="muted small">t${g.turn}</span></td><td>${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</td><td>${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}</td><td class="n">${g.age_turns??"never"}</td>
+  h+=`<div class="grid"><div class="panel"><table><tr><th>deliverable</th><th>client · field</th><th>tags</th><th class="n">turns since said</th><th>age</th><th>result</th><th>fact in view?</th></tr>
+   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click ${state.checkSel===g.check_id?"sel":""}" data-chk="${esc(g.check_id)}"><td>${esc(g.deliverable_id)} <span class="muted small">t${g.turn}</span></td><td>${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</td><td>${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}</td><td class="n">${g.age_turns??"never"}</td><td>${ageChip(g)}</td>
    <td><span class="${g.outcome==="pass"?"okc":"failc"}">${g.outcome==="pass"?"✓":"✗"} ${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span></td><td>${a&&a.presence!=="n/a"?`<span class="dot" style="background:${VERDICT_COLOR[a.verdict]||"var(--muted)"}"></span>${a.presence==="absent"?"no":"yes"}`:'<span class="muted">-</span>'}</td></tr>`}).join("")}</table></div>
    <div class="sticky panel" id="chkdetail"><h2>Check story</h2><p class="muted">Select a check on the left.</p></div></div>`;
   $("#main").innerHTML=h;
   $("#main").onchange=e=>{const f=e.target.dataset.f;if(f){state.checkFilter[f]=e.target.value;viewChecks()}};
   $("#main").onclick=e=>{const r=e.target.closest("tr[data-chk]");if(r){state.checkSel=r.dataset.chk;viewChecks()}};
   if(state.checkSel)checkDetail(d,sess,A,state.checkSel)}
+const BURIED_TIP="the fact was inside pasted notes or a thread, not a standalone sentence";
+function ageChip(g){const a=ageBinOf(g);return (a?`<span class="chip" style="border-color:${AGE_COLOR[a]}" title="${esc(AGE_TEXT[a])}">${a}</span>`:'<span class="muted">-</span>')+(g.form==="buried"?`<span class="chip" title="${esc(BURIED_TIP)}">buried</span>`:"")}
 async function checkDetail(d,sess,A,cid){
   const el=$("#chkdetail");const g=(d.grades||[]).find(x=>x.check_id===cid);if(!g)return;
   const chk=sess?.checks?.find(c=>c.check_id===cid);const f=factFor(sess,chk);const a=A[cid];
@@ -469,7 +508,7 @@ async function checkDetail(d,sess,A,cid){
   el.querySelectorAll("[data-turn]").forEach(x=>x.onclick=e=>{e.preventDefault();const v=visitOf(sess,+x.dataset.turn);state.openVisit=v?.visit;state.tab="run";render()})}
 
 /* ---------- COMPARE tab ---------- */
-const AGE_BINS=[["<20",0,19],["20-39",20,39],["40-79",40,79],["80+",80,1e9]];
+const AGE_BINS_OLD=[["<20",0,19],["20-39",20,39],["40-79",40,79],["80+",80,1e9]];
 const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 async function viewCompare(){
   const ids=[...state.sel].filter(i=>state.runs.some(r=>r.id===i));
@@ -487,9 +526,16 @@ async function viewCompare(){
     return `<div class="panel"><h2>${title}</h2><svg viewBox="0 0 ${w} ${h}" width="100%">${s}</svg></div>`};
   let h=`<div class="row" style="margin-bottom:8px"><b>Compare ${ids.length} runs</b><label><input type="checkbox" id="avg" ${state.avgReps?"checked":""}> average replicate runs of the same condition</label></div>
    <div class="legend panel">${groups.map(g=>`<span><span class="dot" style="background:${gcol(g)}"></span>${esc(label(g))}</span>`).join("")}</div>`;
+  {const nw=Math.max(1,...info.map(x=>Math.ceil(x.D.n/SESSION_WINDOW)));
+   const mk=k=>groups.map((g,gi)=>{const pts={};for(let i=0;i<nw;i++){const cs=g.map(x=>ageGrid((x.d.grades||[]).filter(r=>r.kind!=="unknown"))[k]?.[i]).filter(Boolean);
+       if(cs.length)pts[i]={n:cs.reduce((a,c)=>a+c.n,0),v:mean(cs.map(c=>c.pass/c.n))}}
+     return {label:label(g),color:gcol(g),dash:state.avgReps?null:(gi%3)==1?"5 3":(gi%3)==2?"2 2":null,pts}});
+   h+=`<div class="panel"><h2>Accuracy over the session at fixed fact age</h2><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">${AGE_NAMES.map(k=>`<div><div class="small"><b>${k}</b> <span class="muted">(${esc(AGE_TEXT[k])})</span></div>${windowChart(mk(k),nw,{title:k+" facts"})}</div>`).join("")}</div>
+    <p class="small" style="margin:8px 0 2px"><b>How to read it.</b> If the fresh line falls from left to right, the agent gets worse as the session grows longer. If, in the same window, the old line sits below the fresh line, facts are being lost as they age.</p>
+    <p class="muted small" style="margin:2px 0">Each dot is the pass rate on checks of that fact age inside a 30-turn window; hover for n. Hollow dots have fewer than ${MIN_N} checks and are not joined by the line.${state.avgReps?" Replicates of a condition are averaged (n is the total across them).":""} Older runs without stored age bins are binned here from the turn and age of each check.</p></div>`}
   h+=barGroup("Pass rate by check type",[{label:"overall",f:()=>true},{label:"A: old fact",f:r=>r.tags.includes("A")},{label:"C: return to client",f:r=>r.tags.includes("C")},{label:"D: superseded",f:r=>r.tags.includes("D")},{label:"CTRL",f:r=>r.tags.includes("CTRL")},{label:"NEAR",f:r=>r.tags.includes("NEAR")}],(g,c)=>stat(g,c.f));
   h+=barGroup("Pass rate by where the fact was said",[{label:"home (client's own visit)",f:r=>r.placement==="home"},{label:"embedded (in passing)",f:r=>r.placement==="embedded"}],(g,c)=>stat(g,c.f));
-  h+=barGroup("Pass rate by fact age (turns between the fact and the check): does accuracy degrade?",AGE_BINS.map(([l,a,b])=>({label:l+" turns",f:r=>r.age_turns!=null&&r.age_turns>=a&&r.age_turns<=b})),(g,c)=>stat(g,c.f));
+  h+=barGroup("Pass rate by fact age (turns between the fact and the check): does accuracy degrade?",AGE_BINS_OLD.map(([l,a,b])=>({label:l+" turns",f:r=>r.age_turns!=null&&r.age_turns>=a&&r.age_turns<=b})),(g,c)=>stat(g,c.f));
   // spend vs accuracy
   const xv=g=>mean(g.map(x=>state.xcost==="total"?x.d.cost?.total_usd:state.xcost==="actor"?x.d.cost?.actor_usd:x.d.cost?.gatherer_usd).filter(v=>v!=null));
   const pts=groups.map(g=>({g,x:xv(g),y:stat(g,()=>true)})).filter(p=>p.x!=null&&p.y!=null);
