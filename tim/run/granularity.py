@@ -85,7 +85,7 @@ class CappedLLM(LiteLLMClient):
     def complete(self, prompt, **kw):
         """AG's call, retried on an API error (503, timeout) so a provider hiccup is not measured as a
         verdict: in AG a failed boundary call reads as "same task". Gives up after 6 tries."""
-        for attempt, wait in enumerate((0, 15, 30, 60, 120, 240)):
+        for attempt, wait in enumerate((0, 15, 30, 60, 120, 240, 300, 600, 600, 900)):
             s = self.spent()
             if s >= self.max_usd:
                 raise SystemExit(f"spend cap ${self.max_usd} reached (${s:.2f}); stopping")
@@ -169,7 +169,10 @@ def main():
         open_turns = [t for t in turns_so_far if t.index >= start]
         if len(open_turns) <= 1:
             return False, "first turn of the open task", len(open_turns)
+        nfail = len(CappedLLM.failures)
         v, why = boundary.is_new_task(open_turns, located[:-1], turns_so_far, llm, bparams)
+        if len(CappedLLM.failures) > nfail:
+            return None, "API error after all retries (not a verdict)", len(open_turns)
         if v is None:
             v, why = False, f"{why}; treated as a continuation"
         return v, why, len(open_turns)
@@ -203,12 +206,15 @@ def main():
                         since, open_from = t, None
                     else:
                         stored = tasks
+                        cuts = sorted(x.start_turn for x in locate([dataclasses.replace(x) for x in tasks], so_far)
+                                      if x.start_turn > 1)
                         if len(tasks) < 2:
-                            row["build"] = {"status": "nothing", "tasks": len(tasks)}
+                            row["build"] = {"status": "nothing", "tasks": len(tasks), "cuts": cuts}
                             since, open_from = t, None
                         else:
                             open_from = tasks[-1].start_turn
-                            row["build"] = {"status": "ready", "tasks": len(tasks), "open_from": open_from}
+                            row["build"] = {"status": "ready", "tasks": len(tasks), "open_from": open_from,
+                                            "cuts": cuts}
             rows_out.append(row)
 
             if t in switch_at:
@@ -220,7 +226,8 @@ def main():
                 if not row["checked"]:
                     wv, wwhy, _ = call_check(so_far, stored)     # off the record: state unchanged
                     sw.update(would_say=wv, would_why=wwhy)
-                sw["outcome"] = ("detected" if row["new_task"] else
+                sw["outcome"] = ("api_error" if row["checked"] and row["new_task"] is None else
+                                 "detected" if row["new_task"] else
                                  "checked_missed" if row["checked"] else "never_checked")
                 switches.append(sw)
             print(f"turn {t:3d} into={into:2d} gate={row['gate'] or '-':11s} "
@@ -240,6 +247,14 @@ def main():
     # ---- report
     last_turn = rows_out[-1]["turn"] if rows_out else 0
     sws = [s for s in switches if s["turn"] <= last_turn]
+    # for each switch the boundary check did not catch: the next build after it, and whether that build's
+    # segmentation cut at the switch (exactly, or within one turn)
+    builds = [(r["turn"], r["build"].get("cuts") or []) for r in rows_out if r.get("build") and "cuts" in r["build"]]
+    for s in sws:
+        nb = next(((bt, cuts) for bt, cuts in builds if bt > s["turn"]), None)
+        s["next_build_turn"] = nb[0] if nb else None
+        s["next_build_cut"] = (s["turn"] in nb[1]) if nb else None
+        s["next_build_cut_pm1"] = any(abs(c - s["turn"]) <= 1 for c in nb[1]) if nb else None
 
     def rate(xs, key="outcome", val="detected"):
         return round(sum(x[key] == val for x in xs) / len(xs), 3) if xs else None
@@ -272,7 +287,10 @@ def main():
         "switches": len(sws),
         "detected": sum(s["outcome"] == "detected" for s in sws),
         "checked_missed": sum(s["outcome"] == "checked_missed" for s in sws),
+        "api_error": sum(s["outcome"] == "api_error" for s in sws),
         "never_checked": sum(s["outcome"] == "never_checked" for s in sws),
+        "missed_but_cut_at_next_build": sum(1 for s in sws if s["outcome"] != "detected" and s.get("next_build_cut")),
+        "missed_no_later_build": sum(1 for s in sws if s["outcome"] != "detected" and s.get("next_build_turn") is None),
         "never_checked_by_gate": {g: sum(1 for s in sws if s["gate"] == g) for g in ("cooldown", "min_context")},
         "never_checked_would_say_new": sum(1 for s in sws if s["outcome"] == "never_checked" and s["would_say"]),
         "detection_rate": rate(sws),
