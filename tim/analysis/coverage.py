@@ -93,11 +93,12 @@ def report(run, rows):
     if not rows:
         print("  no raw/requests here (local only)")
         return
-    print(f"  coverage at end: {rows[-1]['coverage']:.0%} of {rows[-1]['n']} facts; "
-          f"mean {sum(r['coverage'] for r in rows if r['coverage'] is not None)/len(rows):.0%}")
+    vals = [r["coverage"] for r in rows if r["coverage"] is not None]
+    if vals:
+        print(f"  coverage at end: {vals[-1]:.0%} of {rows[-1]['n']} facts; mean {sum(vals)/len(vals):.0%}")
     for t in events:
         b, a = by.get(t - 1), by.get(t)
-        if b and a:
+        if b and a and b['coverage'] is not None and a['coverage'] is not None:
             print(f"  turn {t}: {b['coverage']:.0%} before, {a['coverage']:.0%} after; newly lost: "
                   + ", ".join(sorted(set(a['lost']) - set(b['lost']))[:8]))
 
