@@ -50,7 +50,7 @@ from ag.ag_policies.tools.tasks import locate  # noqa: E402
 from ag.ag_tools.llm.litellm_client import LiteLLMClient  # noqa: E402
 from ag.ag_tools.tokenizers.tiktoken_tokenizer import Tiktoken  # noqa: E402
 
-GATHERER = f"gemini/{MODEL}"
+GATHERER = f"gemini/{MODEL}"   # default; --model overrides (e.g. during an API outage)
 # What the actor's context holds besides the open task under ag pi, measured in the smoke run
 # (ag_default_seed0_rep1, turn 1: 10,543 Gemini tokens with a 1-turn history). Only used for the
 # min_context_tokens gate; with min_context_tokens = 7500 that gate always passes.
@@ -132,9 +132,14 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-usd", type=float, default=4.5)
     ap.add_argument("--max-turns", type=int, default=None)
+    ap.add_argument("--model", default=None, help="gatherer model, e.g. gemini/gemini-3-flash-preview")
     a = ap.parse_args()
+    global GATHERER
+    if a.model:
+        GATHERER = a.model
 
     prices = json.load(open(os.path.join(HERE, "prices.json")))
+    # spend cap priced at gemini-3.8-flash rates (an upper bound for older Flash models)
     price = prices["models"][MODEL]
     cfg = dataclasses.replace(ProactiveContextManagerConfig(), **AG_SCALED_100K,
                               boundary_model=GATHERER, segment_model=GATHERER)
