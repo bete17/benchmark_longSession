@@ -5,46 +5,46 @@
  "visits": 49,
  "notes_scale": 1.0,
  "report_rows": 420,
- "user_messages": 149,
+ "user_messages": 150,
  "deliverables": 38,
- "checks": 254,
+ "checks": 242,
  "checks_by_tag": {
-  "C": 134,
+  "UNK": 42,
+  "C": 115,
   "CTRL": 10,
-  "UNK": 28,
-  "NEAR": 20,
-  "D": 89,
-  "A": 84
+  "D": 75,
+  "NEAR": 18,
+  "A": 73
  },
  "checks_by_placement": {
-  "home": 173,
-  "embedded": 53,
-  "none": 28
+  "none": 42,
+  "embedded": 66,
+  "home": 134
  },
- "user_text_chars": 240449,
- "user_text_tokens_est": 60112,
- "plan_attempt": 24,
- "fact_statements": 91,
- "supersessions": 57,
- "embedded_statements": 27,
- "buried_statements": 28,
+ "user_text_chars": 247587,
+ "user_text_tokens_est": 61896,
+ "plan_attempt": 12,
+ "fact_statements": 84,
+ "supersessions": 49,
+ "embedded_statements": 25,
+ "buried_statements": 24,
  "statements_by_third": [
-  36,
-  28,
+  31,
+  26,
   27
  ],
  "checks_by_age_bin": {
-  "fresh": 59,
-  "None": 28,
-  "other": 33,
-  "medium": 68,
-  "old": 66
+  "None": 42,
+  "fresh": 52,
+  "medium": 63,
+  "other": 37,
+  "old": 48
  },
  "checks_by_session_bin": {
-  "0": 33,
-  "1": 55,
-  "2": 61,
-  "3": 54,
-  "4": 51
+  "0": 31,
+  "1": 56,
+  "2": 52,
+  "3": 50,
+  "4": 53
  }
 }

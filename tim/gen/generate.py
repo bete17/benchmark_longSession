@@ -27,6 +27,7 @@ Design notes (see ../DESIGN.md):
 
 import argparse
 import json
+import math
 import os
 import random
 from dataclasses import dataclass, field
@@ -585,7 +586,7 @@ MEDIUM_REQUIRED_FROM = 20   # deliverables at turn >= this must carry a medium c
 OLD_REQUIRED_FROM = 66      # deliverables at turn >= this must carry an old check
 MIN_GAP = 6                 # turns between two statements of the same field
 CTRL_SHARE = 0.25
-BURIED_SHARE = 0.31
+BURIED_SHARE = 0.285
 
 
 def age_bin_of(age):
@@ -602,6 +603,51 @@ def age_bin_of(age):
 
 def session_bin_of(turn):
     return (turn - 1) // 30
+
+
+# Balance criteria (schedule v2, Nov 19): inside each age bin (fresh, medium, old; CTRL and UNK left out) the
+# mix of field group, placement and form must not depend on the age bin.
+BAL_BINS = ("fresh", "medium", "old")
+MAX_GROUP_SPREAD = 0.15     # share of checks on SUPERSEDABLE fields, max minus min over the three bins
+MAX_PLACE_SPREAD = 0.10     # share of checks whose fact was said in another client's visit
+MAX_FORM_SPREAD = 0.10      # share of checks whose fact was buried in pasted material
+GEN_MARGIN = 0.85           # the generator aims inside this fraction of each limit
+MIN_SUPERSESSIONS = 30
+
+
+def balance_stats(checks):
+    """Per age bin: n, share supersedable, share embedded, share buried; and the field x age_bin counts.
+    checks: check dicts (kind field or style, CTRL left out)."""
+    main = [c for c in checks if c["kind"] in ("field", "style") and "CTRL" not in c["tags"]]
+    out = {"bins": {}, "fields": {f: {b: 0 for b in BAL_BINS} for f in FIELDS}}
+    for b in BAL_BINS:
+        x = [c for c in main if c["age_bin"] == b]
+        n = len(x)
+        out["bins"][b] = {
+            "n": n,
+            "sup": sum(c["field"] in SUPERSEDABLE for c in x) / n if n else 0.0,
+            "emb": sum(c["placement"] == "embedded" for c in x) / n if n else 0.0,
+            "bur": sum(c["form"] == "buried" for c in x) / n if n else 0.0}
+        for c in x:
+            out["fields"][c["field"]][b] += 1
+    return out
+
+
+def balance_problems(checks, scale=1.0):
+    """Violations of the three balance criteria (scale < 1 tightens the limits)."""
+    st = balance_stats(checks)
+    probs = []
+    for key, lim, label in (("sup", MAX_GROUP_SPREAD, "supersedable share"),
+                            ("emb", MAX_PLACE_SPREAD, "embedded share"),
+                            ("bur", MAX_FORM_SPREAD, "buried share")):
+        vals = [st["bins"][b][key] for b in BAL_BINS]
+        if max(vals) - min(vals) > lim * scale:
+            probs.append(f"{label} spread {max(vals) - min(vals):.1%} over bins (limit {lim * scale:.1%}): "
+                         + ", ".join(f"{b} {v:.1%}" for b, v in zip(BAL_BINS, vals)))
+    for f, row in st["fields"].items():
+        if sum(1 for b in BAL_BINS if row[b] > 0) < 2:
+            probs.append(f"field {f} appears in fewer than two age bins: {row}")
+    return probs
 
 
 @dataclass
@@ -744,7 +790,7 @@ def build_skeleton(rng, names, n_deliv, n_debriefs, msg_range=(146, 150)):
                 v.hdr, v.facing = V2_TYPES[v.dtype]
             visits.append(v)
         first_d = next(v for v in visits if v.kind == "deliverable")
-        if first_d.last > 12:
+        if first_d.last > 11:
             continue
         return visits
     raise RuntimeError("no skeleton")
@@ -969,15 +1015,128 @@ def plan_statements(rng, names, visits, n_target):
     return plan
 
 
+def plan_rows(plan):
+    """What the checks of a plan will be: rows (bin, field, embedded, buried_capable, statement key), the number of
+    UNK checks, and the (deliverable, bin) requirements still missing."""
+    if not hasattr(plan, "_dl"):
+        plan._dl = [(d, [(f, f in d.hdr) for f in list(d.hdr) + (["style_rule"] if d.facing else [])],
+                     plan.required(d)) for d in plan.delivs]
+        plan._bc = {}
+        plan._home = {}
+    rows, unk, miss = [], 0, 0
+    stm, vis, bc, home = plan.stm, plan.vis, plan._bc, plan._home
+    for d, fl, req in plan._dl:
+        c, T = d.client, d.last
+        have = set()
+        for f, in_hdr in fl:
+            ts = stm.get((c, f))
+            i = bisect_left(ts, T) - 1 if ts else -1
+            if i < 0:
+                unk += in_hdr
+                continue
+            t = ts[i]
+            age = T - t
+            b = "fresh" if 2 <= age <= 10 else "medium" if 15 <= age <= 45 else "old" if age >= 60 else "other"
+            k = (t, c)
+            if k not in bc:
+                bc[k] = plan.buried_capable(t, c)
+                home[k] = vis[t].client == c
+            rows.append((b, f, not home[k], bc[k], (c, f, t)))
+            if in_hdr:
+                if b == "fresh" and (vis[t].idx not in (d.idx, d.idx - 1) or t == d.first):
+                    b = "other"
+                have.add(b)
+        miss += len(req - have)
+    return rows, unk, miss
+
+
+def plan_cost(plan):
+    """0 when every hard requirement and every balance criterion holds with margin; larger when not."""
+    rows, unk, miss = plan_rows(plan)
+    n = plan.count()
+    th = plan.thirds()
+    cost = 40.0 * miss
+    cost += 8 * max(0, 83 - n) + 8 * max(0, n - 97)
+    cost += 8 * max(0, MIN_SUPERSESSIONS + 2 - plan.supersessions())
+    cost += 200 * max(0.0, th[0] / n - 0.37)
+    sup_th = [0, 0, 0]
+    for ts in plan.stm.values():
+        for t in ts[1:]:
+            sup_th[min(2, (t - 1) * 3 // plan.n_turns)] += 1
+    cost += 6 * max(0, 7 - min(sup_th))
+    cost += 400 * max(0.0, abs(plan.embedded() / n - 0.278) - 0.023) + 100 * max(0.0, plan.embedded() / n - 0.27)
+    cost += 3 * max(0, 12 - unk) + 3 * max(0, unk - 45)
+    by = {b: [r for r in rows if r[0] == b] for b in BAL_BINS}
+    shares = {k: [] for k in ("sup", "emb", "el")}
+    for b in BAL_BINS:
+        x = by[b]
+        m = len(x)
+        cost += 2 * max(0, 48 - m)
+        m = max(m, 1)
+        shares["sup"].append(sum(r[1] in SUPERSEDABLE for r in x) / m)
+        shares["emb"].append(sum(r[2] for r in x) / m)
+        shares["el"].append(sum(r[3] for r in x) / m)
+    cost += 300 * max(0.0, max(shares["sup"]) - min(shares["sup"]) - 0.07)
+    cost += 300 * max(0.0, max(shares["emb"]) - min(shares["emb"]) - 0.05)
+    cost += 100 * sum(max(0.0, abs(e - 0.29) - 0.05) for e in shares["emb"])
+    cost += 100 * sum(max(0.0, 0.5 - e) for e in shares["el"])
+    for f in FIELDS:
+        cnt = [sum(1 for r in by[b] if r[1] == f) for b in BAL_BINS]
+        cost += 12 * max(0, 2 - sum(1 for x in cnt if x >= 2))
+    return cost
+
+
+def anneal_plan(plan, rng, iters=30000, rounds=2):
+    """Move, add and remove statements (keeping every slot rule) to drive plan_cost to 0."""
+    cur = plan_cost(plan)
+    n_t = plan.n_turns
+    for it in range(iters * rounds):
+        if cur < 6.0 and valid_plan(plan) and plan_balanced(plan):
+            break
+        temp = 3.0 * (0.03 / 3.0) ** ((it % iters) / iters)
+        r = rng.random()
+        allst = [(c, f, t) for (c, f), ts in plan.stm.items() for t in ts]
+        if r < 0.55 and allst:
+            c, f, t = rng.choice(allst)
+            t2 = min(n_t, max(1, t + rng.randint(-25, 25))) if rng.random() < 0.5 else rng.randint(1, n_t)
+            if t2 == t:
+                continue
+            plan.remove(c, f, t)
+            if not plan.slot_ok(t2, c, f):
+                plan.add(c, f, t)
+                continue
+            plan.add(c, f, t2)
+            undo = lambda: (plan.remove(c, f, t2), plan.add(c, f, t))
+        elif r < 0.8:
+            c, f = rng.choice(plan.names), rng.choice(FIELDS)
+            t2 = rng.randint(1, n_t)
+            if (f in STABLE and plan.stm.get((c, f))) or not plan.slot_ok(t2, c, f):
+                continue
+            plan.add(c, f, t2)
+            undo = lambda: plan.remove(c, f, t2)
+        elif allst:
+            c, f, t = rng.choice(allst)
+            plan.remove(c, f, t)
+            undo = lambda: plan.add(c, f, t)
+        else:
+            continue
+        new = plan_cost(plan)
+        if new <= cur or rng.random() < math.exp((cur - new) / temp):
+            cur = new
+        else:
+            undo()
+    return cur
+
+
 def valid_plan(plan, n_range=(80, 100)):
     n = plan.count()
     th = plan.thirds()
     if not n_range[0] <= n <= n_range[1] or not plan.all_ok():
         return False
-    if plan.supersessions() < 25 or th[0] / n > 0.40:
+    if plan.supersessions() < MIN_SUPERSESSIONS or th[0] / n > 0.40:
         return False
     emb = plan.embedded() / n
-    if not 0.24 <= emb <= 0.32:
+    if not 0.255 <= emb <= 0.30:
         return False
     # supersessions spread over the session
     sup_by_third = [0, 0, 0]
@@ -985,6 +1144,62 @@ def valid_plan(plan, n_range=(80, 100)):
         for t in ts[1:]:
             sup_by_third[min(2, (t - 1) * 3 // plan.n_turns)] += 1
     return min(sup_by_third) >= 6
+
+
+def plan_balanced(plan):
+    """The balance criteria on the planned checks (CTRL not yet chosen), with the generator's margin."""
+    rows, unk, miss = plan_rows(plan)
+    if miss or not 8 <= unk <= 50:
+        return False
+    by = {b: [r for r in rows if r[0] == b] for b in BAL_BINS}
+    if min(len(x) for x in by.values()) < 42:
+        return False
+    for i, lim in ((1, MAX_GROUP_SPREAD), (2, MAX_PLACE_SPREAD)):
+        sh = [sum((r[1] in SUPERSEDABLE) if i == 1 else r[2] for r in by[b]) / len(by[b]) for b in BAL_BINS]
+        if max(sh) - min(sh) > lim * GEN_MARGIN:
+            return False
+    for b in BAL_BINS:       # level, not only spread: at most 38% embedded in every bin
+        if not 0.20 <= sum(r[2] for r in by[b]) / len(by[b]) <= 0.35:
+            return False
+    for f in FIELDS:
+        if sum(1 for b in BAL_BINS if sum(1 for r in by[b] if r[1] == f) >= 2) < 2:
+            return False
+    return True
+
+
+def choose_buried(plan, rng, stmts, eligible, want, iters=6000):
+    """Pick `want` buried statements among `eligible` so the buried share of checks is the same in every age bin."""
+    rows, _, _ = plan_rows(plan)
+    use = defaultdict(lambda: [0, 0, 0])        # statement key -> checks per balanced bin
+    tot = [0, 0, 0]
+    for b, f, e, el, key in rows:
+        if b in BAL_BINS:
+            use[key][BAL_BINS.index(b)] += 1
+            tot[BAL_BINS.index(b)] += 1
+    elig = [(c, f, t) for (t, c, f) in eligible]
+    inn = set(rng.sample(elig, want))
+    cnt = [sum(use[k][i] for k in inn) for i in range(3)]
+
+    def cost(cn):
+        sh = [cn[i] / max(1, tot[i]) for i in range(3)]
+        return 10 * (max(sh) - min(sh)) + sum(abs(x - 0.30) for x in sh)
+
+    cur = cost(cnt)
+    out = [k for k in elig if k not in inn]
+    for _ in range(iters):
+        if cur < 0.02:
+            break
+        a = rng.choice(sorted(inn))
+        b = rng.choice(out)
+        new = [cnt[i] - use[a][i] + use[b][i] for i in range(3)]
+        nc = cost(new)
+        if nc <= cur:
+            inn.remove(a)
+            inn.add(b)
+            out.remove(b)
+            out.append(a)
+            cnt, cur = new, nc
+    return {(t, c, f) for (c, f, t) in inn}
 
 
 def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0, report_rows=420,
@@ -995,17 +1210,22 @@ def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0,
         visits = build_skeleton(rng, names, n_deliv, n_debriefs)
         n_target = rng.randint(84, 92)
         plan = plan_statements(rng, names, visits, n_target)
-        if plan is None or not valid_plan(plan):
+        if plan is None:
             continue
-        # Forms: which statements are buried in pasted material.
+        anneal_plan(plan, rng)
+        if not valid_plan(plan) or not plan_balanced(plan):
+            continue
+        # Forms: which statements are buried in pasted material, balanced over the age bins.
         stmts = sorted((t, c, f) for (c, f), ts in plan.stm.items() for t in ts)
         eligible = [s for s in stmts if plan.buried_capable(s[0], s[1])]
         want = round(BURIED_SHARE * len(stmts))
         if len(eligible) < want:
             continue
-        buried = set(rng.sample(eligible, want))
+        buried = choose_buried(plan, rng, stmts, eligible, want)
         out = _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob)
         if out is None:
+            continue
+        if balance_problems(out[2], GEN_MARGIN):
             continue
         return out + (attempt,)
     raise RuntimeError("generate_v2: no valid plan in %d attempts" % max_attempts)

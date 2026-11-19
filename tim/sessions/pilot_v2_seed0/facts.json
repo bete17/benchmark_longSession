@@ -2,470 +2,536 @@
  "Acme Robotics": {
   "cc_name": [
    {
-    "value": "Hana Haddad",
-    "turn": 5,
-    "visit": 2,
+    "value": "Ines Varga",
+    "turn": 1,
+    "visit": 0,
     "placement": "home",
-    "sentence": "Hana Haddad runs procurement at Acme Robotics, so they need to be cc'd on pricing emails.",
+    "sentence": "Ines Varga runs procurement at Acme Robotics, so they need to be cc'd on pricing emails.",
     "form": "buried"
    },
    {
-    "value": "Marcus Fischer",
-    "turn": 61,
-    "visit": 20,
+    "value": "Diego Tanaka",
+    "turn": 115,
+    "visit": 38,
     "placement": "home",
-    "sentence": "For Acme Robotics, stop copying Hana Haddad on pricing; copy Marcus Fischer instead, they took over procurement.",
+    "sentence": "For Acme Robotics, stop copying Ines Varga on pricing; copy Diego Tanaka instead, they took over procurement.",
     "form": "sentence"
    },
    {
-    "value": "Priya Brennan",
-    "turn": 80,
-    "visit": 26,
-    "placement": "home",
-    "sentence": "For Acme Robotics, stop copying Marcus Fischer on pricing; copy Priya Brennan instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Dana Tanaka",
-    "turn": 86,
-    "visit": 28,
-    "placement": "embedded",
-    "sentence": "For Acme Robotics, stop copying Priya Brennan on pricing; copy Dana Tanaka instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Hiro Kowalski",
-    "turn": 141,
+    "value": "Sofia Novak",
+    "turn": 143,
     "visit": 46,
     "placement": "home",
-    "sentence": "For Acme Robotics, stop copying Dana Tanaka on pricing; copy Hiro Kowalski instead, they took over procurement.",
-    "form": "sentence"
-   }
-  ],
-  "discount_pct": [
-   {
-    "value": 22,
-    "turn": 5,
-    "visit": 2,
-    "placement": "home",
-    "sentence": "We got a 22% discount approved for Acme Robotics' renewal.",
-    "form": "buried"
-   },
-   {
-    "value": 25,
-    "turn": 57,
-    "visit": 19,
-    "placement": "home",
-    "sentence": "Deal desk revised Acme Robotics' approved discount from 22% to 25%.",
-    "form": "buried"
-   },
-   {
-    "value": 28,
-    "turn": 124,
-    "visit": 41,
-    "placement": "home",
-    "sentence": "Deal desk revised Acme Robotics' approved discount from 25% to 28%.",
-    "form": "sentence"
-   }
-  ],
-  "renewal_deadline": [
-   {
-    "value": "2027-02-21",
-    "turn": 5,
-    "visit": 2,
-    "placement": "home",
-    "sentence": "Acme Robotics needs the renewal signed by 2027-02-21.",
-    "form": "buried"
-   },
-   {
-    "value": "2027-03-26",
-    "turn": 14,
-    "visit": 5,
-    "placement": "embedded",
-    "sentence": "Acme Robotics moved their signing date from 2027-02-21 to 2027-03-26.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-03-14",
-    "turn": 58,
-    "visit": 19,
-    "placement": "home",
-    "sentence": "Acme Robotics moved their signing date from 2027-03-26 to 2027-03-14.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-07-23",
-    "turn": 81,
-    "visit": 26,
-    "placement": "home",
-    "sentence": "Acme Robotics moved their signing date from 2027-03-14 to 2027-07-23.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-08-12",
-    "turn": 107,
-    "visit": 35,
-    "placement": "embedded",
-    "sentence": "Acme Robotics moved their signing date from 2027-07-23 to 2027-08-12.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-03-23",
-    "turn": 140,
-    "visit": 46,
-    "placement": "home",
-    "sentence": "Acme Robotics moved their signing date from 2027-08-12 to 2027-03-23.",
-    "form": "sentence"
-   }
-  ],
-  "seats": [
-   {
-    "value": 160,
-    "turn": 5,
-    "visit": 2,
-    "placement": "home",
-    "sentence": "Acme Robotics plans to renew 160 seats.",
-    "form": "buried"
-   },
-   {
-    "value": 135,
-    "turn": 21,
-    "visit": 7,
-    "placement": "embedded",
-    "sentence": "Acme Robotics is changing their seat count from 160 to 135 for the renewal.",
-    "form": "sentence"
-   }
-  ],
-  "term_months": [
-   {
-    "value": 12,
-    "turn": 5,
-    "visit": 2,
-    "placement": "home",
-    "sentence": "Acme Robotics prefers a 12-month term.",
-    "form": "buried"
-   }
-  ],
-  "currency": [
-   {
-    "value": "GBP",
-    "turn": 51,
-    "visit": 17,
-    "placement": "home",
-    "sentence": "Reminder that Acme Robotics' contract is denominated in GBP.",
+    "sentence": "For Acme Robotics, stop copying Diego Tanaka on pricing; copy Sofia Novak instead, they took over procurement.",
     "form": "sentence"
    }
   ],
   "contact_name": [
    {
-    "value": "Elena Brennan",
-    "turn": 57,
-    "visit": 19,
+    "value": "Ravi Alvarez",
+    "turn": 1,
+    "visit": 0,
     "placement": "home",
-    "sentence": "Elena Brennan is our main contact at Acme Robotics and owns the renewal on their side.",
+    "sentence": "Our point of contact at Acme Robotics is Ravi Alvarez.",
+    "form": "buried"
+   },
+   {
+    "value": "Sofia Chen",
+    "turn": 48,
+    "visit": 16,
+    "placement": "embedded",
+    "sentence": "Ravi Alvarez has left Acme Robotics; Sofia Chen is our main contact there from now on.",
+    "form": "sentence"
+   },
+   {
+    "value": "Nadia Okafor",
+    "turn": 78,
+    "visit": 25,
+    "placement": "home",
+    "sentence": "Sofia Chen has left Acme Robotics; Nadia Okafor is our main contact there from now on.",
     "form": "sentence"
    }
-  ]
- },
- "Beta Health": {
-  "cc_name": [
+  ],
+  "discount_pct": [
    {
-    "value": "Felix Chen",
-    "turn": 7,
-    "visit": 3,
+    "value": 16,
+    "turn": 1,
+    "visit": 0,
     "placement": "home",
-    "sentence": "Always cc Felix Chen from Beta Health procurement on anything involving pricing.",
+    "sentence": "We got a 16% discount approved for Acme Robotics' renewal.",
     "form": "buried"
    },
    {
-    "value": "Tomas Brennan",
-    "turn": 25,
-    "visit": 9,
+    "value": 14,
+    "turn": 30,
+    "visit": 10,
     "placement": "home",
-    "sentence": "For Beta Health, stop copying Felix Chen on pricing; copy Tomas Brennan instead, they took over procurement.",
-    "form": "buried"
-   },
-   {
-    "value": "Jonah Sato",
-    "turn": 52,
-    "visit": 17,
-    "placement": "embedded",
-    "sentence": "For Beta Health, stop copying Tomas Brennan on pricing; copy Jonah Sato instead, they took over procurement.",
+    "sentence": "Deal desk revised Acme Robotics' approved discount from 16% to 14%.",
     "form": "sentence"
    },
    {
-    "value": "Grace Kowalski",
+    "value": 11,
+    "turn": 58,
+    "visit": 19,
+    "placement": "home",
+    "sentence": "Deal desk revised Acme Robotics' approved discount from 14% to 11%.",
+    "form": "sentence"
+   },
+   {
+    "value": 6,
     "turn": 77,
     "visit": 25,
     "placement": "home",
-    "sentence": "For Beta Health, stop copying Jonah Sato on pricing; copy Grace Kowalski instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Jonah Chen",
-    "turn": 92,
-    "visit": 30,
-    "placement": "home",
-    "sentence": "For Beta Health, stop copying Grace Kowalski on pricing; copy Jonah Chen instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Marcus Kowalski",
-    "turn": 100,
-    "visit": 32,
-    "placement": "home",
-    "sentence": "For Beta Health, stop copying Jonah Chen on pricing; copy Marcus Kowalski instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Ravi Okafor",
-    "turn": 115,
-    "visit": 38,
-    "placement": "embedded",
-    "sentence": "Marcus Kowalski no longer handles procurement here, please cc Ravi Okafor on anything about pricing.",
+    "sentence": "Deal desk revised Acme Robotics' approved discount from 11% to 6%.",
     "form": "buried"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-06-28",
+    "turn": 1,
+    "visit": 0,
+    "placement": "home",
+    "sentence": "Acme Robotics needs the renewal signed by 2027-06-28.",
+    "form": "buried"
+   },
+   {
+    "value": "2027-07-21",
+    "turn": 53,
+    "visit": 18,
+    "placement": "embedded",
+    "sentence": "Our signing date has moved from 2027-06-28 to 2027-07-21.",
+    "form": "buried"
+   },
+   {
+    "value": "2027-07-19",
+    "turn": 96,
+    "visit": 32,
+    "placement": "embedded",
+    "sentence": "Our signing date has moved from 2027-07-21 to 2027-07-19.",
+    "form": "buried"
+   },
+   {
+    "value": "2027-01-23",
+    "turn": 112,
+    "visit": 37,
+    "placement": "home",
+    "sentence": "Acme Robotics moved their signing date from 2027-07-19 to 2027-01-23.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-09-21",
+    "turn": 129,
+    "visit": 42,
+    "placement": "embedded",
+    "sentence": "Acme Robotics moved their signing date from 2027-01-23 to 2027-09-21.",
+    "form": "buried"
+   }
+  ],
+  "seats": [
+   {
+    "value": 265,
+    "turn": 1,
+    "visit": 0,
+    "placement": "home",
+    "sentence": "Acme Robotics wants to renew at 265 seats.",
+    "form": "buried"
+   },
+   {
+    "value": 285,
+    "turn": 105,
+    "visit": 35,
+    "placement": "home",
+    "sentence": "Acme Robotics is changing their seat count from 265 to 285 for the renewal.",
+    "form": "sentence"
+   },
+   {
+    "value": 315,
+    "turn": 111,
+    "visit": 37,
+    "placement": "home",
+    "sentence": "Acme Robotics is changing their seat count from 285 to 315 for the renewal.",
+    "form": "buried"
+   },
+   {
+    "value": 290,
+    "turn": 140,
+    "visit": 45,
+    "placement": "embedded",
+    "sentence": "Acme Robotics is changing their seat count from 315 to 290 for the renewal.",
+    "form": "sentence"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 36,
+    "turn": 17,
+    "visit": 6,
+    "placement": "home",
+    "sentence": "Acme Robotics prefers a 36-month term.",
+    "form": "sentence"
    }
   ],
   "concession_ref": [
    {
-    "value": "CX-9485",
-    "turn": 7,
-    "visit": 3,
+    "value": "CX-1323",
+    "turn": 100,
+    "visit": 33,
     "placement": "home",
-    "sentence": "On the last call we promised Beta Health free onboarding for their new admins; the concession is logged as CX-9485 and has to be referenced on their quote.",
+    "sentence": "On the last call we promised Acme Robotics free onboarding for their new admins; the concession is logged as CX-1323 and has to be referenced on their quote.",
     "form": "sentence"
    }
   ],
   "currency": [
    {
-    "value": "EUR",
-    "turn": 7,
-    "visit": 3,
+    "value": "USD",
+    "turn": 113,
+    "visit": 37,
     "placement": "home",
-    "sentence": "Beta Health is billed in EUR, so everything we send them should be in EUR.",
+    "sentence": "Acme Robotics is billed in USD, so everything we send them should be in USD.",
+    "form": "sentence"
+   }
+  ]
+ },
+ "Beta Health": {
+  "seats": [
+   {
+    "value": 165,
+    "turn": 3,
+    "visit": 1,
+    "placement": "home",
+    "sentence": "Beta Health plans to renew 165 seats.",
+    "form": "sentence"
+   },
+   {
+    "value": 245,
+    "turn": 67,
+    "visit": 22,
+    "placement": "home",
+    "sentence": "Beta Health is changing their seat count from 165 to 245 for the renewal.",
+    "form": "sentence"
+   },
+   {
+    "value": 265,
+    "turn": 145,
+    "visit": 47,
+    "placement": "embedded",
+    "sentence": "Beta Health is changing their seat count from 245 to 265 for the renewal.",
     "form": "sentence"
    }
   ],
-  "seats": [
+  "cc_name": [
    {
-    "value": 225,
-    "turn": 7,
+    "value": "Jonah Alvarez",
+    "turn": 8,
     "visit": 3,
-    "placement": "home",
-    "sentence": "Beta Health plans to renew 225 seats.",
+    "placement": "embedded",
+    "sentence": "Jonah Alvarez runs procurement at Beta Health, so they need to be cc'd on pricing emails.",
+    "form": "sentence"
+   },
+   {
+    "value": "Omar Brennan",
+    "turn": 94,
+    "visit": 31,
+    "placement": "embedded",
+    "sentence": "Jonah Alvarez no longer handles procurement here, please cc Omar Brennan on anything about pricing.",
     "form": "buried"
    },
    {
-    "value": 200,
+    "value": "Priya Novak",
+    "turn": 122,
+    "visit": 40,
+    "placement": "home",
+    "sentence": "For Beta Health, stop copying Omar Brennan on pricing; copy Priya Novak instead, they took over procurement.",
+    "form": "sentence"
+   },
+   {
+    "value": "Priya Kowalski",
+    "turn": 134,
+    "visit": 43,
+    "placement": "home",
+    "sentence": "For Beta Health, stop copying Priya Novak on pricing; copy Priya Kowalski instead, they took over procurement.",
+    "form": "sentence"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-01-11",
+    "turn": 10,
+    "visit": 4,
+    "placement": "home",
+    "sentence": "Beta Health's renewal has to close by 2027-01-11.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-05-27",
+    "turn": 71,
+    "visit": 23,
+    "placement": "embedded",
+    "sentence": "Beta Health moved their signing date from 2027-01-11 to 2027-05-27.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-07-28",
+    "turn": 83,
+    "visit": 27,
+    "placement": "embedded",
+    "sentence": "Beta Health moved their signing date from 2027-05-27 to 2027-07-28.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-04-12",
+    "turn": 133,
+    "visit": 43,
+    "placement": "home",
+    "sentence": "Beta Health moved their signing date from 2027-07-28 to 2027-04-12.",
+    "form": "sentence"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Nadia Moreau",
+    "turn": 33,
+    "visit": 11,
+    "placement": "embedded",
+    "sentence": "Please address everything on the renewal to Nadia Moreau, who owns it for us.",
+    "form": "buried"
+   },
+   {
+    "value": "Marcus Fischer",
+    "turn": 40,
+    "visit": 13,
+    "placement": "home",
+    "sentence": "Heads up, Marcus Fischer replaced Nadia Moreau as our point of contact at Beta Health.",
+    "form": "sentence"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 5,
+    "turn": 37,
+    "visit": 12,
+    "placement": "home",
+    "sentence": "The discount approved for Beta Health is 5%.",
+    "form": "sentence"
+   }
+  ],
+  "concession_ref": [
+   {
+    "value": "CX-5899",
     "turn": 73,
     "visit": 24,
     "placement": "embedded",
-    "sentence": "Beta Health is changing their seat count from 225 to 200 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 160,
-    "turn": 127,
-    "visit": 42,
-    "placement": "home",
-    "sentence": "Beta Health is changing their seat count from 200 to 160 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 220,
-    "turn": 133,
-    "visit": 44,
-    "placement": "embedded",
-    "sentence": "We have revised our seat count for the renewal from 160 to 220.",
+    "sentence": "For reference, the onboarding concession promised on the last call is logged on our side as CX-5899; please reference it on the quote.",
     "form": "buried"
    }
   ],
   "term_months": [
    {
     "value": 36,
-    "turn": 7,
-    "visit": 3,
-    "placement": "home",
-    "sentence": "Beta Health agreed in principle to a 36-month term.",
-    "form": "buried"
-   }
-  ],
-  "style_rule": [
-   {
-    "value": [
-     "outage",
-     "service interruption"
-    ],
-    "turn": 8,
-    "visit": 3,
-    "placement": "home",
-    "sentence": "Beta Health's comms team is particular: never say \"outage\" to them, always say \"service interruption\" instead.",
-    "form": "sentence"
-   }
-  ],
-  "renewal_deadline": [
-   {
-    "value": "2027-03-12",
-    "turn": 13,
-    "visit": 5,
-    "placement": "home",
-    "sentence": "Beta Health's renewal has to close by 2027-03-12.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-04-27",
-    "turn": 36,
-    "visit": 12,
-    "placement": "embedded",
-    "sentence": "Our signing date has moved from 2027-03-12 to 2027-04-27.",
-    "form": "buried"
-   },
-   {
-    "value": "2027-09-28",
-    "turn": 127,
-    "visit": 42,
-    "placement": "home",
-    "sentence": "Beta Health moved their signing date from 2027-04-27 to 2027-09-28.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-09-21",
-    "turn": 139,
-    "visit": 46,
-    "placement": "embedded",
-    "sentence": "Our signing date has moved from 2027-09-28 to 2027-09-21.",
-    "form": "buried"
-   }
-  ],
-  "discount_pct": [
-   {
-    "value": 6,
-    "turn": 93,
-    "visit": 30,
-    "placement": "home",
-    "sentence": "The discount approved for Beta Health is 6%.",
-    "form": "sentence"
-   },
-   {
-    "value": 3,
     "turn": 99,
-    "visit": 32,
-    "placement": "home",
-    "sentence": "Deal desk revised Beta Health's approved discount from 6% to 3%.",
-    "form": "sentence"
-   },
-   {
-    "value": 7,
-    "turn": 129,
-    "visit": 42,
-    "placement": "home",
-    "sentence": "Deal desk revised Beta Health's approved discount from 3% to 7%.",
-    "form": "sentence"
-   },
-   {
-    "value": 9,
-    "turn": 137,
-    "visit": 45,
-    "placement": "home",
-    "sentence": "Deal desk revised Beta Health's approved discount from 7% to 9%.",
-    "form": "sentence"
-   },
-   {
-    "value": 15,
-    "turn": 148,
-    "visit": 48,
-    "placement": "home",
-    "sentence": "Deal desk revised Beta Health's approved discount from 9% to 15%.",
-    "form": "sentence"
-   }
-  ],
-  "contact_name": [
-   {
-    "value": "Felix Kowalski",
-    "turn": 144,
-    "visit": 47,
-    "placement": "home",
-    "sentence": "Our point of contact at Beta Health is Felix Kowalski.",
-    "form": "sentence"
-   }
-  ]
- },
- "Cobalt Freight": {
-  "concession_ref": [
-   {
-    "value": "CX-5602",
-    "turn": 1,
-    "visit": 0,
-    "placement": "home",
-    "sentence": "On the last call we promised Cobalt Freight free onboarding for their new admins; the concession is logged as CX-5602 and has to be referenced on their quote.",
+    "visit": 33,
+    "placement": "embedded",
+    "sentence": "We would like a 36-month term this time.",
     "form": "buried"
    }
   ],
   "currency": [
    {
-    "value": "GBP",
-    "turn": 1,
-    "visit": 0,
+    "value": "AUD",
+    "turn": 129,
+    "visit": 42,
     "placement": "home",
-    "sentence": "Reminder that Cobalt Freight's contract is denominated in GBP.",
+    "sentence": "Beta Health is billed in AUD, so everything we send them should be in AUD.",
+    "form": "sentence"
+   }
+  ],
+  "style_rule": [
+   {
+    "value": [
+     "discount",
+     "loyalty credit"
+    ],
+    "turn": 129,
+    "visit": 42,
+    "placement": "home",
+    "sentence": "Beta Health's comms team is particular: never say \"discount\" to them, always say \"loyalty credit\" instead.",
+    "form": "buried"
+   }
+  ]
+ },
+ "Cobalt Freight": {
+  "contact_name": [
+   {
+    "value": "Marcus Osei",
+    "turn": 5,
+    "visit": 2,
+    "placement": "home",
+    "sentence": "Marcus Osei is our main contact at Cobalt Freight and owns the renewal on their side.",
     "form": "sentence"
    }
   ],
   "seats": [
    {
     "value": 365,
-    "turn": 1,
-    "visit": 0,
+    "turn": 5,
+    "visit": 2,
     "placement": "home",
     "sentence": "Cobalt Freight wants to renew at 365 seats.",
     "form": "sentence"
    },
    {
-    "value": 340,
-    "turn": 40,
-    "visit": 13,
-    "placement": "embedded",
-    "sentence": "Cobalt Freight is changing their seat count from 365 to 340 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 420,
-    "turn": 87,
-    "visit": 28,
+    "value": 395,
+    "turn": 49,
+    "visit": 16,
     "placement": "home",
-    "sentence": "Cobalt Freight is changing their seat count from 340 to 420 for the renewal.",
+    "sentence": "Cobalt Freight is changing their seat count from 365 to 395 for the renewal.",
     "form": "sentence"
    },
    {
-    "value": 440,
-    "turn": 96,
-    "visit": 31,
-    "placement": "embedded",
-    "sentence": "Cobalt Freight is changing their seat count from 420 to 440 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 470,
-    "turn": 113,
-    "visit": 37,
+    "value": 380,
+    "turn": 126,
+    "visit": 41,
     "placement": "home",
-    "sentence": "Cobalt Freight is changing their seat count from 440 to 470 for the renewal.",
+    "sentence": "Cobalt Freight is changing their seat count from 395 to 380 for the renewal.",
+    "form": "sentence"
+   }
+  ],
+  "term_months": [
+   {
+    "value": 36,
+    "turn": 5,
+    "visit": 2,
+    "placement": "home",
+    "sentence": "Cobalt Freight prefers a 36-month term.",
+    "form": "buried"
+   }
+  ],
+  "cc_name": [
+   {
+    "value": "Marcus Moreau",
+    "turn": 6,
+    "visit": 2,
+    "placement": "home",
+    "sentence": "Marcus Moreau runs procurement at Cobalt Freight, so they need to be cc'd on pricing emails.",
+    "form": "sentence"
+   },
+   {
+    "value": "Omar Sato",
+    "turn": 13,
+    "visit": 5,
+    "placement": "home",
+    "sentence": "For Cobalt Freight, stop copying Marcus Moreau on pricing; copy Omar Sato instead, they took over procurement.",
+    "form": "sentence"
+   },
+   {
+    "value": "Hiro Varga",
+    "turn": 27,
+    "visit": 9,
+    "placement": "home",
+    "sentence": "For Cobalt Freight, stop copying Omar Sato on pricing; copy Hiro Varga instead, they took over procurement.",
+    "form": "sentence"
+   },
+   {
+    "value": "Ravi Tanaka",
+    "turn": 46,
+    "visit": 15,
+    "placement": "home",
+    "sentence": "For Cobalt Freight, stop copying Hiro Varga on pricing; copy Ravi Tanaka instead, they took over procurement.",
+    "form": "sentence"
+   },
+   {
+    "value": "Omar Fischer",
+    "turn": 81,
+    "visit": 26,
+    "placement": "embedded",
+    "sentence": "Ravi Tanaka no longer handles procurement here, please cc Omar Fischer on anything about pricing.",
     "form": "buried"
    },
    {
-    "value": 520,
-    "turn": 134,
-    "visit": 44,
+    "value": "Omar Varga",
+    "turn": 88,
+    "visit": 29,
     "placement": "home",
-    "sentence": "Cobalt Freight is changing their seat count from 470 to 520 for the renewal.",
+    "sentence": "For Cobalt Freight, stop copying Omar Fischer on pricing; copy Omar Varga instead, they took over procurement.",
     "form": "sentence"
    },
    {
-    "value": 580,
-    "turn": 145,
-    "visit": 47,
+    "value": "Dana Kowalski",
+    "turn": 104,
+    "visit": 35,
     "placement": "embedded",
-    "sentence": "Cobalt Freight is changing their seat count from 520 to 580 for the renewal.",
+    "sentence": "For Cobalt Freight, stop copying Omar Varga on pricing; copy Dana Kowalski instead, they took over procurement.",
+    "form": "sentence"
+   },
+   {
+    "value": "Tomas Haddad",
+    "turn": 140,
+    "visit": 45,
+    "placement": "home",
+    "sentence": "For Cobalt Freight, stop copying Dana Kowalski on pricing; copy Tomas Haddad instead, they took over procurement.",
+    "form": "sentence"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-01-16",
+    "turn": 26,
+    "visit": 9,
+    "placement": "home",
+    "sentence": "Cobalt Freight needs the renewal signed by 2027-01-16.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-06-25",
+    "turn": 109,
+    "visit": 36,
+    "placement": "home",
+    "sentence": "Cobalt Freight moved their signing date from 2027-01-16 to 2027-06-25.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-07-26",
+    "turn": 131,
+    "visit": 42,
+    "placement": "embedded",
+    "sentence": "Cobalt Freight moved their signing date from 2027-06-25 to 2027-07-26.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-06-27",
+    "turn": 139,
+    "visit": 45,
+    "placement": "home",
+    "sentence": "Cobalt Freight moved their signing date from 2027-07-26 to 2027-06-27.",
+    "form": "sentence"
+   }
+  ],
+  "concession_ref": [
+   {
+    "value": "CX-6914",
+    "turn": 42,
+    "visit": 14,
+    "placement": "home",
+    "sentence": "On the last call we promised Cobalt Freight free onboarding for their new admins; the concession is logged as CX-6914 and has to be referenced on their quote.",
+    "form": "sentence"
+   }
+  ],
+  "discount_pct": [
+   {
+    "value": 16,
+    "turn": 44,
+    "visit": 14,
+    "placement": "home",
+    "sentence": "We got a 16% discount approved for Cobalt Freight's renewal.",
+    "form": "sentence"
+   },
+   {
+    "value": 22,
+    "turn": 89,
+    "visit": 29,
+    "placement": "home",
+    "sentence": "Deal desk revised Cobalt Freight's approved discount from 16% to 22%.",
     "form": "sentence"
    }
   ],
@@ -475,306 +541,196 @@
      "add-on",
      "module"
     ],
-    "turn": 1,
-    "visit": 0,
-    "placement": "home",
+    "turn": 111,
+    "visit": 37,
+    "placement": "embedded",
     "sentence": "Cobalt Freight's comms team is particular: never say \"add-on\" to them, always say \"module\" instead.",
-    "form": "sentence"
-   }
-  ],
-  "term_months": [
-   {
-    "value": 24,
-    "turn": 1,
-    "visit": 0,
-    "placement": "home",
-    "sentence": "Cobalt Freight prefers a 24-month term.",
-    "form": "sentence"
-   }
-  ],
-  "discount_pct": [
-   {
-    "value": 9,
-    "turn": 20,
-    "visit": 7,
-    "placement": "home",
-    "sentence": "We got a 9% discount approved for Cobalt Freight's renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 6,
-    "turn": 37,
-    "visit": 12,
-    "placement": "home",
-    "sentence": "Deal desk revised Cobalt Freight's approved discount from 9% to 6%.",
-    "form": "sentence"
-   },
-   {
-    "value": 4,
-    "turn": 84,
-    "visit": 27,
-    "placement": "home",
-    "sentence": "Deal desk revised Cobalt Freight's approved discount from 6% to 4%.",
-    "form": "sentence"
-   },
-   {
-    "value": 7,
-    "turn": 105,
-    "visit": 34,
-    "placement": "home",
-    "sentence": "Deal desk revised Cobalt Freight's approved discount from 4% to 7%.",
-    "form": "sentence"
-   }
-  ],
-  "contact_name": [
-   {
-    "value": "Elena Okafor",
-    "turn": 38,
-    "visit": 12,
-    "placement": "home",
-    "sentence": "Elena Okafor is our main contact at Cobalt Freight and owns the renewal on their side.",
-    "form": "sentence"
-   }
-  ],
-  "renewal_deadline": [
-   {
-    "value": "2027-03-21",
-    "turn": 60,
-    "visit": 20,
-    "placement": "embedded",
-    "sentence": "Cobalt Freight needs the renewal signed by 2027-03-21.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-04-23",
-    "turn": 70,
-    "visit": 23,
-    "placement": "home",
-    "sentence": "Cobalt Freight moved their signing date from 2027-03-21 to 2027-04-23.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-05-24",
-    "turn": 83,
-    "visit": 27,
-    "placement": "home",
-    "sentence": "Cobalt Freight moved their signing date from 2027-04-23 to 2027-05-24.",
-    "form": "buried"
-   },
-   {
-    "value": "2027-05-11",
-    "turn": 102,
-    "visit": 33,
-    "placement": "embedded",
-    "sentence": "Our signing date has moved from 2027-05-24 to 2027-05-11.",
-    "form": "buried"
-   }
-  ],
-  "cc_name": [
-   {
-    "value": "Mei Chen",
-    "turn": 66,
-    "visit": 22,
-    "placement": "home",
-    "sentence": "Always cc Mei Chen from Cobalt Freight procurement on anything involving pricing.",
-    "form": "sentence"
-   },
-   {
-    "value": "Nadia Fischer",
-    "turn": 116,
-    "visit": 38,
-    "placement": "home",
-    "sentence": "For Cobalt Freight, stop copying Mei Chen on pricing; copy Nadia Fischer instead, they took over procurement.",
-    "form": "sentence"
-   },
-   {
-    "value": "Aaron Fischer",
-    "turn": 130,
-    "visit": 43,
-    "placement": "embedded",
-    "sentence": "Nadia Fischer no longer handles procurement here, please cc Aaron Fischer on anything about pricing.",
-    "form": "buried"
-   }
-  ]
- },
- "Delta Learning": {
-  "contact_name": [
-   {
-    "value": "Omar Brennan",
-    "turn": 3,
-    "visit": 1,
-    "placement": "home",
-    "sentence": "Our point of contact at Delta Learning is Omar Brennan.",
-    "form": "buried"
-   },
-   {
-    "value": "Ines Novak",
-    "turn": 17,
-    "visit": 6,
-    "placement": "embedded",
-    "sentence": "Omar Brennan has left Delta Learning; Ines Novak is our main contact there from now on.",
-    "form": "sentence"
-   },
-   {
-    "value": "Mei Okafor",
-    "turn": 73,
-    "visit": 24,
-    "placement": "home",
-    "sentence": "Ines Novak has left Delta Learning; Mei Okafor is our main contact there from now on.",
-    "form": "sentence"
-   },
-   {
-    "value": "Felix Novak",
-    "turn": 118,
-    "visit": 39,
-    "placement": "embedded",
-    "sentence": "Mei Okafor has moved to another team, so Felix Novak will be your contact at Delta Learning from now on.",
-    "form": "buried"
-   },
-   {
-    "value": "Lena Lindqvist",
-    "turn": 128,
-    "visit": 42,
-    "placement": "embedded",
-    "sentence": "Felix Novak has left Delta Learning; Lena Lindqvist is our main contact there from now on.",
     "form": "sentence"
    }
   ],
   "currency": [
    {
-    "value": "USD",
-    "turn": 3,
-    "visit": 1,
+    "value": "GBP",
+    "turn": 127,
+    "visit": 41,
     "placement": "home",
-    "sentence": "Delta Learning is billed in USD, so everything we send them should be in USD.",
+    "sentence": "Reminder that Cobalt Freight's contract is denominated in GBP.",
     "form": "sentence"
    }
-  ],
-  "discount_pct": [
+  ]
+ },
+ "Delta Learning": {
+  "cc_name": [
    {
-    "value": 9,
-    "turn": 3,
-    "visit": 1,
-    "placement": "home",
-    "sentence": "We got a 9% discount approved for Delta Learning's renewal.",
+    "value": "Omar Ito",
+    "turn": 1,
+    "visit": 0,
+    "placement": "embedded",
+    "sentence": "Always cc Omar Ito from Delta Learning procurement on anything involving pricing.",
     "form": "buried"
    },
    {
-    "value": 4,
-    "turn": 98,
-    "visit": 32,
+    "value": "Tomas Chen",
+    "turn": 146,
+    "visit": 47,
+    "placement": "home",
+    "sentence": "For Delta Learning, stop copying Omar Ito on pricing; copy Tomas Chen instead, they took over procurement.",
+    "form": "sentence"
+   }
+  ],
+  "contact_name": [
+   {
+    "value": "Hana Chen",
+    "turn": 1,
+    "visit": 0,
     "placement": "embedded",
-    "sentence": "Our procurement team has updated its working assumption on the discount from 9% to 4%.",
+    "sentence": "Hana Chen is our main contact at Delta Learning and owns the renewal on their side.",
+    "form": "sentence"
+   },
+   {
+    "value": "Omar Tanaka",
+    "turn": 91,
+    "visit": 30,
+    "placement": "home",
+    "sentence": "Heads up, Omar Tanaka replaced Hana Chen as our point of contact at Delta Learning.",
     "form": "buried"
+   },
+   {
+    "value": "Dana Sato",
+    "turn": 147,
+    "visit": 47,
+    "placement": "home",
+    "sentence": "Omar Tanaka has left Delta Learning; Dana Sato is our main contact there from now on.",
+    "form": "sentence"
+   }
+  ],
+  "renewal_deadline": [
+   {
+    "value": "2027-04-23",
+    "turn": 7,
+    "visit": 3,
+    "placement": "home",
+    "sentence": "Delta Learning's renewal has to close by 2027-04-23.",
+    "form": "buried"
+   },
+   {
+    "value": "2027-06-27",
+    "turn": 64,
+    "visit": 21,
+    "placement": "home",
+    "sentence": "Delta Learning moved their signing date from 2027-04-23 to 2027-06-27.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-09-10",
+    "turn": 75,
+    "visit": 24,
+    "placement": "home",
+    "sentence": "Delta Learning moved their signing date from 2027-06-27 to 2027-09-10.",
+    "form": "sentence"
+   },
+   {
+    "value": "2027-06-24",
+    "turn": 91,
+    "visit": 30,
+    "placement": "home",
+    "sentence": "Delta Learning moved their signing date from 2027-09-10 to 2027-06-24.",
+    "form": "buried"
+   },
+   {
+    "value": "2027-02-16",
+    "turn": 106,
+    "visit": 35,
+    "placement": "embedded",
+    "sentence": "Delta Learning moved their signing date from 2027-06-24 to 2027-02-16.",
+    "form": "sentence"
    }
   ],
   "seats": [
    {
-    "value": 305,
-    "turn": 3,
-    "visit": 1,
+    "value": 185,
+    "turn": 8,
+    "visit": 3,
     "placement": "home",
-    "sentence": "Delta Learning plans to renew 305 seats.",
-    "form": "buried"
-   },
-   {
-    "value": 265,
-    "turn": 46,
-    "visit": 15,
-    "placement": "home",
-    "sentence": "Delta Learning is changing their seat count from 305 to 265 for the renewal.",
+    "sentence": "Delta Learning plans to renew 185 seats.",
     "form": "sentence"
    },
    {
-    "value": 345,
-    "turn": 84,
-    "visit": 27,
+    "value": 170,
+    "turn": 54,
+    "visit": 18,
+    "placement": "home",
+    "sentence": "Delta Learning is changing their seat count from 185 to 170 for the renewal.",
+    "form": "sentence"
+   },
+   {
+    "value": 130,
+    "turn": 66,
+    "visit": 22,
     "placement": "embedded",
-    "sentence": "Delta Learning is changing their seat count from 265 to 345 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 425,
-    "turn": 95,
-    "visit": 31,
-    "placement": "home",
-    "sentence": "Delta Learning is changing their seat count from 345 to 425 for the renewal.",
+    "sentence": "We have revised our seat count for the renewal from 170 to 130.",
     "form": "buried"
-   },
+   }
+  ],
+  "concession_ref": [
    {
-    "value": 400,
-    "turn": 104,
-    "visit": 34,
+    "value": "CX-6377",
+    "turn": 17,
+    "visit": 6,
     "placement": "embedded",
-    "sentence": "Delta Learning is changing their seat count from 425 to 400 for the renewal.",
-    "form": "sentence"
-   },
-   {
-    "value": 420,
-    "turn": 121,
-    "visit": 40,
-    "placement": "home",
-    "sentence": "Delta Learning is changing their seat count from 400 to 420 for the renewal.",
+    "sentence": "On the last call we promised Delta Learning free onboarding for their new admins; the concession is logged as CX-6377 and has to be referenced on their quote.",
     "form": "sentence"
    }
   ],
   "term_months": [
    {
     "value": 12,
-    "turn": 3,
-    "visit": 1,
-    "placement": "home",
+    "turn": 31,
+    "visit": 10,
+    "placement": "embedded",
     "sentence": "Delta Learning prefers a 12-month term.",
     "form": "sentence"
    }
   ],
-  "renewal_deadline": [
+  "discount_pct": [
    {
-    "value": "2027-06-19",
-    "turn": 7,
-    "visit": 3,
-    "placement": "embedded",
-    "sentence": "Delta Learning's renewal has to close by 2027-06-19.",
-    "form": "buried"
-   },
-   {
-    "value": "2027-09-20",
-    "turn": 16,
-    "visit": 6,
-    "placement": "embedded",
-    "sentence": "Delta Learning moved their signing date from 2027-06-19 to 2027-09-20.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-07-12",
-    "turn": 33,
-    "visit": 11,
-    "placement": "home",
-    "sentence": "Delta Learning moved their signing date from 2027-09-20 to 2027-07-12.",
-    "form": "sentence"
-   },
-   {
-    "value": "2027-07-26",
+    "value": 19,
     "turn": 60,
     "visit": 20,
-    "placement": "embedded",
-    "sentence": "Our signing date has moved from 2027-07-12 to 2027-07-26.",
-    "form": "buried"
-   },
-   {
-    "value": "2027-01-17",
-    "turn": 108,
-    "visit": 35,
     "placement": "home",
-    "sentence": "Delta Learning moved their signing date from 2027-07-26 to 2027-01-17.",
+    "sentence": "We got a 19% discount approved for Delta Learning's renewal.",
     "form": "sentence"
    },
    {
-    "value": "2027-05-26",
-    "turn": 139,
-    "visit": 46,
+    "value": 23,
+    "turn": 74,
+    "visit": 24,
+    "placement": "home",
+    "sentence": "Deal desk revised Delta Learning's approved discount from 19% to 23%.",
+    "form": "sentence"
+   },
+   {
+    "value": 26,
+    "turn": 91,
+    "visit": 30,
+    "placement": "home",
+    "sentence": "Deal desk revised Delta Learning's approved discount from 23% to 26%.",
+    "form": "buried"
+   },
+   {
+    "value": 30,
+    "turn": 114,
+    "visit": 38,
     "placement": "embedded",
-    "sentence": "Delta Learning moved their signing date from 2027-01-17 to 2027-05-26.",
+    "sentence": "Deal desk revised Delta Learning's approved discount from 26% to 30%.",
+    "form": "sentence"
+   },
+   {
+    "value": 28,
+    "turn": 134,
+    "visit": 43,
+    "placement": "embedded",
+    "sentence": "Deal desk revised Delta Learning's approved discount from 30% to 28%.",
     "form": "sentence"
    }
   ],
@@ -784,31 +740,21 @@
      "price increase",
      "plan adjustment"
     ],
-    "turn": 44,
-    "visit": 15,
+    "turn": 63,
+    "visit": 21,
     "placement": "home",
     "sentence": "Delta Learning's comms team is particular: never say \"price increase\" to them, always say \"plan adjustment\" instead.",
     "form": "sentence"
    }
   ],
-  "cc_name": [
+  "currency": [
    {
-    "value": "Hana Alvarez",
-    "turn": 95,
-    "visit": 31,
+    "value": "CAD",
+    "turn": 91,
+    "visit": 30,
     "placement": "home",
-    "sentence": "Always cc Hana Alvarez from Delta Learning procurement on anything involving pricing.",
+    "sentence": "Delta Learning is billed in CAD, so everything we send them should be in CAD.",
     "form": "buried"
-   }
-  ],
-  "concession_ref": [
-   {
-    "value": "CX-7880",
-    "turn": 127,
-    "visit": 42,
-    "placement": "embedded",
-    "sentence": "On the last call we promised Delta Learning free onboarding for their new admins; the concession is logged as CX-7880 and has to be referenced on their quote.",
-    "form": "sentence"
    }
   ]
  }

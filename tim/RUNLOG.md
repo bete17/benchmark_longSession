@@ -274,3 +274,30 @@ session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197
 - Verified: oracle perfect 1.000 with null on all 28 UNK; stale fails exactly the 89 D checks; empty 0.000.
   Tests pass. viewer/make_synthetic.py ran unchanged on v2 (results/_synthetic_v2); analysis/coverage.py and
   attribute.py ran on it. Open: compaction ceiling to be decided after a coverage check on a short v2 run.
+
+## 2026-11-19: generator v2, balance of field group, placement and form across age bins
+
+- Why: in the first v2 build old checks sat on stable fields (currency 21, term 18, style 8, concession 7 of 64) and
+  on home facts (58 of 64), fresh checks on changing fields (supersedable share 88% fresh, 69% medium, 16% old;
+  embedded 40%, 32%, 9%). Old-vs-fresh would have partly measured stable-vs-changing field.
+- gen/generate.py: after `plan_statements`, `anneal_plan` (simulated annealing on `plan_cost`, moves: shift, add,
+  remove a statement under the existing slot rules) balances the bins and keeps every v2 requirement; supersedable
+  fields can stay unchanged for long stretches, stable fields can be first stated late. `choose_buried` picks the
+  buried statements to equalise the buried share per bin. `balance_stats` and `balance_problems` (limits: group 15
+  points, placement 10, form 10, every field in at least two bins) are checked on the real checks; the generator
+  retries with derived seeds until they hold with a 15% margin. Minimum supersessions 30 (was 25), first deliverable
+  by turn 11 (was 12 allowed), BURIED_SHARE 0.285. v1 untouched: `--schedule v1` still matches sessions/pilot_seed0
+  byte for byte (meta only gains `schedule` and `report_rows`). Generation now takes about 1 minute per seed (annealing
+  plus retries; seed 0 succeeded at attempt 12).
+- gen/report.py: balance section (per age bin share supersedable, embedded, buried; field x age_bin table), --strict
+  asserts the three criteria. gen/test_generate.py: new test on seeds 0 and 1.
+- Regenerated sessions/pilot_v2_seed0 (overwrites the first v2 build): 150 messages, 38 deliverables, 242 checks (200 on
+  stated facts: A 73, C 115, D 75, CTRL 10, NEAR 18; 42 UNK), 84 statements, 49 supersessions, 25 embedded, 24 buried.
+  Per age bin (fresh / medium / old): checks 50 / 60 / 47, supersedable 74% / 73% / 70%, embedded 36% / 35% / 34%,
+  buried 30% / 32% / 32%.
+- Verified: report --strict passes; unit tests pass; oracle perfect 1.000 with null on all 42 UNK, stale fails exactly the
+  75 D checks, empty 0.000; viewer/make_synthetic.py (results/_synthetic_v2), analysis/attribute.py and
+  analysis/coverage.py run without error; three visits read naturally.
+- Not met: embedded level per bin is 34 to 36%, above the 25 to 30% target (spread is 2 points); statements overall are 29.8%.
+  Embedded facts are current for more checks than home facts, and the previous-visit fresh facts are embedded by
+  construction. Any earlier results on the first v2 build are not comparable to this session.

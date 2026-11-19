@@ -63,6 +63,19 @@ class V2Invariants(unittest.TestCase):
                 if turns[d] >= g.OLD_REQUIRED_FROM:
                     self.assertIn("old", bins, d)
 
+    def test_balance_criteria(self):
+        """Inside each age bin the field group, placement and form mix must not depend on the bin."""
+        for seed, (msgs, checks, facts) in self.sessions.items():
+            self.assertEqual(g.balance_problems(checks), [], seed)
+            st = g.balance_stats(checks)
+            for key, lim in (("sup", 0.15), ("emb", 0.10), ("bur", 0.10)):
+                vals = [st["bins"][b][key] for b in g.BAL_BINS]
+                self.assertLessEqual(max(vals) - min(vals), lim, (seed, key, vals))
+            for f, row in st["fields"].items():
+                self.assertGreaterEqual(sum(1 for b in g.BAL_BINS if row[b] > 0), 2, (seed, f, row))
+            sup = sum(len(hs) - 1 for fs in facts.values() for hs in fs.values())
+            self.assertGreaterEqual(sup, 30, seed)
+
     def test_size(self):
         for seed, (msgs, checks, facts) in self.sessions.items():
             self.assertTrue(140 <= len(msgs) <= 170)

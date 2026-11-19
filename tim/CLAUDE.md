@@ -25,11 +25,13 @@ tim/
   grade/make_oracle.py         synthetic deliverables to sanity-check the grader
   TRACE.md                     the trace format every run must produce (read before writing run code)
   run/system_prompt.md         the system prompt for the Actor in EVERY condition (replaces pi's coding prompt)
-  gen/report.py                prints the v2 schedule report (counts, session_bin x age_bin table, per-deliverable bins)
-  gen/test_generate.py         invariant tests (each fact sentence is verbatim in its turn's message, bins, size)
-  sessions/pilot_v2_seed0/     the v2 session (fixed-age check schedule, see DESIGN.md): 149 user messages,
-                               254 checks over 38 deliverables (226 on stated facts: A 84 / C 134 / D 89 /
-                               CTRL 10 / NEAR 20; 28 UNK); checks also carry age_bin, session_bin, form
+  gen/report.py                prints the v2 schedule report (counts, session_bin x age_bin table, balance per age bin,
+                               field x age_bin table, per-deliverable bins); --strict asserts every criterion
+  gen/test_generate.py         invariant tests (verbatim sentences, bins, balance criteria on seeds 0 and 1, size)
+  sessions/pilot_v2_seed0/     the v2 session (fixed-age check schedule, see DESIGN.md): 150 user messages,
+                               242 checks over 38 deliverables (200 on stated facts: A 73 / C 115 / D 75 /
+                               CTRL 10 / NEAR 18; 42 UNK); checks also carry age_bin, session_bin, form;
+                               field group, placement and form are balanced across age bins
   sessions/pilot_seed0/        the v1 pilot session (kept for the step 2 smoke runs)
     session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
     checks.jsonl               163 checks over 32 deliverables: 129 on stated facts, tagged A / C / D /

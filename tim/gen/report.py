@@ -7,6 +7,10 @@ session), the check table by session bin (rows) x age bin (columns), and one lin
 confirming it holds at least one fresh check (and medium and old ones once the session is long
 enough). With --strict the exit code is 1 when a requirement is not met.
 
+The balance section prints, per age bin, the share of checks on supersedable fields, embedded facts and buried
+facts, and a field x age_bin table; --strict fails when any of these spreads exceeds its limit (field group 15
+points, placement 10, form 10) or a field appears in fewer than two of the three bins.
+
 Age bins (age = deliverable turn minus the turn the current value was stated):
   fresh 2 to 10, medium 15 to 45, old 60+, other = everything between (and age 0 or 1).
 CTRL checks (value restated in the request) and UNK checks (answer is null) are listed separately
@@ -21,7 +25,9 @@ from collections import Counter, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from generate import (MEDIUM_REQUIRED_FROM, OLD_REQUIRED_FROM, age_bin_of, session_bin_of)  # noqa: E402
+from generate import (MEDIUM_REQUIRED_FROM, OLD_REQUIRED_FROM, age_bin_of, session_bin_of, FIELDS,  # noqa: E402
+                      SUPERSEDABLE, BAL_BINS, MAX_GROUP_SPREAD, MAX_PLACE_SPREAD, MAX_FORM_SPREAD,
+                      MIN_SUPERSESSIONS, balance_problems)
 
 BINS = ["fresh", "medium", "old", "other"]
 
@@ -61,8 +67,8 @@ def main():
     print("  statements per third " + ", ".join(f"{['first', 'middle', 'last'][i]}: {th[i]} ({th[i] / n:.1%})" for i in range(3)))
     if not 80 <= n <= 100:
         problems.append(f"fact statements {n} outside 80-100")
-    if sup < 25:
-        problems.append(f"supersessions {sup} < 25")
+    if sup < MIN_SUPERSESSIONS:
+        problems.append(f"supersessions {sup} < {MIN_SUPERSESSIONS}")
     if th[0] / n > 0.40:
         problems.append("more than 40% of statements in the first third")
     if not 0.24 <= emb / n <= 0.32:
@@ -120,8 +126,33 @@ def main():
     print("    " + "total".ljust(16) + "".join(f"{tot[b]:>8}" for b in BINS) + f"{sum(tot.values()):>8}")
     tags = Counter(t for c in checks for t in c["tags"])
     print(f"  tags {dict(sorted(tags.items()))}")
-    old_fields = Counter(c["field"] for c in main_checks if c["age_bin"] == "old")
-    print(f"  old checks by field {dict(old_fields.most_common())}")
+
+    # ---- balance of the mix inside each age bin
+    print("\nBALANCE inside each age bin (CTRL and UNK excluded): the mix must not depend on fact age")
+    print("    " + f"{'age_bin':<10}{'checks':>8}{'supersedable':>14}{'embedded':>11}{'buried':>9}")
+    shares = {k: [] for k in ("sup", "emb", "bur")}
+    for b in BINS:
+        x = [c for c in main_checks if c["age_bin"] == b]
+        m = max(1, len(x))
+        sh = (sum(c["field"] in SUPERSEDABLE for c in x) / m, sum(c["placement"] == "embedded" for c in x) / m,
+              sum(c["form"] == "buried" for c in x) / m)
+        if b in BAL_BINS:
+            for k, v in zip(("sup", "emb", "bur"), sh):
+                shares[k].append(v)
+        print("    " + f"{b:<10}{len(x):>8}{sh[0]:>14.1%}{sh[1]:>11.1%}{sh[2]:>9.1%}" + ("   (not balanced, not in the criteria)" if b == "other" else ""))
+    for k, lim, label in (("sup", MAX_GROUP_SPREAD, "supersedable"), ("emb", MAX_PLACE_SPREAD, "embedded"),
+                          ("bur", MAX_FORM_SPREAD, "buried")):
+        sp = max(shares[k]) - min(shares[k])
+        print(f"    spread {label:<13}{sp:>6.1%}  (limit {lim:.0%})  {'ok' if sp <= lim else 'FAIL'}")
+    print("  field x age_bin (checks):  group   " + "".join(f"{b:>8}" for b in BINS) + f"{'bins>0':>8}")
+    ftab = defaultdict(Counter)
+    for c in main_checks:
+        ftab[c["field"]][c["age_bin"]] += 1
+    for f in FIELDS:
+        row = ftab[f]
+        print(f"    {f:<18}{'sup' if f in SUPERSEDABLE else 'stable':<8}" + "".join(f"{row[b]:>8}" for b in BINS)
+              + f"{sum(1 for b in BAL_BINS if row[b] > 0):>8}")
+    problems += balance_problems(checks)
 
     # ---- per deliverable
     print("\nDELIVERABLES (field checks, CTRL and UNK excluded): counts fresh/medium/old")
@@ -167,8 +198,8 @@ def main():
     print(f"  first deliverable at turn {min(turns)}; deliverables per 30-turn window "
           f"{[win[i] for i in range(max(win) + 1)]}; gaps min/max {min(b - a_ for a_, b in zip(turns, turns[1:]))}/"
           f"{max(b - a_ for a_, b in zip(turns, turns[1:]))}")
-    if min(turns) > 12:
-        problems.append("first deliverable after turn 12")
+    if min(turns) > 11:
+        problems.append("first deliverable after turn 11")
     ctrl_share = len({c['deliverable_id'] for c in ctrl}) / nd
     if not 0.15 <= ctrl_share <= 0.35:
         problems.append(f"CTRL share {ctrl_share:.0%} not about 1 in 4")

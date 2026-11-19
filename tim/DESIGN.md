@@ -84,7 +84,7 @@ from "late checks ask about older facts". A smoke run also showed pi's compactio
 said so far, so v1 was easy for a good summarizer.
 
 Decision: `generate.py --schedule v2` (the default; `--schedule v1` reproduces the old session byte for byte).
-- Facts are planted throughout the session: 80 to 100 statements, at most 40% in the first third, at least 25
+- Facts are planted throughout the session: 80 to 100 statements, at most 40% in the first third, at least 30
   supersessions spread over all thirds, 25 to 30% embedded in another client's visit.
 - About 30% of facts are buried: a bullet inside pasted call notes, or a line in a forwarded client email
   (`form: "buried"` in facts.json and checks.jsonl), the rest are stated outright (`form: "sentence"`).
@@ -105,12 +105,35 @@ Decision: `generate.py --schedule v2` (the default; `--schedule v1` reproduces t
   schedule.
 - Size is held near v1 so cost does not grow. The v2 header types are wider than v1 (6 or 7 fields each) so
   every type can carry all three ages.
-- Known confound: old checks fall mostly on stable fields (currency, term, concession reference, style rule),
-  which are never superseded; fresh checks fall on fields that change. Read `by_field` next to the age bins.
+- Balance inside each age bin (added Nov 19, after the first v2 build). The first v2 session had a confound: old
+  checks (60+ turns) fell on fields that never change (currency, term, concession reference, style rule) and on
+  facts said in the client's own visit, while fresh checks fell on changing fields and on embedded facts. Stable
+  headline fields are what summaries keep, so old-vs-fresh would have partly measured stable-vs-changing field
+  (first build: supersedable share 88% fresh, 69% medium, 16% old; embedded 40%, 32%, 9%). Now the generator
+  balances, inside each of fresh, medium and old (CTRL and UNK left out; style checks count as stable):
+  1. Field group: share of checks on SUPERSEDABLE fields (contact_name, cc_name, seats, discount_pct,
+     renewal_deadline) differs by at most 15 points between the three bins, and every field appears in at least
+     two of the three bins.
+  2. Placement: share of checks whose fact was said in another client's visit (embedded) differs by at most 10
+     points between bins. Level is about 30 to 36%, a little above the 25 to 30% of statements overall, because
+     embedded statements tend to be the current value for more checks (the previous-visit fresh facts are
+     embedded by construction).
+  3. Form: share of checks whose fact was buried differs by at most 10 points between bins (about 30% each).
+  How: after the statement plan, a simulated-annealing pass (`anneal_plan`, cost `plan_cost`) moves, adds and
+  removes statements under every slot rule. Supersedable fields may stay unchanged for long stretches (so they
+  can be old) and stable fields may be first stated late (so they can be fresh or medium; the checks before
+  that are UNK). Which statements are buried is chosen after the plan (`choose_buried`) to equalise the buried
+  share per bin. The generator retries with derived seeds until `balance_problems` is empty on the real checks
+  (with a 15% margin on each limit). `gen/report.py --strict` and `gen/test_generate.py` (seeds 0 and 1) check
+  the same criteria. The cost of balance: supersessions dropped from 57 to 49 and D checks from 89 to 75.
+- Still read `by_field` next to the age bins when a result looks odd; balance removes the systematic confound,
+  not the small per-field counts (a field has 0 to 14 checks in a bin).
 
-`sessions/pilot_v2_seed0` (seed 0): 4 clients, 49 visits (2 to 4 messages), 149 user messages, 38 deliverables,
-254 checks: 226 on stated facts (A 84, C 134, D 89, CTRL 10, NEAR 20; home 173, embedded 53) and 28 UNK; 91 fact
-statements, 57 of them supersessions, 27 embedded, 28 buried; 240k user characters (v1: 244k, 145 messages).
+`sessions/pilot_v2_seed0` (seed 0): 4 clients, 49 visits (2 to 4 messages), 150 user messages, 38 deliverables,
+242 checks: 200 on stated facts (A 73, C 115, D 75, CTRL 10, NEAR 18; home 134, embedded 66) and 42 UNK; 84 fact
+statements, 49 of them supersessions, 25 embedded, 24 buried; 248k user characters (v1: 244k, 145 messages).
+Main checks by age bin (CTRL and UNK left out): fresh 50, medium 60, old 47, other 33. Share on supersedable
+fields 74%, 73%, 70% (fresh, medium, old); embedded 36%, 35%, 34%; buried 30%, 32%, 32%.
 
 ## 4. Generation
 
