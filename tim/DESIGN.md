@@ -106,7 +106,7 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 
 | # | Condition | Notes |
 |---|---|---|
-| 1 | Pi, full context, no compaction | Context-rot reference. Only valid while the session fits, so run on a truncated session |
+| 1 | Pi, full context, no compaction (`pi_full`) | Context-rot reference. The model's real window (1,048,576 tokens for gemini-3.8-flash); the whole session (~150k tokens) fits, so it runs on the full session, 1 run |
 | 2 | Pi with native compaction at 100k | The main baseline |
 | 3 | Pi, one session per client (`pi_per_client`) | The "separate threads" workaround people use. Embedded facts land in the wrong client's thread, as they would for a real user |
 | 4 | AG + Pi, `ag_half`: `max_context_tokens = 100000` with every AG budget halved (AG's defaults sum to 105k and do not fit under 100k; halving is AG's own `within_limit` rule) | Main treatment |

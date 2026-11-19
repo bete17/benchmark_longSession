@@ -380,7 +380,12 @@ def main():
             "context_tokens": max([c["input_tokens"] for c in agent] or [0]),
             "gatherer_input_tokens": sum(g["input_tokens"] for g in gs) if conn else None,
             "gatherer_output_tokens": sum(g["output_tokens"] for g in gs) if conn else None,
-            "gatherer_seconds": round(sum(g["seconds"] or 0 for g in gs), 3) if conn else None,
+            # time the session waited on AG after this turn (runner's build/check wait) when recorded;
+            # older runs: the Gatherer calls' own time
+            "gatherer_seconds": (r["ag_wait_seconds"] if r.get("ag_wait_seconds") is not None
+                                 else round(sum(g["seconds"] or 0 for g in gs), 3)) if conn else None,
+            "gatherer_call_seconds": round(sum(g["seconds"] or 0 for g in gs), 3) if conn else None,
+            "ag_wait_capped": r.get("ag_wait_capped"),
             "actor_usd": round(sum(c["usd"] for c in cs), 6),
             "gatherer_usd": round(sum(g["usd"] for g in gs), 6) if conn else None,
             "events": ev, "error": r.get("error")})

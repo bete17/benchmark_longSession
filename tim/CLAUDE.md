@@ -133,7 +133,8 @@ Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
 - `ag_quarter`: as ag_half with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 3750
   (renamed from `ag_tight`). run.json records every effective AG option in `ag_effective_options`.
   (One knob variant for the spend curve; more later.)
-Optional if budget allows: `pi_full` (no compaction) on a truncated session as a context-rot reference.
+- `pi_full`: pi alone, compaction off, model registered with its real window (1,048,576), full
+  session, 1 run. Context-rot reference (added 2026-11-19; the session fits, so no truncation).
 Grade each run: `python grade/grade.py --session sessions/pilot_seed0 --run results/<run>`.
 ASK TIM before any spend beyond the cap he gives you.
 

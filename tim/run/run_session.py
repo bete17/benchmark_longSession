@@ -4,7 +4,7 @@ Usage:
   python run/run_session.py --condition pi_compact --session sessions/pilot_seed0 --rep 1 \
       [--max-turns 30] [--results results] [--max-usd 5]
 
-Conditions: pi_compact, pi_per_client, ag_half, ag_quarter (see CONDITIONS below).
+Conditions: pi_compact, pi_per_client, ag_half, ag_quarter, pi_full (see CONDITIONS below).
 
 What it does (layout in TRACE.md):
   - runs a logging proxy in front of the Gemini API. pi's model baseUrl points at it, so every Actor
@@ -25,6 +25,7 @@ it cannot read the session's answer files. Then run trace/export.py on the run d
 import argparse
 import hashlib
 import http.server
+import glob
 import json
 import os
 import shutil
@@ -66,6 +67,9 @@ AG_SCALED_100K = {
 }
 CONDITIONS = {
     "pi_compact": {"ag": False, "per_client": False},
+    # pi_full: context-rot reference. No compaction, the model's real window (1,048,576 input tokens),
+    # whole session in one thread; no 100k ceiling.
+    "pi_full": {"ag": False, "per_client": False, "full": True},
     "pi_per_client": {"ag": False, "per_client": True},
     # ag_half: every AG budget halved (AG's own within_limit rule) so defaults fit under 100k.
     # ag_quarter: as ag_half with the three relevance/previous-task budgets halved again.
@@ -193,6 +197,7 @@ def make_handler(state):
             except Exception as e:  # network failure: let pi retry
                 status, rbody, ctype = 502, json.dumps({"error": {"message": repr(e)}}).encode(), "application/json"
             secs = time.time() - t0
+            wait, pending, capped = ag_wait(ag_home) if cond["ag"] else (0.0, [], False)
             with open(os.path.join(state.raw, "responses", f"{call_id}.txt"), "wb") as fh:
                 fh.write(rbody)
             usage, finish, tools = parse_sse(rbody) if status == 200 else ({}, None, [])
@@ -364,15 +369,18 @@ def run_turn(proc, text, turn):
 
 # ------------------------------------------------------------------ setup
 
-def write_pi_agent_dir(d, port):
+FULL_WINDOW = 1048576   # gemini-3.8-flash inputTokenLimit (models API, 2026-11-19)
+
+
+def write_pi_agent_dir(d, port, full=False):
     os.makedirs(d, exist_ok=True)
     models = {"providers": {PROVIDER: {
         "baseUrl": f"http://127.0.0.1:{port}/v1beta", "api": "google-generative-ai", "apiKey": "GEMINI_API_KEY",
-        "models": [{"id": MODEL, "name": f"{MODEL} (bench)", "input": ["text"], "contextWindow": WINDOW,
+        "models": [{"id": MODEL, "name": f"{MODEL} (bench)", "input": ["text"], "contextWindow": FULL_WINDOW if full else WINDOW,
                     "maxTokens": 65536, "reasoning": True,
                     "cost": {"input": 0.75, "output": 3.75, "cacheRead": 0.075, "cacheWrite": 0}}]}}}
     json.dump(models, open(os.path.join(d, "models.json"), "w"), indent=1)
-    settings = {"compaction": {"enabled": True, "reserveTokens": RESERVE, "keepRecentTokens": 20000},
+    settings = {"compaction": {"enabled": not full, "reserveTokens": RESERVE, "keepRecentTokens": 20000},
                 "retry": {"enabled": True}}
     json.dump(settings, open(os.path.join(d, "settings.json"), "w"), indent=1)
 
@@ -397,6 +405,39 @@ def git_out(args, cwd):
         return subprocess.run(args, cwd=cwd, capture_output=True, text=True).stdout.strip()
     except OSError:
         return None
+
+
+BUILD_WAIT_CAP_S = 300
+
+
+def ag_wait(home, cap=BUILD_WAIT_CAP_S):
+    """Before the next user message: wait while AG has a boundary check undecided or a build running
+    (as a real user's pause would allow), at most `cap` seconds. Returns (seconds waited, what was
+    pending at the start, whether the cap was hit)."""
+    import sqlite3
+    t0, first = time.time(), None
+    while True:
+        pending = []
+        for db in glob.glob(os.path.join(home, "gatherers", "*", "context.db")) + \
+                glob.glob(os.path.join(home, "context.db")):
+            try:
+                c = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=5)
+                if c.execute("select count(*) from _boundaries where decided_at is null").fetchone()[0]:
+                    pending.append("check")
+                if c.execute("select count(*) from _builds where status='running' and started_at > ?",
+                             (time.time() - 3600,)).fetchone()[0]:
+                    pending.append("build")
+                c.close()
+            except sqlite3.Error:
+                pass    # store not created yet, or busy
+        if first is None:
+            first = pending
+        waited = time.time() - t0
+        if not pending:
+            return round(waited, 3), first, False
+        if waited >= cap:
+            return round(waited, 3), first, True
+        time.sleep(1.0)
 
 
 def ag_usd_so_far(home, price):
@@ -459,11 +500,12 @@ def main():
            "session_dir": os.path.relpath(session_dir, TIM), "actor_model": f"gemini/{MODEL}",
            "gatherer_model": f"gemini/{MODEL}" if cond["ag"] else None,
            "ag_commit": git_out(["git", "rev-parse", "--short", "HEAD"], AG_CLONE) if cond["ag"] else None,
-           "pi_version": pi_version, "ceiling_tokens": CEILING, "system_prompt_sha": sp_sha,
+           "pi_version": pi_version, "ceiling_tokens": None if cond.get("full") else CEILING, "system_prompt_sha": sp_sha,
            "started_at": now(), "finished_at": None, "status": "partial", "turns_completed": 0, "errors": [],
            "ag_options": cond.get("options"),
            "ag_effective_options": ag_effective(cond.get("options")) if cond["ag"] else None, "actor_thinking": THINKING, "pi_tools": TOOLS_ALLOWED,
-           "pi_context_window": WINDOW, "pi_reserve_tokens": RESERVE, "max_turns": a.max_turns or None,
+           "pi_context_window": FULL_WINDOW if cond.get("full") else WINDOW,
+           "pi_compaction": not cond.get("full"), "pi_reserve_tokens": RESERVE, "max_turns": a.max_turns or None,
            "request_capture": "logging proxy in front of the Gemini API (run_session.py)"}
 
     def save_run():
@@ -477,7 +519,7 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
     agent_dir = os.path.join(raw, "pi", "agent")
-    write_pi_agent_dir(agent_dir, port)
+    write_pi_agent_dir(agent_dir, port, full=cond.get("full", False))
     ag_home = os.path.join(raw, "ag", "home")
     if cond["ag"]:
         write_ag_home(ag_home, run_id, cond["options"])
@@ -515,7 +557,9 @@ def main():
                             dirs_exist_ok=True)
             turn_log.write(json.dumps({"turn": m["turn"], "visit": m["visit"], "client": m["client"],
                                        "thread": thread, "started_at": started, "finished_at": now(),
-                                       "seconds": round(secs, 3), "events": events, "error": err}) + "\n")
+                                       "seconds": round(secs, 3), "events": events, "error": err,
+                                       "ag_wait_seconds": wait, "ag_wait_pending": pending,
+                                       "ag_wait_capped": capped}) + "\n")
             turn_log.flush()
             gat = ag_usd_so_far(ag_home, price) if cond["ag"] else 0.0
             spent = state.actor_usd + gat
