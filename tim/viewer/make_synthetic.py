@@ -58,7 +58,7 @@ def make_run(root, session, cond, rep, seed=0):
     for v in visits:
         for t in range(v["first_turn"], v["last_turn"] + 1):
             visit_of[t] = v
-    turns, calls, contexts, decisions, builds, gcalls = [], [], [], [], [], []
+    turns, calls, contexts, decisions, builds, gcalls, msgs = [], [], [], [], [], [], []
     ctx_tokens = 0
     last_compact_turn = 0
     summary_facts = set()            # (client, field, turn) retained by the compaction summary
@@ -233,6 +233,18 @@ def make_run(root, session, cond, rep, seed=0):
                     hdr[c["field"]] = val
             with open(os.path.join(d, "deliverables", did + ".md"), "w") as f:
                 f.write("```json\n" + json.dumps(hdr) + "\n```\n\n" + body + "\n")
+        steps = []
+        for did in sorted({c["deliverable_id"] for c in checks_by_turn.get(t, [])}):
+            txt = open(os.path.join(d, "deliverables", did + ".md")).read()
+            cid = f"t{t:03d}c{n_calls-1}"
+            steps += [{"call_id": cid, "kind": "tool_call", "name": "write",
+                       "text": json.dumps({"path": f"deliverables/{did}.md", "content": txt})},
+                      {"call_id": cid, "kind": "tool_result", "name": "write", "text": "Wrote file"},
+                      {"call_id": cid, "kind": "text", "name": None, "text": f"Done: {did} is in deliverables/{did}.md."}]
+        if not steps:
+            steps = [{"call_id": f"t{t:03d}c0", "kind": "text", "name": None,
+                      "text": f"Noted for {client}. (synthetic reply)"}]
+        msgs.append({"turn": t, "thread": thread, "user": sess[t - 1]["text"], "steps": steps})
         a_usd = turn_in * 0.3e-6 + turn_out * 2.5e-6 - turn_cache * 0.225e-6
         cost_a += a_usd
         cost_g += g_usd
@@ -247,6 +259,7 @@ def make_run(root, session, cond, rep, seed=0):
     jl(os.path.join(d, "trace/calls.jsonl"), calls)
     jl(os.path.join(d, "trace/contexts.jsonl"), contexts)
     jl(os.path.join(d, "trace/decisions.jsonl"), decisions)
+    jl(os.path.join(d, "trace/messages.jsonl"), msgs)
     if is_ag:
         jl(os.path.join(d, "trace/builds.jsonl"), builds)
         jl(os.path.join(d, "trace/gatherer_calls.jsonl"), gcalls)

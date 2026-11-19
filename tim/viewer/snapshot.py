@@ -20,7 +20,8 @@ data, deliv, session = {}, {}, None
 for rid, d in runs.items():
     run = serve.jf(os.path.join(d, "run.json"), {})
     out = {"run": run, "summary": serve.jf(os.path.join(d, "summary.json"), {}), "cost": serve.jf(os.path.join(d, "cost.json"), {}),
-           "grades": serve.jl(os.path.join(d, "grades.jsonl")), "attribution": serve.jl(os.path.join(d, "attribution.jsonl"))}
+           "grades": serve.jl(os.path.join(d, "grades.jsonl")), "attribution": serve.jl(os.path.join(d, "attribution.jsonl")),
+           "coverage": serve.jl(os.path.join(d, "coverage.jsonl"))}
     for t in serve.TRACE_FILES:
         out[t] = serve.jl(os.path.join(d, "trace", t + ".jsonl"))
     data[rid] = out

@@ -69,6 +69,15 @@ How to fill it:
 - pi runs: from the pi session file (compaction entries and the messages kept after them), checked
   against the request file.
 
+## trace/messages.jsonl (one row per user turn: the conversation as it happened)
+
+`turn, thread, user` (the user text), `steps`: the agent's side of the turn in order, each
+`{call_id, kind, name, text}` where kind is "text" (reply text), "thinking" (if the model returned
+thoughts), "tool_call" (`name` is the tool, `text` its arguments as JSON, e.g. a write's path and
+content), or "tool_result" (`name` the tool, `text` the result, truncated to 2000 chars). From the pi
+session file (or the captured responses). Committed: it is what the viewer's conversation view shows
+when raw/ is not available.
+
 ## trace/decisions.jsonl (one row per decision the context manager made)
 
 `turn, kind, detail`:
@@ -88,6 +97,12 @@ computes most of this.
 
 `turn, purpose` (boundary, segment, rank, summarize, ...), `model, input_tokens, output_tokens,
 seconds, usd`. From AG's call log (`ag/ag_tools/llm/calllog.py`).
+
+## coverage.jsonl (from analysis/coverage.py, one row per turn)
+
+`turn, call_id, n, verbatim, paraphrased, absent, coverage, lost`: of the facts said so far (current
+value of each client field), how many are in the turn's last agent request. Shows whether compaction or
+AG keeps facts in view, independent of grading.
 
 ## attribution.jsonl (from analysis, one row per graded check)
 

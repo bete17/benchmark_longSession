@@ -55,6 +55,21 @@ label{font-size:13px}
 select{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:3px 6px}
 .legend span{margin-right:14px;font-size:12px}
 .err{color:var(--fail)}
+.bub{padding:7px 10px;border-radius:10px;margin:4px 0;white-space:pre-wrap;word-break:break-word;font-size:13px;max-width:92%}
+.bub.user{background:var(--soft);border:1px solid var(--line)}
+.bub.agent{background:color-mix(in srgb,var(--accent) 10%,var(--panel));margin-left:6%;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line))}
+.bub details summary{cursor:pointer;color:var(--muted);font-size:12px}
+details.tool{margin:4px 0 4px 6%;font-size:12px}details.tool summary{cursor:pointer;color:var(--accent)}
+.turnhead{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:10px}
+.turnblock{border-left:2px solid var(--line);padding-left:10px;margin:4px 0 8px}
+.ev{font-size:12px;margin:8px 0 2px;padding:4px 8px;border-radius:6px;background:var(--soft);border-left:3px solid var(--c3)}
+.ev.evc{border-left-color:var(--fail)}.ev.evnew{border-left-color:var(--c2)}details.ev summary{cursor:pointer}
+.story{background:var(--soft);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px;line-height:1.5}.story ol{margin:4px 0 0;padding-left:20px}.story li{margin:3px 0}
+.okc{color:var(--pass)}.failc{color:var(--fail)}.small{font-size:12px}
+mark{background:rgba(217,168,58,.45);color:inherit;border-radius:2px}
+tr.sel{background:var(--soft)}tr.vrow>td{background:var(--bg);padding:6px 12px 14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{font:inherit;font-size:12px;border:0;background:var(--panel);color:var(--ink);padding:3px 10px;cursor:pointer}.seg button.on{background:var(--ink);color:var(--bg)}
+.checkline{margin:3px 0}.checkline a{font-size:12px;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -80,7 +95,7 @@ const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
 const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",ag_half:"var(--c2)",ag_quarter:"var(--c3)",pi_full:"var(--c4)"};
 const colorOf=c=>COND_COLOR[c]||"var(--c5)";
 const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
-const state={tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
+const state={onlyFail:false,onlyEv:false,openVisit:null,visitMode:"convo",tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
 
 async function api(p,opt){if(window.SNAPSHOT)return snapApi(p);const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
   const t=r.headers.get("content-type")||"";return t.includes("json")?r.json():r.text()}
@@ -156,103 +171,171 @@ function viewRuns(){
   $("#main").onclick=e=>{const c=e.target.closest("[data-sel]");if(c){c.checked?state.sel.add(c.dataset.sel):state.sel.delete(c.dataset.sel);return}
     const tr=e.target.closest("tr[data-id]");if(tr){state.cur=tr.dataset.id;state.turn=null;state.tab="run";render()}}}
 
+/* ---------- shared: conversation, stories ---------- */
+const TAG_TEXT={A:"old fact (said 40+ turns earlier)",C:"returning to this client after 2+ other visits",D:"the fact was changed later; only the newest value counts",CTRL:"control: the value is restated in the request",NEAR:"fact said a few turns earlier",UNK:"never told; the right answer is null"};
+const VERDICT_TEXT={ok:"Correct, and the fact was in what the model saw.",lucky:"Correct, but the fact was not in what the model saw (a guess, or picked up some other way).",
+  retrieval_miss:"Wrong, and the fact was not in what the model saw: compaction or AG lost it. A memory failure.",
+  usage_miss:"Wrong even though the fact was in what the model saw: the model had it and did not use it.",made_up:"The agent invented a value for something it was never told."};
+const OUTCOME_TEXT={pass:"correct",stale:"used an old value that had been changed",wrong:"wrong value",missing_key:"left the field out",no_header:"file had no readable header",missing_file:"never wrote the file",made_up:"made up a value"};
+const clip=(s,n)=>s&&s.length>n?s.slice(0,n)+" [...]":s||"";
+function hl(text,needle){const t=esc(text);if(!needle)return t;const n=esc(needle);const i=t.toLowerCase().indexOf(n.toLowerCase());
+  return i<0?t:t.slice(0,i)+`<mark>${t.slice(i,i+n.length)}</mark>`+t.slice(i+n.length)}
+function msgsBy(d){const m={};(d.messages||[]).forEach(r=>m[r.turn]=r);return m}
+function decisionLine(x){
+  if(x.kind==="boundary")return `<div class="ev ${x.detail.new_task?"evnew":""}">AG boundary check: <b>${x.detail.new_task?"new task":"same task"}</b> <span class="muted">${esc(x.detail.why||"")}</span></div>`;
+  if(x.kind==="compaction")return `<div class="ev evc">Compaction: history summarized, ${fmtTok(x.detail.tokens_before)} to ${fmtTok(x.detail.tokens_after)} tokens. Anything not in the summary is gone from the model's view.</div>`;
+  if(x.kind==="build")return `<div class="ev">AG build ${x.detail.build_id??""} started <span class="muted">(rebuilds the context from stored tasks${x.detail.forced?", forced by size":""})</span></div>`;
+  return `<div class="ev">${esc(x.kind)}</div>`}
+function stepsHtml(steps,needle){
+  if(!steps||!steps.length)return '<div class="muted small">No agent reply recorded for this turn.</div>';
+  return steps.map(s=>{
+    if(s.kind==="text")return `<div class="bub agent">${hl(clip(s.text,1500),needle)}</div>`;
+    if(s.kind==="thinking")return `<details class="tool"><summary>model thinking</summary><pre>${esc(clip(s.text,3000))}</pre></details>`;
+    if(s.kind==="tool_call"){let a=s.text;let p=null;try{p=JSON.parse(a)}catch{}
+      const label=p&&p.path?`${esc(s.name)} ${esc(p.path)}`:esc(s.name);
+      const body=p&&p.content!=null?p.content:(p?JSON.stringify(p,null,1):a);
+      return `<details class="tool" ${needle&&body&&body.toLowerCase().includes(String(needle).toLowerCase())?"open":""}><summary>tool call: ${label}</summary><pre>${hl(clip(body,4000),needle)}</pre></details>`}
+    if(s.kind==="tool_result")return `<div class="muted small">tool result (${esc(s.name||"")}): ${esc(clip(s.text,200))}</div>`;
+    return ""}).join("")}
+function turnConvo(d,sess,t,opts={}){
+  const M=msgsBy(d);const m=M[t];const user=m?.user??sess?.session?.[t-1]?.text??"";
+  const long=user.length>(opts.full?99999:600);
+  let h=`<div class="turnhead">turn ${t}${opts.label?" · "+opts.label:""}</div>`;
+  h+=`<div class="bub user">${long?`<span>${hl(user.slice(0,600),opts.needle)}</span><details><summary>show all ${user.length} characters</summary>${hl(user,opts.needle)}</details>`:hl(user,opts.needle)}</div>`;
+  h+=stepsHtml(m?.steps,opts.needleAgent);
+  return h}
+function turnModelView(d,t){
+  const c=ctxHtml(d,t);
+  return `<div class="turnhead">turn ${t} · what the model saw (${fmtTok(c.total)} tokens)</div>${c.html}
+   ${c.last?`<div class="row" style="margin:4px 0"><button class="btn sm" data-req="${c.last.call_id}">full request</button><button class="btn sm" data-resp="${c.last.call_id}">raw response</button></div><div data-box="${c.last.call_id}"></div>`:""}`}
+function wireReqButtons(root){
+  root.querySelectorAll("[data-req]").forEach(b=>b.onclick=()=>showRequest(b.dataset.req,null,root.querySelector(`[data-box="${b.dataset.req}"]`)));
+  root.querySelectorAll("[data-resp]").forEach(b=>b.onclick=()=>showResponse(b.dataset.resp,root.querySelector(`[data-box="${b.dataset.resp}"]`)))}
+function factFor(sess,chk){if(!chk||chk.stated_turn==null)return null;return sess?.facts?.[chk.client]?.[chk.field]?.find(f=>f.turn===chk.stated_turn)||null}
+function visitOf(sess,t){return sess?.visits?.find(v=>v.first_turn<=t&&t<=v.last_turn)}
+function storyHtml(d,sess,g){
+  const chk=sess?.checks?.find(c=>c.check_id===g.check_id);const f=factFor(sess,chk);const a=attrBy(d)[g.check_id];
+  const lines=[];
+  const fieldName=g.field==="style_rule"?"wording rule":g.field.replace(/_/g," ");
+  if(g.kind==="unknown"){
+    lines.push(`The user never told the agent ${esc(g.client)}'s <b>${esc(fieldName)}</b> before turn ${g.turn}.`);
+  }else if(f){const sv=visitOf(sess,f.turn);
+    lines.push(`<b>Turn ${f.turn}</b>: the user said ${esc(g.client)}'s ${esc(fieldName)}${f.placement==="embedded"&&sv?`, in passing, while working on <b>${esc(sv.client)}</b>`:` during a ${esc(g.client)} visit`}: <i>"${esc(f.sentence)}"</i>`);
+    const all=sess.facts[chk.client][chk.field];const later=all.filter(x=>x.turn<g.turn&&x.turn!==f.turn);
+    if(chk.superseded_values?.length){const old=all.filter(x=>x.turn<f.turn);
+      if(old.length)lines.push(`Earlier, on turn ${old.map(x=>x.turn).join(", ")}, the value had been <b>${esc(JSON.stringify(old[0].value))}</b>. This check wants the newer one.`)}
+    const between=(d.decisions||[]).filter(x=>x.turn>f.turn&&x.turn<=g.turn);
+    const comp=between.filter(x=>x.kind==="compaction").map(x=>x.turn);
+    const nt=between.filter(x=>x.kind==="boundary"&&x.detail.new_task).map(x=>x.turn);
+    const away=chk.visits_since_client_last_seen;
+    let mid=`Then ${g.turn-f.turn} turns passed`;const bits=[];
+    if(away!=null)bits.push(`${away} visit${away===1?"":"s"} to other clients before returning`);
+    if(comp.length)bits.push(`<b>${comp.length} compaction${comp.length>1?"s":""}</b> (turn ${comp.join(", ")})`);
+    if(nt.length)bits.push(`AG started ${nt.length} new task${nt.length>1?"s":""}`);
+    lines.push(mid+(bits.length?": "+bits.join(", "):"")+".");
+  }
+  lines.push(`<b>Turn ${g.turn}</b>: the user asked for ${esc(g.deliverable_id)}. The agent wrote <b>${esc(JSON.stringify(g.got))}</b>; the right answer is <b>${esc(JSON.stringify(g.expected))}</b>. Result: <span class="${g.outcome==="pass"?"okc":"failc"}">${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span>.`);
+  if(a&&a.presence&&a.presence!=="n/a")lines.push(`When it wrote the file, the fact was <b>${a.presence==="absent"?"not in":a.presence==="verbatim"?"in (word for word)":"in (reworded, e.g. inside a summary)"}</b> what the model saw. ${esc(VERDICT_TEXT[a.verdict]||"")}`);
+  else if(a&&a.verdict==="made_up")lines.push(esc(VERDICT_TEXT.made_up));
+  else if(!a&&g.kind!=="unknown")lines.push(`<span class="muted">Whether the fact was in view is unknown until analysis/attribute.py runs (needs the local raw/ folder).</span>`);
+  return `<div class="story"><div class="row" style="margin-bottom:4px">${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}<span class="muted small">${g.tags.map(t=>TAG_TEXT[t]).filter(Boolean).join("; ")}</span></div><ol>${lines.map(l=>`<li>${l}</li>`).join("")}</ol></div>`}
+
 /* ---------- RUN tab ---------- */
 async function viewRun(){
   if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
   const id=state.cur;const d=await getRun(id);const sess=await getSession(id);const D=derive(d);
   const card=state.runs.find(r=>r.id===id)||{};const run=d.run||{};let S=d.summary||{};
-  const partial=run.status&&run.status!=="complete";
-  if(partial){const done=run.turns_completed||D.n;const rows=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done);
+  const partial=run.status&&run.status!=="complete";const done=run.turns_completed||D.n;
+  if(partial){const rows=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done);
     const rt=rs=>({n:rs.length,pass:rs.length?rs.filter(r=>r.outcome==="pass").length/rs.length:null});
     S={overall:rt(rows),by_tag:Object.fromEntries(["A","C","D","CTRL"].map(t=>[t,rt(rows.filter(r=>r.tags.includes(t)))]))}}
   const isAG=(d.builds||[]).length||(run.condition||"").startsWith("ag");
-  const totSec=(d.turns||[]).reduce((a,t)=>a+(t.seconds||0),0);
-  const miss=card.misses||{};
+  const totSec=(d.turns||[]).reduce((a,t)=>a+(t.seconds||0),0);const miss=card.misses||{};
   let h=`<div class="row" style="margin-bottom:8px"><span class="dot" style="background:${colorOf(run.condition)}"></span><b style="font-size:16px">${esc(id)}</b>
-    <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}${partial?" | scored on the "+(run.turns_completed||"")+" turns run":""}</span></div>`;
+    <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}${partial?" | scored on the "+done+" turns run":""}</span></div>`;
   h+=`<div class="kpis">
-   <div class="kpi"><div class="v">${pct(S.overall?.pass)}</div><div class="l">pass (n=${S.overall?.n??""})</div></div>
-   ${["A","C","D","CTRL"].map(k=>`<div class="kpi"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">tag ${k} (n=${S.by_tag?.[k]?.n??""})</div></div>`).join("")}
+   <div class="kpi"><div class="v">${pct(S.overall?.pass)}</div><div class="l">checks correct (n=${S.overall?.n??""})</div></div>
+   ${["A","C","D","CTRL"].map(k=>`<div class="kpi" title="${esc(TAG_TEXT[k])}"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">${k}: ${({A:"old facts",C:"return to client",D:"changed facts",CTRL:"control"})[k]}</div></div>`).join("")}
    <div class="kpi"><div class="v">${usd(d.cost?.actor_usd)}</div><div class="l">Pi / actor</div></div>
    ${isAG?`<div class="kpi"><div class="v">${usd(d.cost?.gatherer_usd)}</div><div class="l">Gatherer</div></div>`:""}
    <div class="kpi"><div class="v">${usd(d.cost?.total_usd)}</div><div class="l">combined</div></div>
-   <div class="kpi"><div class="v">${sec(totSec)}</div><div class="l">session latency</div></div>
-   ${card.has_attribution?`<div class="kpi"><div class="v">${miss.retrieval_miss||0} / ${miss.usage_miss||0}</div><div class="l">retrieval / usage misses</div></div>`:""}</div>`;
-  // events & bands
+   <div class="kpi"><div class="v">${sec(totSec)}</div><div class="l">total latency</div></div>
+   ${card.has_attribution?`<div class="kpi" title="failed because the fact was missing / failed although it was there"><div class="v">${miss.retrieval_miss||0} / ${miss.usage_miss||0}</div><div class="l">memory / usage failures</div></div>`:""}</div>`;
+  // overview chart
   const ev=[];(d.turns||[]).forEach(t=>(t.events||[]).forEach(e=>ev.push({turn:t.turn,e})));
-  const clients=[...new Set((d.turns||[]).map(t=>t.client))];const cc=c=>`hsl(${(clients.indexOf(c)*67+200)%360} 55% 50%)`;
-  const bands=[];(d.turns||[]).forEach(t=>{const b=bands[bands.length-1];if(b&&b.visit===t.visit)b.b=t.turn;else bands.push({a:t.turn,b:t.turn,visit:t.visit,client:t.client,color:cc(t.client)})});
+  const visits=(sess?.visits||[]).filter(v=>v.first_turn<=D.n);
+  const clients=[...new Set(visits.map(v=>v.client))];const cc=c=>`hsl(${(clients.indexOf(c)*67+200)%360} 55% 50%)`;
+  const bands=visits.map(v=>({a:v.first_turn,b:Math.min(v.last_turn,D.n),color:cc(v.client)}));
   const evStyle={compaction:["var(--fail)",1.6],new_task:["var(--c2)",1],build:["var(--c3)",1],forced_build:["var(--c3)",2],error:["var(--fail)",2]};
-  const markers=ev.map(x=>({turn:x.turn,color:(evStyle[x.e]||["var(--muted)"])[0],w:(evStyle[x.e]||[0,1])[1],title:x.e+" at turn "+x.turn,op:x.e==="build"?.35:.8}));
+  const markers=ev.filter(x=>x.e!=="build").map(x=>({turn:x.turn,color:(evStyle[x.e]||["var(--muted)"])[0],w:(evStyle[x.e]||[0,1])[1],title:x.e+" at turn "+x.turn}));
   if(run.ceiling_tokens)markers.push({ceil:run.ceiling_tokens,label:"ceiling "+fmtTok(run.ceiling_tokens)});
   const A=attrBy(d);
-  const dots=(x,y,hh)=>D.gr.map(g=>{const a=A[g.check_id];const c=g.outcome==="pass"?(a?.verdict==="lucky"?VERDICT_COLOR.lucky:VERDICT_COLOR.ok):(a?VERDICT_COLOR[a.verdict]||VERDICT_COLOR.retrieval_miss:VERDICT_COLOR.retrieval_miss);
-     const yy=g.outcome==="pass"?y(0.93):y(0.07);return `<circle cx="${x(g.turn)}" cy="${yy}" r="3" fill="${c}" opacity=".85"><title>${esc(g.check_id)} ${g.outcome}${a?" ("+a.verdict+")":""}</title></circle>`}).join("");
-  h+=`<div class="grid"><div>`;
-  h+=`<div class="panel"><h2>Context size per turn <span class="muted" style="text-transform:none">(tokens in the largest actor call)</span></h2>
-   <div class="legend"><span style="color:var(--fail)">| compaction</span><span style="color:var(--c2)">| new task (AG)</span><span style="color:var(--c3)">| build (AG)</span><span class="muted">shaded = client visit</span></div>
-   ${turnChart({id:"c1",h:160,n:D.n,series:[{vals:D.ctx,color:colorOf(run.condition)}],fmtY:fmtTok,bands,markers,ymax:Math.max(niceMax(Math.max(...D.ctx.filter(Boolean),1)),run.ceiling_tokens?niceMax(run.ceiling_tokens*1.02):0)})}</div>`;
-  h+=`<div class="panel"><h2>Accuracy at checkpoints <span class="muted" style="text-transform:none">(each dot is one graded check; line = pass rate of the last 12 checks)</span></h2>
-   <div class="legend"><span style="color:var(--pass)">pass</span><span style="color:var(--lucky)">pass without the fact in view</span><span style="color:var(--fail)">fail, fact absent (retrieval)</span><span style="color:#d98a2b">fail, fact present (usage)</span></div>
-   ${turnChart({id:"c2",h:150,n:D.n,series:[{vals:D.roll,color:"var(--ink)",w:1.4,dash:"3 2"}],fmtY:v=>pct(v),ymax:1,bands,markers:ev.filter(e=>e.e==="compaction").map(x=>({turn:x.turn,color:"var(--fail)",w:1.4})),extra:dots})}</div>`;
-  h+=`<div class="panel"><h2>Latency per turn <span class="muted" style="text-transform:none">(actor, plus gatherer on top)</span></h2>
-   ${turnChart({id:"c3",h:130,n:D.n,series:[{type:"bars",vals:D.secA,color:"var(--c0)"},...(isAG?[{type:"bars",vals:D.secG,base:D.secA,color:"var(--c2)"}]:[])],fmtY:v=>v.toFixed(0)+"s",markers:ev.filter(e=>e.e==="compaction"||e.e==="new_task").map(x=>({turn:x.turn,color:evStyle[x.e][0],op:.35})),ymax:niceMax(Math.max(1,...D.secA.map((v,i)=>(v||0)+(D.secG[i]||0))))})}</div>`;
-  h+=`<div class="panel"><h2>Cumulative cost</h2>
-   <div class="legend"><span style="color:var(--c0)">Pi / actor</span>${isAG?'<span style="color:var(--c2)">Gatherer</span><span style="color:var(--ink)">combined</span>':""}</div>
-   ${turnChart({id:"c4",h:130,n:D.n,series:[{vals:D.cumA,color:"var(--c0)"},...(isAG?[{vals:D.cumG,color:"var(--c2)"},{vals:D.cumT,color:"var(--ink)",w:1.2}]:[])],fmtY:usd,markers:ev.filter(e=>e.e==="compaction").map(x=>({turn:x.turn,color:"var(--fail)",op:.35}))})}</div>`;
-  h+=`</div><div class="sticky panel" id="inspector"></div></div>`;
+  const ymaxC=Math.max(niceMax(Math.max(...D.ctx.filter(Boolean),1)),run.ceiling_tokens?niceMax(run.ceiling_tokens*1.02):0);
+  const dots=(x,y)=>D.gr.map(g=>{const a=A[g.check_id];const c=g.outcome==="pass"?(a?.verdict==="lucky"?VERDICT_COLOR.lucky:VERDICT_COLOR.ok):(a?VERDICT_COLOR[a.verdict]||VERDICT_COLOR.retrieval_miss:VERDICT_COLOR.retrieval_miss);
+     return `<circle cx="${x(g.turn)}" cy="${y(ymaxC*(g.outcome==="pass"?.97:.03))}" r="3.2" fill="${c}"><title>${esc(g.check_id)}: ${g.outcome}</title></circle>`}).join("");
+  const cov=d.coverage||[];const covVals=Array.from({length:D.n},(_,i)=>{const r=cov.find(c=>c.turn===i+1);return r?r.coverage:null});
+  h+=`<div class="panel"><h2>The session at a glance</h2>
+   <div class="legend"><span>line: context size</span><span style="color:var(--fail)">| compaction</span><span style="color:var(--c2)">| AG new task</span><span>shaded: one client visit</span><span style="color:var(--pass)">● check correct</span><span style="color:var(--fail)">● check wrong</span><span class="muted">(dots along the top are correct, along the bottom wrong). Click to jump to that visit.</span></div>
+   ${turnChart({id:"c1",h:170,n:D.n,series:[{vals:D.ctx,color:colorOf(run.condition)}],fmtY:fmtTok,bands,markers,ymax:ymaxC,extra:dots,showSel:false})}
+   ${cov.length?`<h2 style="margin-top:10px">Facts still in view <span class="muted" style="text-transform:none;letter-spacing:0">(of everything the user has said about clients so far, the share present in the model's input on each turn)</span></h2>
+     ${turnChart({id:"c5",h:110,n:D.n,series:[{vals:covVals,color:"var(--c1)"}],fmtY:pct,ymax:1,bands,markers:ev.filter(e=>e.e==="compaction"||e.e==="new_task").map(x=>({turn:x.turn,color:evStyle[x.e][0],op:.6})),showSel:false})}`:
+     `<p class="muted small">"Facts still in view" appears here after running analysis/coverage.py on the machine with the raw/ folder.</p>`}
+   <details><summary class="muted">more charts: accuracy over time, latency per turn, cumulative cost</summary>
+   ${turnChart({id:"c2",h:120,n:D.n,series:[{vals:D.roll,color:"var(--ink)",w:1.4,dash:"3 2"}],fmtY:pct,ymax:1,bands,showSel:false})}
+   <div class="muted small">rolling share of the last 12 checks that were correct</div>
+   ${turnChart({id:"c3",h:110,n:D.n,series:[{type:"bars",vals:D.secA,color:"var(--c0)"},...(isAG?[{type:"bars",vals:D.secG,base:D.secA,color:"var(--c2)"}]:[])],fmtY:v=>v.toFixed(0)+"s",ymax:niceMax(Math.max(1,...D.secA.map((v,i)=>(v||0)+(D.secG[i]||0)))),showSel:false})}
+   <div class="muted small">seconds per turn: actor (blue) plus gatherer (orange)</div>
+   ${turnChart({id:"c4",h:110,n:D.n,series:[{vals:D.cumA,color:"var(--c0)"},...(isAG?[{vals:D.cumG,color:"var(--c2)"},{vals:D.cumT,color:"var(--ink)",w:1.2}]:[])],fmtY:usd,showSel:false})}
+   <div class="muted small">cumulative cost: actor, gatherer, combined</div></details></div>`;
+  // visit list
+  const grByTurn={};(d.grades||[]).forEach(g=>(grByTurn[g.turn]??=[]).push(g));
+  const decBy={};(d.decisions||[]).forEach(x=>(decBy[x.turn]??=[]).push(x));
+  h+=`<div class="panel"><h2>Visits <span class="muted" style="text-transform:none;letter-spacing:0">(each visit is a stretch of turns about one client; click to read it)</span></h2>
+   <div class="row" style="margin-bottom:6px"><label><input type="checkbox" id="onlyfail" ${state.onlyFail?"checked":""}> only visits with a wrong check</label>
+   <label><input type="checkbox" id="onlyev" ${state.onlyEv?"checked":""}> only visits with compaction or an AG new task</label></div><table class="visits">
+   <tr><th>#</th><th>turns</th><th>client</th><th>what happens</th><th>context manager</th><th>checks</th><th class="n">context</th></tr>`;
+  visits.forEach(v=>{const ts=[];for(let t=v.first_turn;t<=Math.min(v.last_turn,D.n);t++)ts.push(t);
+    const gs=ts.flatMap(t=>grByTurn[t]||[]);const nf=gs.filter(g=>g.outcome!=="pass").length;
+    const dec=ts.flatMap(t=>decBy[t]||[]);const nComp=dec.filter(x=>x.kind==="compaction").length;const nNew=dec.filter(x=>x.kind==="boundary"&&x.detail.new_task).length;const nSame=dec.filter(x=>x.kind==="boundary"&&!x.detail.new_task).length;
+    if(state.onlyFail&&!nf)return;if(state.onlyEv&&!nComp&&!nNew)return;
+    const open=state.openVisit===v.visit;
+    h+=`<tr class="click ${open?"sel":""}" data-visit="${v.visit}"><td>${v.visit}</td><td>${v.first_turn}-${Math.min(v.last_turn,D.n)}</td><td><span class="dot" style="background:${cc(v.client)}"></span>${esc(v.client)}</td>
+      <td>${esc(v.kind)}${v.deliverable?` → <b>${esc(v.deliverable)}</b>`:""}${(v.planted||[]).length?` <span class="muted small">(${v.planted.length} new fact${v.planted.length>1?"s":""})</span>`:""}</td>
+      <td>${nComp?`<span class="chip fail">compaction</span>`:""}${nNew?`<span class="chip">AG: new task</span>`:""}${nSame&&!nNew?`<span class="muted small">AG: same task ×${nSame}</span>`:""}</td>
+      <td>${gs.length?`<span class="okc">${gs.length-nf} ✓</span>${nf?` <span class="failc">${nf} ✗</span>`:""}`:""}</td><td class="n">${fmtTok(D.tb[v.last_turn]?.context_tokens)}</td></tr>`;
+    if(open)h+=`<tr class="vrow"><td colspan="7"><div id="vdetail"></div></td></tr>`});
+  h+=`</table></div>`;
   $("#main").innerHTML=h;
-  wirePick($("#main"),t=>{state.turn=t;viewRun()});
-  renderInspector(d,sess,D,A);
-}
+  $("#onlyfail").onchange=e=>{state.onlyFail=e.target.checked;viewRun()};$("#onlyev").onchange=e=>{state.onlyEv=e.target.checked;viewRun()};
+  $("#main").querySelectorAll("tr[data-visit]").forEach(r=>r.onclick=()=>{const v=+r.dataset.visit;state.openVisit=state.openVisit===v?null:v;viewRun()});
+  wirePick($("#main"),t=>{const v=visitOf(sess,t);if(v){state.openVisit=v.visit;viewRun().then(()=>$("#vdetail")?.scrollIntoView({block:"start"}))}});
+  if(state.openVisit!=null){const v=visits.find(x=>x.visit===state.openVisit);if(v)renderVisit(d,sess,v,decBy,grByTurn)}}
 
-async function renderInspector(d,sess,D,A){
-  const el=$("#inspector");const t=state.turn;
-  if(t==null){el.innerHTML=`<h2>Turn inspector</h2><p class="muted">Click any chart to inspect a turn: the user message, tokens, cost and latency, what AG decided (same task or new task, what it rebuilt), what was in front of the model, and the checks graded on that turn.</p>`;return}
-  const tr=D.tb[t]||{};const msg=sess?.session?.[t-1];const visit=sess?.visits?.find(v=>v.first_turn<=t&&t<=v.last_turn);
-  let h=`<h2>Turn ${t} <span class="muted" style="text-transform:none">${esc(tr.client||msg?.client||"")}${visit?" | visit "+visit.visit+" ("+esc(visit.kind)+")":""}</span></h2>
-   <div class="row" style="margin-bottom:6px"><button class="btn sm" id="prev">prev</button><button class="btn sm" id="next">next</button>${(tr.events||[]).map(e=>`<span class="chip ev">${esc(e)}</span>`).join("")}</div>`;
-  h+=`<table><tr><td>actor calls</td><td class="n">${tr.actor_calls??""}</td><td>context (peak)</td><td class="n">${fmtTok(tr.context_tokens)}</td></tr>
-   <tr><td>input / output</td><td class="n">${fmtTok(tr.actor_input_tokens)} / ${fmtTok(tr.actor_output_tokens)}</td><td>cached</td><td class="n">${fmtTok(tr.actor_cache_tokens)}</td></tr>
-   <tr><td>latency</td><td class="n">${sec(tr.seconds)}</td><td>gatherer latency</td><td class="n">${sec(tr.gatherer_seconds)}</td></tr>
-   <tr><td>actor cost</td><td class="n">${usd(tr.actor_usd)}</td><td>gatherer cost</td><td class="n">${usd(tr.gatherer_usd)}</td></tr></table>`;
-  if(msg){h+=`<div class="sec">User message</div><pre>${esc(msg.text.length>900?msg.text.slice(0,900)+"\n[... "+(msg.text.length-900)+" more chars]":msg.text)}</pre>`}
-  // decisions
-  const dec=(d.decisions||[]).filter(x=>x.turn===t);
-  if(dec.length){h+=`<div class="sec">Context manager decisions</div>`;dec.forEach(x=>{
-    if(x.kind==="boundary")h+=`<div><span class="chip ${x.detail.new_task?"":"ev"}">${x.detail.new_task?"NEW TASK":"same task"}</span> <span class="muted">${esc(x.detail.why||"")}</span></div>`;
-    else if(x.kind==="compaction")h+=`<div><span class="chip fail">compaction</span> ${fmtTok(x.detail.tokens_before)} to ${fmtTok(x.detail.tokens_after)} tokens, summary ${x.detail.summary_chars} chars</div>`;
-    else h+=`<div style="word-break:break-word"><span class="chip">${esc(x.kind)}</span> <span class="muted">${esc(JSON.stringify(x.detail))}</span></div>`})}
-  const bl=(d.builds||[]).find(b=>b.turn===t);
-  if(bl){h+=`<div class="sec">AG build ${bl.build_id} (${esc(bl.status)}, ${sec(bl.seconds)})</div>
-    <div class="muted">ranking (task indices, most relevant first): ${esc((bl.ranking||[]).map(r=>typeof r==="object"?(r.task_index??JSON.stringify(r)):r).join(", "))}${bl.adopted_by_read?" | adopted from turn "+bl.adopted_by_read:""}</div>
-    <div class="sec">Sections adopted for the next read</div>${(bl.sections||[]).map(s=>`<div>${esc(s.name)} <span class="muted">${fmtTok(s.tokens)}</span></div>`).join("")}
-    <div class="sec">Tasks AG has stored (${bl.tasks?bl.tasks.length:"not recorded for this build"})</div><div style="max-height:170px;overflow:auto"><table>${(bl.tasks||[]).map(k=>`<tr><td>${k.index}</td><td>${esc(k.name)}<div class="muted">${esc(k.description||(typeof k.retention==="string"?k.retention:""))}</div></td><td class="n">t${k.first_turn}-${k.last_turn}</td><td class="n">${fmtTok(k.tokens)}</td></tr>`).join("")}</table></div>`}
-  const gc=(d.gatherer_calls||[]).filter(x=>x.turn===t);
-  if(gc.length)h+=`<div class="sec">Gatherer model calls</div><table>${gc.map(c=>`<tr><td>${esc(c.purpose)}</td><td class="n">${fmtTok(c.input_tokens)} in / ${fmtTok(c.output_tokens)} out</td><td class="n">${sec(c.seconds)}</td><td class="n">${usd(c.usd)}</td></tr>`).join("")}</table>`;
-  // context contents
-  const calls=(d.calls||[]).filter(c=>c.turn===t);const lastCall=calls[calls.length-1];
-  const cx=lastCall&&(d.contexts||[]).find(c=>c.call_id===lastCall.call_id);
-  if(cx){h+=`<div class="sec">In front of the model on the last call (${fmtTok(cx.total_tokens)} tokens)</div>`;
-    const groups=[];cx.items.forEach(it=>{const g=groups[groups.length-1];
-      if(g&&it.kind==="message"&&g.kind==="message"&&g.role===it.role){g.tokens+=it.tokens;g.hi=Math.max(g.hi,it.origin_turn??0);g.lo=Math.min(g.lo,it.origin_turn??1e9);g.n++;g.turns.push(it.origin_turn)}
-      else groups.push({kind:it.kind,role:it.role,label:it.label,tokens:it.tokens,lo:it.origin_turn??1e9,hi:it.origin_turn??0,n:1,turns:[it.origin_turn]})});
-    const colr={system:"var(--c4)",summary:"var(--c3)",message:"var(--c0)"};const tot=groups.reduce((a,g)=>a+g.tokens,0)||1;
-    h+=`<div class="bar">${groups.map(g=>`<span style="width:${g.tokens/tot*100}%;background:${g.label==="paged in"?"var(--c2)":colr[g.kind]}" title="${esc(g.label||g.kind)} ${g.tokens}"></span>`).join("")}</div>`;
-    h+=`<table>${groups.map(g=>`<tr><td><span class="dot" style="background:${colr[g.kind]}"></span>${g.kind==="message"?(g.n>1?"messages":"message"):esc(g.kind)}</td>
-      <td>${esc(g.label||"")}${g.kind==="message"?" from turn"+(g.n>1?"s ":" ")+(g.lo===g.hi?g.lo:g.lo+" to "+g.hi)+(g.n>1?" ("+g.n+")":""):""}</td><td class="n">${fmtTok(g.tokens)}</td></tr>`).join("")}</table>
-    <div class="row"><button class="btn sm" id="viewreq">view the exact request</button><button class="btn sm" id="viewresp">view the response</button></div><div id="reqbox"></div>`}
-  // checks this turn
-  const ck=(d.grades||[]).filter(g=>g.turn===t);
-  if(ck.length){h+=`<div class="sec">Checks graded on this turn</div><table>${ck.map(g=>{const a=A[g.check_id];return `<tr class="click" data-chk="${esc(g.check_id)}"><td>${esc(g.check_id)}</td><td><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${a?`<span class="chip">${esc(a.verdict)}</span>`:""}</td><td class="muted">${esc(JSON.stringify(g.expected))}${g.outcome!=="pass"?" got "+esc(JSON.stringify(g.got)):""}</td></tr>`}).join("")}</table>
-    ${[...new Set(ck.map(g=>g.deliverable_id))].map(x=>`<button class="btn sm" data-deliv="${x}">open ${x}.md</button> `).join("")}<div id="delivbox"></div>`}
+function renderVisit(d,sess,v,decBy,grByTurn){
+  const el=$("#vdetail");const mode=state.visitMode||"convo";const last=Math.min(v.last_turn,derive(d).n);
+  let h=`<div class="row" style="margin:6px 0 10px"><b>Visit ${v.visit}: ${esc(v.client)}, ${esc(v.kind)}</b>
+   <span class="seg"><button class="${mode==="convo"?"on":""}" data-mode="convo">Conversation</button><button class="${mode==="model"?"on":""}" data-mode="model">What the model saw</button></span>
+   <span class="muted small">${mode==="convo"?"User messages and the agent's replies and tool calls, as they happened.":"Per turn: what was in the model's input. Blue = original messages kept word for word, purple = summaries (AG items or the compaction summary)."}</span></div>`;
+  if((v.planted||[]).length)h+=`<div class="muted small" style="margin-bottom:6px">Facts introduced in this visit: ${v.planted.map(p=>`${esc(p[0])} ${esc(p[1].replace(/_/g," "))}${p[2]==="embedded"?" (in passing)":""}`).join("; ")}</div>`;
+  const prevV=sess.visits.find(x=>x.visit===v.visit-1);
+  for(let t=v.first_turn;t<=last;t++){
+    (decBy[t]||[]).forEach(x=>h+=decisionLine(x));
+    const bl=(d.builds||[]).find(b=>b.turn===t);
+    if(bl)h+=`<details class="ev"><summary>AG build ${bl.build_id}: ${esc(bl.status)}${bl.seconds?", took "+sec(bl.seconds):""}${bl.adopted_by_read?", used from turn "+bl.adopted_by_read:""}. What AG stored and inserted</summary>
+      <div class="small">Sections it puts in front of the model: ${(bl.sections||[]).map(s=>`${esc(s.name)} (${fmtTok(s.tokens)})`).join(", ")||"none recorded"}</div>
+      ${bl.tasks?`<table class="small">${bl.tasks.map(k=>`<tr><td>task ${k.index}</td><td><b>${esc(k.name)}</b><div class="muted">${esc(k.description||"")}</div></td><td class="n">turns ${k.first_turn}-${k.last_turn}</td><td class="n">${fmtTok(k.tokens)}</td></tr>`).join("")}</table>`:'<div class="muted small">Task list not recorded for this build (AG keeps only its latest split).</div>'}</details>`;
+    h+=`<div class="turnblock">${mode==="convo"?turnConvo(d,sess,t):turnModelView(d,t)}</div>`;
+    const gs=grByTurn[t]||[];
+    if(gs.length)h+=`<div class="sec">Checks on ${esc(gs[0].deliverable_id)}</div>`+gs.map(g=>`<div class="checkline"><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${g.outcome==="pass"?"✓":"✗"} ${esc(g.field)}</span> <a href="#" data-story="${esc(g.check_id)}">${g.outcome==="pass"?"how it got this right":"why it went wrong"}</a><div class="storybox" data-sb="${esc(g.check_id)}"></div></div>`).join("");
+  }
   el.innerHTML=h;
-  $("#prev",el).onclick=()=>{state.turn=Math.max(1,t-1);viewRun()};$("#next",el).onclick=()=>{state.turn=Math.min(D.n,t+1);viewRun()};
-  const vr=$("#viewreq",el);if(vr)vr.onclick=()=>showRequest(lastCall.call_id,null,$("#reqbox",el));
-  const vp=$("#viewresp",el);if(vp)vp.onclick=()=>showResponse(lastCall.call_id,$("#reqbox",el));
-  el.querySelectorAll("[data-deliv]").forEach(b=>b.onclick=async()=>{try{$("#delivbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+b.dataset.deliv))}</pre>`}catch(e){$("#delivbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}});
-  el.querySelectorAll("[data-chk]").forEach(r=>r.onclick=()=>{state.checkSel=r.dataset.chk;state.tab="checks";render()});
-}
+  el.querySelectorAll("[data-mode]").forEach(b=>b.onclick=e=>{e.stopPropagation();state.visitMode=b.dataset.mode;renderVisit(d,sess,v,decBy,grByTurn)});
+  el.querySelectorAll("[data-story]").forEach(a=>a.onclick=e=>{e.preventDefault();const box=el.querySelector(`[data-sb="${a.dataset.story}"]`);
+    if(box.innerHTML){box.innerHTML="";return}const g=d.grades.find(x=>x.check_id===a.dataset.story);
+    box.innerHTML=storyHtml(d,sess,g)+`<a href="#" data-full="${esc(g.check_id)}">open the full story with both conversation excerpts</a>`;
+    box.querySelector("[data-full]").onclick=ev=>{ev.preventDefault();state.checkSel=g.check_id;state.tab="checks";render()}});
+  wireReqButtons(el)}
+
 function reqMessages(req){const out=[];if(req&&req.body&&typeof req.body==="object")req=req.body;
   if(Array.isArray(req.contents)){const pt=p=>p.text!=null?p.text:p.functionCall?JSON.stringify(p.functionCall):p.functionResponse?JSON.stringify(p.functionResponse):"";
     const si=req.systemInstruction||req.system_instruction;if(si)out.push({role:"system",text:(si.parts||[]).map(pt).join("\n")});
@@ -340,9 +423,10 @@ function viewGuide(){$("#main").innerHTML=`<div class="panel" style="max-width:9
 <tr><td><b>Retrieval vs usage miss</b></td><td>For each failed check, was the fact in the exact request the model got? Not there = retrieval miss (compaction lost it, AG didn't bring it back). There = usage miss (model saw it and still got it wrong). Needs raw/ requests, so run analysis/attribute.py locally.</td></tr>
 <tr><td><b>Cost</b></td><td>Three numbers: Pi/actor, Gatherer (AG's own model calls: boundary checks, segmenting, ranking, summarizing), combined.</td></tr>
 <tr><td><b>Latency</b></td><td>Wall time per user turn, actor plus gatherer time on top.</td></tr>
+<tr><td><b>Facts still in view</b></td><td>On each turn, of everything said so far about the clients (latest value of each fact), the share present in the model's input. Drops show exactly where compaction or AG lost facts, before looking at any grade. This is the direct test of whether degradation is even possible.</td></tr>
 <tr><td><b>Context per turn</b></td><td>Tokens in the largest actor call. Shows compaction drops and whether AG keeps context small.</td></tr></table>
 <h2>How to read each tab</h2>
-<p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: four charts over the session; click any to open the turn inspector (user message, AG verdict and reason, builds and what AG stored, what was in front of the model, exact request and response). <b>Checks</b>: every graded field, filterable; detail shows where the fact was said and highlights it in the request. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
+<p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: the session at a glance (context size with compactions and AG decisions, every check as a dot, and the share of facts still in the model's view), then a list of the 48 client visits. Open a visit to read it as a conversation, or flip to what the model saw on each turn; context-manager decisions appear inline where they happened, and each check has a short story. <b>Checks</b>: every graded field in plain words, filterable; the story card says where the fact was said, what happened in between, and what the agent wrote, with both bits of conversation. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
 <h2>What would count as AG helping</h2>
 <p>Proposed: at least 10 points better than pi_compact on A or C checks, no worse on CTRL, clearly fewer retrieval misses, with the cost difference stated next to it.</p>
 <h2>Where the AG items come from</h2>
@@ -354,39 +438,35 @@ ${window.SNAPSHOT?`<p class="muted">This is a snapshot of ${window.SNAPSHOT.runs
 async function viewChecks(){
   if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
   const id=state.cur,d=await getRun(id),sess=await getSession(id),A=attrBy(d);const F=state.checkFilter;
-  const rows=(d.grades||[]).filter(g=>(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||g.outcome===F.outcome)&&(!F.placement||g.placement===F.placement)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
-  const opts=(arr,cur)=>`<option value="">all</option>`+arr.map(x=>`<option ${x===cur?"selected":""}>${x}</option>`).join("");
-  const uniq=f=>[...new Set((d.grades||[]).map(f).flat().filter(Boolean))].sort();
-  let h=`<div class="row" style="margin-bottom:8px"><b>${esc(id)}</b><label>tag <select data-f="tag">${opts(uniq(g=>g.tags),F.tag)}</select></label>
-   <label>outcome <select data-f="outcome">${opts(uniq(g=>g.outcome),F.outcome)}</select></label>
-   <label>placement <select data-f="placement">${opts(uniq(g=>g.placement),F.placement)}</select></label>
-   <label>verdict <select data-f="verdict">${opts(["ok","lucky","retrieval_miss","usage_miss","made_up"],F.verdict)}</select></label><span class="muted">${rows.length} checks</span></div>`;
-  h+=`<div class="grid"><div class="panel"><table><tr><th>check</th><th>client</th><th>tags</th><th>place</th><th class="n">age</th><th>outcome</th><th>in view?</th><th>expected</th><th>got</th></tr>
-   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click" data-chk="${esc(g.check_id)}" ${state.checkSel===g.check_id?'style="background:var(--soft)"':""}><td>${esc(g.check_id)}</td><td>${esc(g.client)}</td><td>${g.tags.map(t=>`<span class="chip">${t}</span>`).join("")}</td><td>${esc(g.placement)}</td><td class="n">${g.age_turns??""}</td>
-   <td><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span></td><td>${a?`<span class="dot" style="background:${VERDICT_COLOR[a.verdict]||"var(--muted)"}"></span>${esc(a.presence)} (${esc(a.verdict)})`:'<span class="muted">n/a</span>'}</td>
-   <td class="muted">${esc(JSON.stringify(g.expected))}</td><td class="muted">${esc(JSON.stringify(g.got))}</td></tr>`}).join("")}</table></div><div class="sticky panel" id="chkdetail"><h2>Check detail</h2><p class="muted">Select a check.</p></div></div>`;
+  const done=d.run?.turns_completed||Infinity;
+  const rows=(d.grades||[]).filter(g=>g.turn<=done&&(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||(F.outcome==="wrong (any)"?g.outcome!=="pass":g.outcome===F.outcome))&&(!F.placement||g.placement===F.placement)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
+  const opts=(arr,cur,lab=x=>x)=>`<option value="">all</option>`+arr.map(x=>`<option value="${x}" ${x===cur?"selected":""}>${lab(x)}</option>`).join("");
+  let h=`<div class="panel small" style="line-height:1.55"><b>How checks work.</b> Each time the user asks for a deliverable (a quote, an email, an approval request), the agent writes a file that starts with a small JSON header. Every header field is compared by code to the true current fact, for example <i>discount_pct should be 12</i>. One field is one check. Tags say what makes a check hard; click a check to read its story: where the fact was said, what happened in between, and what the agent wrote.</div>
+   <div class="row" style="margin-bottom:8px"><b>${esc(id)}</b>
+   <label>tag <select data-f="tag">${opts(["A","C","D","CTRL","NEAR","UNK"],F.tag,t=>t+": "+TAG_TEXT[t])}</select></label>
+   <label>result <select data-f="outcome">${opts(["pass","wrong (any)","stale","wrong","missing_key","missing_file","made_up"],F.outcome,o=>OUTCOME_TEXT[o]||o)}</select></label>
+   <label>where said <select data-f="placement">${opts(["home","embedded","none"],F.placement,p=>({home:"in the client's own visit",embedded:"in passing, in another client's visit",none:"never said"})[p])}</select></label>
+   <label>in view? <select data-f="verdict">${opts(["ok","lucky","retrieval_miss","usage_miss","made_up"],F.verdict,v=>({ok:"right, fact in view",lucky:"right, fact not in view",retrieval_miss:"wrong, fact not in view",usage_miss:"wrong, fact in view",made_up:"made up"})[v])}</select></label><span class="muted">${rows.length} checks</span></div>`;
+  h+=`<div class="grid"><div class="panel"><table><tr><th>deliverable</th><th>client · field</th><th>tags</th><th class="n">turns since said</th><th>result</th><th>fact in view?</th></tr>
+   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click ${state.checkSel===g.check_id?"sel":""}" data-chk="${esc(g.check_id)}"><td>${esc(g.deliverable_id)} <span class="muted small">t${g.turn}</span></td><td>${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</td><td>${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}</td><td class="n">${g.age_turns??"never"}</td>
+   <td><span class="${g.outcome==="pass"?"okc":"failc"}">${g.outcome==="pass"?"✓":"✗"} ${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span></td><td>${a&&a.presence!=="n/a"?`<span class="dot" style="background:${VERDICT_COLOR[a.verdict]||"var(--muted)"}"></span>${a.presence==="absent"?"no":"yes"}`:'<span class="muted">-</span>'}</td></tr>`}).join("")}</table></div>
+   <div class="sticky panel" id="chkdetail"><h2>Check story</h2><p class="muted">Select a check on the left.</p></div></div>`;
   $("#main").innerHTML=h;
   $("#main").onchange=e=>{const f=e.target.dataset.f;if(f){state.checkFilter[f]=e.target.value;viewChecks()}};
   $("#main").onclick=e=>{const r=e.target.closest("tr[data-chk]");if(r){state.checkSel=r.dataset.chk;viewChecks()}};
   if(state.checkSel)checkDetail(d,sess,A,state.checkSel)}
 async function checkDetail(d,sess,A,cid){
   const el=$("#chkdetail");const g=(d.grades||[]).find(x=>x.check_id===cid);if(!g)return;
-  const chk=sess?.checks?.find(c=>c.check_id===cid);const a=A[cid];
-  let src=null;if(chk&&chk.stated_turn!=null&&sess.facts?.[chk.client]?.[chk.field])src=sess.facts[chk.client][chk.field].find(f=>f.turn===chk.stated_turn);
-  const sup=(chk?.superseded_values||[]);
-  let h=`<h2>${esc(cid)}</h2><div class="row"><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${g.tags.map(t=>`<span class="chip">${t}</span>`).join("")}${a?`<span class="chip">${esc(a.verdict)}</span>`:""}</div>
-   <table><tr><td>client</td><td>${esc(g.client)}</td></tr><tr><td>asked on turn</td><td><a href="#" data-turn="${g.turn}">${g.turn}</a></td></tr>
-   <tr><td>fact stated on turn</td><td>${chk?.stated_turn!=null?`<a href="#" data-turn="${chk.stated_turn}">${chk.stated_turn}</a> (${esc(chk.placement)}, age ${chk.age_turns} turns)`:"never stated"}</td></tr>
-   <tr><td>visits since client last seen</td><td>${g.visits_since_client_last_seen??""}</td></tr>
-   <tr><td>expected</td><td><b>${esc(JSON.stringify(g.expected))}</b></td></tr><tr><td>agent wrote</td><td>${esc(JSON.stringify(g.got))}</td></tr>
-   ${sup.length?`<tr><td>superseded values</td><td>${esc(JSON.stringify(sup))}</td></tr>`:""}</table>`;
-  if(src)h+=`<div class="sec">Where the fact was said</div><pre>${esc(src.sentence)}</pre>`;
-  if(a&&a.call_id){h+=`<div class="sec">Writing call ${esc(a.call_id)}: fact ${esc(a.presence)}</div><button class="btn sm" id="inspreq">find it in the request</button><div id="reqbox2"></div>`}
-  h+=`<div class="sec">Deliverable</div><button class="btn sm" id="opend">open ${esc(g.deliverable_id)}.md</button><div id="dbox"></div>`;
-  el.innerHTML=h;
-  el.querySelectorAll("[data-turn]").forEach(x=>x.onclick=e=>{e.preventDefault();state.turn=+x.dataset.turn;state.tab="run";render()});
-  const ir=$("#inspreq",el);if(ir)ir.onclick=()=>showRequest(a.call_id,[src?.sentence,g.expected&&typeof g.expected!=="object"?String(g.expected):null].filter(Boolean),$("#reqbox2",el));
-  $("#opend",el).onclick=async()=>{try{$("#dbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+g.deliverable_id))}</pre>`}catch(e){$("#dbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}}}
+  const chk=sess?.checks?.find(c=>c.check_id===cid);const f=factFor(sess,chk);const a=A[cid];
+  const needleAgent=g.got!=null&&typeof g.got!=="object"?String(g.got):null;
+  let h=`<h2 style="text-transform:none;letter-spacing:0">${esc(g.deliverable_id)} · ${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</h2>${storyHtml(d,sess,g)}`;
+  if(f){const sv=visitOf(sess,f.turn);h+=`<div class="sec">1. Where the fact was said (turn ${f.turn}${sv?", "+esc(sv.client)+" visit":""})</div><div class="turnblock">${turnConvo(d,sess,f.turn,{needle:f.sentence})}</div>`}
+  h+=`<div class="sec">${f?"2. ":""}Where it was used (turn ${g.turn})</div><div class="turnblock">${turnConvo(d,sess,g.turn,{needleAgent})}</div>`;
+  if(a&&a.call_id){const needles=[f?.sentence,g.expected!=null&&typeof g.expected!=="object"?String(g.expected):null].filter(Boolean);
+    h+=`<div class="sec">${f?"3. ":""}What the model saw when writing it</div>${ctxHtml(d,g.turn).html}<button class="btn sm" id="inspreq">find the fact in the full request</button><div id="reqbox2"></div>`;
+    el.innerHTML=h;$("#inspreq",el).onclick=()=>showRequest(a.call_id,needles,$("#reqbox2",el))}
+  else{h+=`<div class="sec">What the model saw when writing it</div>${ctxHtml(d,g.turn).html}`;el.innerHTML=h}
+  el.querySelectorAll("[data-turn]").forEach(x=>x.onclick=e=>{e.preventDefault();const v=visitOf(sess,+x.dataset.turn);state.openVisit=v?.visit;state.tab="run";render()})}
 
 /* ---------- COMPARE tab ---------- */
 const AGE_BINS=[["<20",0,19],["20-39",20,39],["40-79",40,79],["80+",80,1e9]];

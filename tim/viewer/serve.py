@@ -19,7 +19,7 @@ from urllib.parse import unquote, urlparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 TIM = os.path.dirname(HERE)
 ROOTS = []
-TRACE_FILES = ("turns", "calls", "contexts", "decisions", "builds", "gatherer_calls")
+TRACE_FILES = ("turns", "calls", "contexts", "decisions", "builds", "gatherer_calls", "messages")
 SAFE = re.compile(r"^[\w.\-]+$")
 _session_cache = {}
 
@@ -161,7 +161,8 @@ class H(BaseHTTPRequestHandler):
             out = {"run": run, "summary": jf(os.path.join(d, "summary.json"), {}),
                    "cost": jf(os.path.join(d, "cost.json"), {}),
                    "grades": jl(os.path.join(d, "grades.jsonl")),
-                   "attribution": jl(os.path.join(d, "attribution.jsonl"))}
+                   "attribution": jl(os.path.join(d, "attribution.jsonl")),
+                   "coverage": jl(os.path.join(d, "coverage.jsonl"))}
             for t in TRACE_FILES:
                 out[t] = jl(os.path.join(d, "trace", t + ".jsonl"))
             return self.send(out)

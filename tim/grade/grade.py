@@ -145,7 +145,7 @@ def main():
                                               "turn", "age_turns", "placement", "tags",
                                               "visits_since_client_last_seen")},
                      "expected": chk["expected"],
-                     "got": (hdr or {}).get(chk["field"]) if chk["kind"] == "field" else None,
+                     "got": (hdr or {}).get(chk["field"]) if chk["kind"] in ("field", "unknown") else None,
                      "outcome": grade_check(chk, hdr, body, err)})
     with open(os.path.join(a.run, "grades.jsonl"), "w") as f:
         for r in rows:
