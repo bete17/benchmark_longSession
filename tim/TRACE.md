@@ -8,7 +8,7 @@ files.
 ## Folder layout
 
 ```
-tim/results/<run_id>/                  run_id = <condition>_seed<k>_rep<r>, e.g. ag_default_seed0_rep1
+tim/results/<run_id>/                  run_id = <condition>_seed<k>_rep<r>, e.g. ag_half_seed0_rep1
   run.json                             what was run (committed)
   deliverables/                        what the agent wrote (committed)
   trace/                               normalized trace (committed)

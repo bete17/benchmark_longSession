@@ -4,7 +4,7 @@ Usage:
   python run/run_session.py --condition pi_compact --session sessions/pilot_seed0 --rep 1 \
       [--max-turns 30] [--results results] [--max-usd 5]
 
-Conditions: pi_compact, pi_per_client, ag_default, ag_tight (see CONDITIONS below).
+Conditions: pi_compact, pi_per_client, ag_half, ag_quarter (see CONDITIONS below).
 
 What it does (layout in TRACE.md):
   - runs a logging proxy in front of the Gemini API. pi's model baseUrl points at it, so every Actor
@@ -67,14 +67,32 @@ AG_SCALED_100K = {
 CONDITIONS = {
     "pi_compact": {"ag": False, "per_client": False},
     "pi_per_client": {"ag": False, "per_client": True},
-    "ag_default": {"ag": True, "per_client": False, "options": dict(AG_SCALED_100K)},
-    "ag_tight": {"ag": True, "per_client": False, "options": {
+    # ag_half: every AG budget halved (AG's own within_limit rule) so defaults fit under 100k.
+    # ag_quarter: as ag_half with the three relevance/previous-task budgets halved again.
+    "ag_half": {"ag": True, "per_client": False, "options": dict(AG_SCALED_100K)},
+    "ag_quarter": {"ag": True, "per_client": False, "options": {
         **AG_SCALED_100K, "keep_temporal_relevant_tokens": 3750, "keep_task_relevant_tokens": 3750,
         "keep_previous_task_tokens": 3750}},
 }
 
 TURN_TIMEOUT_S = 900
 MAX_CALLS_PER_TURN = 30
+
+
+def ag_effective(opts):
+    """Every scalar option of AG's policy config at 59ca484 as this run uses it: AG's defaults plus our
+    [options]. With max_context_tokens set, AG does not rescale anything (policy.within: max_given)."""
+    code = ("import json,sys,dataclasses as d\n"
+            "from ag.ag_policies.proactive_context_manager.config import ProactiveContextManagerConfig as C\n"
+            "c=d.replace(C(),**json.loads(sys.argv[1]))\n"
+            "print(json.dumps({f.name:getattr(c,f.name) for f in d.fields(c) "
+            "if isinstance(getattr(c,f.name),(int,float,bool)) or "
+            "(isinstance(getattr(c,f.name),str) and len(getattr(c,f.name))<80)}))")
+    try:
+        r = subprocess.run([AG_PY, "-c", code, json.dumps(opts or {})], capture_output=True, text=True, timeout=60)
+        return json.loads(r.stdout)
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
 
 
 def now():
@@ -432,14 +450,19 @@ def main():
 
     sp_path = os.path.join(HERE, "system_prompt.md")
     sp_sha = hashlib.sha256(open(sp_path, "rb").read()).hexdigest()
-    pi_version = git_out([PI, "--version"], TOOLS)
+    try:  # pi prints its version to stderr
+        r = subprocess.run([PI, "--version"], cwd=TOOLS, capture_output=True, text=True)
+        pi_version = (r.stdout.strip() or r.stderr.strip()) or None
+    except OSError:
+        pi_version = None
     run = {"run_id": run_id, "condition": a.condition, "seed": meta["seed"], "rep": a.rep,
            "session_dir": os.path.relpath(session_dir, TIM), "actor_model": f"gemini/{MODEL}",
            "gatherer_model": f"gemini/{MODEL}" if cond["ag"] else None,
            "ag_commit": git_out(["git", "rev-parse", "--short", "HEAD"], AG_CLONE) if cond["ag"] else None,
            "pi_version": pi_version, "ceiling_tokens": CEILING, "system_prompt_sha": sp_sha,
            "started_at": now(), "finished_at": None, "status": "partial", "turns_completed": 0, "errors": [],
-           "ag_options": cond.get("options"), "actor_thinking": THINKING, "pi_tools": TOOLS_ALLOWED,
+           "ag_options": cond.get("options"),
+           "ag_effective_options": ag_effective(cond.get("options")) if cond["ag"] else None, "actor_thinking": THINKING, "pi_tools": TOOLS_ALLOWED,
            "pi_context_window": WINDOW, "pi_reserve_tokens": RESERVE, "max_turns": a.max_turns or None,
            "request_capture": "logging proxy in front of the Gemini API (run_session.py)"}
 
@@ -523,7 +546,15 @@ def main():
         run["finished_at"] = now()
         save_run()
         if cond["ag"]:
+            # AG builds run in the background and would keep calling the Gatherer model after the
+            # session ends (seen in the smoke run: 28 calls over 14 minutes). Stop this run's AG.
             time.sleep(2)
+            try:
+                r = subprocess.run([AG, "stop"], env=base_env, capture_output=True, text=True, timeout=60)
+                run["ag_stop"] = (r.stdout + r.stderr).strip()[:2000]
+            except Exception as e:  # noqa: BLE001
+                run["ag_stop"] = f"failed: {e}"
+            save_run()
     print(f"done: {run_id} status={run['status']} turns={run['turns_completed']} "
           f"actor=${state.actor_usd:.3f}")
 

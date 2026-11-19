@@ -7,7 +7,7 @@
  "actor_model": "gemini/gemini-3.8-flash",
  "gatherer_model": null,
  "ag_commit": null,
- "pi_version": "",
+ "pi_version": "0.73.1",
  "ceiling_tokens": 100000,
  "system_prompt_sha": "b7f1121d8677ce58a7d5fab15c34e3d2757076c6aaac0aac267390ebd2f3c689",
  "started_at": "2026-11-17T23:51:20.537+00:00",

@@ -109,8 +109,8 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 | 1 | Pi, full context, no compaction | Context-rot reference. Only valid while the session fits, so run on a truncated session |
 | 2 | Pi with native compaction at 100k | The main baseline |
 | 3 | Pi, one session per client (`pi_per_client`) | The "separate threads" workaround people use. Embedded facts land in the wrong client's thread, as they would for a real user |
-| 4 | AG + Pi, defaults except `max_context_tokens = 100000` | Main treatment |
-| 5 | AG + Pi, knob variants (`ag_tight` first: relevance budgets at 7500) | For the accuracy-vs-spend curve: `min_context_tokens`, `keep_*_relevant_tokens`, `summarize` |
+| 4 | AG + Pi, `ag_half`: `max_context_tokens = 100000` with every AG budget halved (AG's defaults sum to 105k and do not fit under 100k; halving is AG's own `within_limit` rule) | Main treatment |
+| 5 | AG + Pi, knob variants (`ag_quarter` first: as `ag_half` with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 3750) | For the accuracy-vs-spend curve: `min_context_tokens`, `keep_*_relevant_tokens`, `summarize` |
 
 2 runs per condition for the pilot.
 

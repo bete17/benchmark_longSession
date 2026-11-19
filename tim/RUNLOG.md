@@ -160,3 +160,41 @@ countTokens calls are free. Total spend to end of step 2: about $1.37 of the $10
   85 turns, plus about 300 tokens per reply), so the second compaction should land around turn 110 to
   120 and a third is unlikely. That meets "passes 100k at least twice", but only just. Not regenerating;
   asking Tim whether to raise `--report-rows` for margin.
+
+## 2026-11-19: Tim's decisions after step 2, and fixes before step 3
+
+Decisions (Tim): accept the halved AG budgets; keep bash out of every condition; do not regenerate the
+session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197 after a rebase onto
+30fa877 (the only conflict was .gitignore, resolved by keeping both sides' lines).
+
+- **Renamed conditions**: `ag_default` -> `ag_half`, `ag_tight` -> `ag_quarter` (keep_*_relevant and
+  keep_previous_task at 3750). Updated in run/run_session.py, DESIGN.md (conditions table), CLAUDE.md
+  (step 4 list), TRACE.md (example run id) and the viewer's colour map (old names kept so older runs
+  still colour). The smoke run folder keeps its old name `ag_default_seed0_rep1` because the AG store
+  is keyed by run id; its run.json has a note that it is the ag_half configuration.
+- **Every effective AG option in run.json**: new field `ag_effective_options`, read from AG's own
+  `ProactiveContextManagerConfig` (defaults) with our `[options]` applied. Checked in AG's policy
+  (`within`, `max_given`): with `max_context_tokens` set in the gatherer's options AG never rescales the
+  budgets, so these are the values the run uses. Backfilled into the smoke AG run.
+- **Missed spend found**: the smoke AG run's second build kept running after the session ended and made
+  28 more Gatherer calls (subdivide, rank, summarize) over 14 minutes. Its gatherer cost is $0.926, not
+  $0.232, and spend to the end of step 2 is about $2.06, not $1.37. Fixes: the runner now runs
+  `ag stop` with the run's AG_HOME at the end of every AG run (output in run.json `ag_stop`); the
+  exporter gives Gatherer calls that start after the last turn `turn: null, after_session: true`, keeps
+  them in `gatherer_usd`, and reports them separately as `cost.json` `gatherer_usd_after_session`.
+- **pi_version** was empty: `pi --version` prints to stderr. Fixed, backfilled "0.73.1".
+- **contexts.jsonl** now has a row for pi's compaction summary calls too (items labelled
+  "compaction instructions" and "conversation to summarize"), so every Actor call has a row.
+- **Unavailable tool attempts**: export.py writes `<run>/tool_attempts.json`: calls to undeclared tools,
+  tool errors, `ag <command>` or shell snippets in the agent's replies, read/ls of paths outside the
+  workspace, from pi's session files. All three smoke runs: 0.
+- **Viewer and attribution on the real trace**: both assumed Anthropic/OpenAI-style requests
+  (`system`, `messages[].content`). Our request files are `{call_id, turn, ..., body}` with the exact
+  Gemini body (`systemInstruction`, `contents[].parts` with text, functionCall, functionResponse). Added
+  a Gemini branch (unwrap `body` first) to `messages_text` in analysis/attribute.py and `reqMessages` in
+  viewer/index.html. Before: every pass was "lucky" (fact never found). After: all passes "ok", 0
+  retrieval or usage misses; checks after the truncated turn show as `no_call`. Viewer: Runs and Run
+  tabs render on all three smoke runs with no console errors; API checked for every run (all trace
+  files, session, exact request).
+- Removed untracked macOS duplicates left by the aborted first AG launch (`run 2.json`, empty
+  `raw 2/`, `deliverables 2/`).

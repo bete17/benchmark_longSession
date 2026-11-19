@@ -127,8 +127,11 @@ Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
 - `pi_per_client`: one pi session per client (route each visit's messages to that client's session),
   compaction at 100k. Models the "separate threads" workaround. Embedded facts land in whichever
   client's thread the message belongs to, as they would for a real user.
-- `ag_default`: `ag pi`, defaults plus `max_context_tokens = 100000`.
-- `ag_tight`: as ag_default with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 7500.
+- `ag_half`: `ag pi`, `max_context_tokens = 100000` with every AG budget halved (min_context 7500,
+  keep_pinned 2500, all_task 15000, parallel_index 5000, keep_* 7500, keep_so_far 7500). Renamed from
+  `ag_default` on 2026-11-19: AG's defaults do not fit under 100k.
+- `ag_quarter`: as ag_half with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 3750
+  (renamed from `ag_tight`). run.json records every effective AG option in `ag_effective_options`.
   (One knob variant for the spend curve; more later.)
 Optional if budget allows: `pi_full` (no compaction) on a truncated session as a context-rot reference.
 Grade each run: `python grade/grade.py --session sessions/pilot_seed0 --run results/<run>`.

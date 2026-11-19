@@ -1,7 +1,8 @@
 {
  "actor_usd": 0.262,
- "gatherer_usd": 0.2319,
- "total_usd": 0.4939,
+ "gatherer_usd": 0.9261,
+ "total_usd": 1.1881,
+ "gatherer_usd_after_session": 0.6942,
  "actor_tokens": {
   "input": 1522294,
   "cached": 1346180,
@@ -10,15 +11,16 @@
   "compaction_calls": 0
  },
  "gatherer_tokens": {
-  "input": 233214,
-  "cached": 0,
-  "output": 15200,
-  "calls": 13,
+  "input": 342770,
+  "cached": 1003,
+  "output": 178584,
+  "calls": 41,
   "by_purpose": {
    "boundary": 9,
-   "segment": 1,
-   "subdivide": 1,
-   "summarize": 2
+   "rank": 1,
+   "segment": 2,
+   "subdivide": 11,
+   "summarize": 18
   }
  },
  "prices": "run/prices.json",

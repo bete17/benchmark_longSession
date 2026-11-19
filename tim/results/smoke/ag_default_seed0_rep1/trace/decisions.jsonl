@@ -8,4 +8,4 @@
 {"turn": 22, "kind": "boundary", "detail": {"new_task": 0, "why": "continues recording CRM account notes and procedural details alongside data requests", "row_id": 106, "seconds": 5.113}}
 {"turn": 23, "kind": "boundary", "detail": {"new_task": 0, "why": "The user is continuing the established review workflow by asking what needs to be flagged to their manager from the provided data.", "row_id": 111, "seconds": 6.062}}
 {"turn": 24, "kind": "boundary", "detail": {"new_task": 1, "why": "The user is now asking to draft a deal-desk approval request for Delta Learning rather than analyzing CSV renewal risks.", "row_id": 116, "seconds": 4.331}}
-{"turn": 24, "kind": "build", "detail": {"build_id": 2, "status": "running", "seconds": null, "through_turn": null, "open_from_turn": null, "forced": false, "reason": "boundary", "error": null}}
+{"turn": 24, "kind": "build", "detail": {"build_id": 2, "status": "ready", "seconds": 917.54, "through_turn": 24, "open_from_turn": 24, "forced": false, "reason": "boundary", "error": null}}

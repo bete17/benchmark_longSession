@@ -40,6 +40,22 @@ def norm(s):
 def messages_text(req):
     """list of per-message strings from a request payload (tolerates str or list-of-parts content)"""
     out = []
+    if isinstance(req.get("body"), dict):  # bench proxy wrapper: {call_id, turn, ..., body}
+        req = req["body"]
+    if "contents" in req:  # Gemini generateContent body
+        def ptext(p):
+            if "text" in p:
+                return p["text"]
+            for k in ("functionCall", "functionResponse"):
+                if k in p:
+                    return json.dumps(p[k], ensure_ascii=False)
+            return ""
+        si = req.get("systemInstruction") or req.get("system_instruction")
+        if si:
+            out.append("\n".join(ptext(p) for p in si.get("parts", [])))
+        for c in req["contents"]:
+            out.append("\n".join(ptext(p) for p in c.get("parts", [])))
+        return out
     sysm = req.get("system")
     if isinstance(sysm, str):
         out.append(sysm)

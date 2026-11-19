@@ -77,7 +77,7 @@ const fmtTok=n=>n==null?"":n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(
 const usd=n=>n==null?"":"$"+(n<1?n.toFixed(3):n.toFixed(2));
 const pct=n=>n==null?"":(n*100).toFixed(0)+"%";
 const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
-const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",pi_full:"var(--c4)"};
+const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",ag_half:"var(--c2)",ag_quarter:"var(--c3)",pi_full:"var(--c4)"};
 const colorOf=c=>COND_COLOR[c]||"var(--c5)";
 const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
 const state={tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
@@ -253,7 +253,11 @@ async function renderInspector(d,sess,D,A){
   el.querySelectorAll("[data-deliv]").forEach(b=>b.onclick=async()=>{try{$("#delivbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+b.dataset.deliv))}</pre>`}catch(e){$("#delivbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}});
   el.querySelectorAll("[data-chk]").forEach(r=>r.onclick=()=>{state.checkSel=r.dataset.chk;state.tab="checks";render()});
 }
-function reqMessages(req){const out=[];if(typeof req.system==="string")out.push({role:"system",text:req.system});
+function reqMessages(req){const out=[];if(req&&req.body&&typeof req.body==="object")req=req.body;
+  if(Array.isArray(req.contents)){const pt=p=>p.text!=null?p.text:p.functionCall?JSON.stringify(p.functionCall):p.functionResponse?JSON.stringify(p.functionResponse):"";
+    const si=req.systemInstruction||req.system_instruction;if(si)out.push({role:"system",text:(si.parts||[]).map(pt).join("\n")});
+    req.contents.forEach(c=>out.push({role:c.role,text:(c.parts||[]).map(pt).join("\n")}));return out}
+  if(typeof req.system==="string")out.push({role:"system",text:req.system});
   (req.messages||[]).forEach(m=>{let c=m.content;if(Array.isArray(c))c=c.map(p=>typeof p==="string"?p:(p.text||p.content||p.input&&JSON.stringify(p.input)||"")).join("\n");else if(c&&typeof c!=="string")c=JSON.stringify(c);out.push({role:m.role,text:c||""})});return out}
 async function showRequest(callId,needles,box){
   try{const req=await api("/api/run/"+encodeURIComponent(state.cur)+"/request/"+callId);const ms=reqMessages(req);

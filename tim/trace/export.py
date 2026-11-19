@@ -20,6 +20,7 @@ import argparse
 import glob
 import json
 import os
+import re
 import sqlite3
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -244,6 +245,20 @@ def main():
             req = json.load(open(os.path.join(raw, "requests", f"{c['call_id']}.json")))
             contexts.append({"call_id": c["call_id"], "turn": c["turn"], "total_tokens": c["input_tokens"],
                              "items": items_from_request(req["body"] or {}, text_to_turns, c["turn"])})
+    # pi compaction summary calls (any condition): one row each, so every Actor call has a context row
+    for c in calls:
+        if c["purpose"] != "compaction":
+            continue
+        req = json.load(open(os.path.join(raw, "requests", f"{c['call_id']}.json")))
+        items = items_from_request(req["body"] or {}, {}, c["turn"])
+        for it in items:
+            if it["label"] == "system prompt":
+                it["label"] = "compaction instructions"
+            elif it["label"] == "unmatched user text":
+                it["label"] = "conversation to summarize"
+        contexts.append({"call_id": c["call_id"], "turn": c["turn"], "total_tokens": c["input_tokens"],
+                         "items": items})
+    contexts.sort(key=lambda r: r["call_id"])
     write_jl(os.path.join(out, "contexts.jsonl"), contexts)
 
     # ---- pi compactions (any condition; under AG pi's compaction is normally cancelled)
@@ -318,7 +333,10 @@ def main():
             cached = (u.get("prompt_tokens_details") or {}).get("cached_tokens") or 0
             outt = u.get("completion_tokens") or 0
             started = ts(r.get("started"))
-            gcalls.append({"turn": turn_at(started, windows) if started else None, "purpose": r.get("purpose"),
+            # a background build can keep calling after the last turn ended: turn null, flagged
+            after = bool(started and windows and windows[-1]["end"] and started > windows[-1]["end"])
+            gcalls.append({"turn": None if after or not started else turn_at(started, windows),
+                           "after_session": after, "purpose": r.get("purpose"),
                            "model": r.get("model"), "input_tokens": inp, "output_tokens": outt,
                            "cache_tokens": cached, "seconds": r.get("seconds"),
                            "usd": usd(inp, cached, outt, gat_price), "effort": r.get("effort"),
@@ -373,6 +391,7 @@ def main():
     gatherer_usd = sum(g["usd"] for g in gcalls)
     cost = {"actor_usd": round(actor_usd, 4), "gatherer_usd": round(gatherer_usd, 4) if conn else 0.0,
             "total_usd": round(actor_usd + gatherer_usd, 4),
+            "gatherer_usd_after_session": round(sum(g["usd"] for g in gcalls if g.get("after_session")), 4),
             "actor_tokens": {"input": sum(c["input_tokens"] for c in calls),
                              "cached": sum(c["cache_tokens"] for c in calls),
                              "output": sum(c["output_tokens"] for c in calls), "calls": len(calls),
@@ -384,9 +403,56 @@ def main():
                                                for p in sorted({g["purpose"] for g in gcalls})}} if conn else None,
             "prices": "run/prices.json", "item_token_counter": COUNTER}
     json.dump(cost, open(os.path.join(run_dir, "cost.json"), "w"), indent=1)
+    json.dump(tool_attempts(raw, run), open(os.path.join(run_dir, "tool_attempts.json"), "w"), indent=1)
     print(json.dumps({k: cost[k] for k in ("actor_usd", "gatherer_usd", "total_usd")}),
           f"turns={len(turns)} calls={len(calls)} decisions={len(decisions)} builds={len(builds_out)} "
           f"gatherer_calls={len(gcalls)}")
+
+
+AG_CMD = re.compile(r"\bag\s+(?:actors|show|status|gatherers|stop|home|config|new|model|dashboard)\b")
+SHELL = re.compile(r"```(?:bash|sh|shell|zsh)\b|\bsqlite3\b|\bcontext\.db\b|^\s*\$ \w+", re.M)
+
+
+def tool_attempts(raw, run):
+    """How often the agent reached for something it cannot run (no bash in any condition): calls to
+    undeclared tools, tool errors, AG commands or shell snippets written in its replies, and read/ls
+    of paths outside the workspace (e.g. AG's database). From pi's session files."""
+    allowed = set((run.get("pi_tools") or "read,write,edit,ls").split(","))
+    out = {"undeclared_tool_calls": 0, "tool_errors": 0, "ag_command_mentions": 0, "shell_mentions": 0,
+           "outside_workspace_paths": 0, "examples": []}
+    for f in sorted(glob.glob(os.path.join(raw, "pi", "*", "*.jsonl"))):
+        for line in open(f):
+            e = json.loads(line)
+            m = e.get("message") if e.get("type") == "message" else None
+            if not m or not isinstance(m.get("content"), list):
+                continue
+            if m["role"] == "toolResult" and m.get("isError"):
+                out["tool_errors"] += 1
+                txt = "".join(p.get("text", "") for p in m["content"])
+                out["examples"].append({"kind": "tool_error", "tool": m.get("toolName"), "text": txt[:200]})
+            if m["role"] != "assistant":
+                continue
+            for p in m["content"]:
+                if p.get("type") == "toolCall":
+                    args = p.get("arguments") or {}
+                    if p.get("name") not in allowed:
+                        out["undeclared_tool_calls"] += 1
+                        out["examples"].append({"kind": "undeclared", "tool": p.get("name"), "args": str(args)[:200]})
+                    path = str(args.get("path", "")) if p.get("name") in ("read", "ls") else ""
+                    if path.startswith(("/", "~")) or ".." in path or ".ag" in path:
+                        out["outside_workspace_paths"] += 1
+                        out["examples"].append({"kind": "outside_path", "tool": p.get("name"), "path": path[:200]})
+                elif p.get("type") == "text":
+                    t = p.get("text", "")
+                    for k, rx in (("ag_command_mentions", AG_CMD), ("shell_mentions", SHELL)):
+                        hits = rx.findall(t)
+                        if hits:
+                            out[k] += len(hits)
+                            out["examples"].append({"kind": k, "text": hits[0][:100]})
+    out["examples"] = out["examples"][:20]
+    out["total"] = sum(out[k] for k in ("undeclared_tool_calls", "tool_errors", "ag_command_mentions",
+                                         "shell_mentions", "outside_workspace_paths"))
+    return out
 
 
 if __name__ == "__main__":
