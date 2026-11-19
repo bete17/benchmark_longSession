@@ -221,3 +221,36 @@ session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197
 - Gemini API outage on 2026-11-19 ~08:38 UTC: 503 "model is currently experiencing high demand" and
   60 s timeouts on 5 of the first 6 boundary calls of a 12-turn test. Test stopped and discarded
   (spend < $0.01); waiting for the API before rerunning.
+
+## 2026-11-19: overnight prep (items 1, 2, 3, 4, 7 done); step 3 blocked by a free-tier quota
+
+- Pulled 5535b97 and a2a4502 (viewer visit list and conversation view, analysis/coverage.py,
+  messages.jsonl and coverage.jsonl in TRACE.md).
+- export.py writes trace/messages.jsonl from the pi session files: per turn the user text and the
+  agent's steps (text, tool_call with JSON arguments, tool_result truncated to 2000 chars). The k-th
+  assistant message of a thread is matched to the k-th agent call of that thread; counts agree on all
+  three smoke runs and tool_call steps point at calls whose response holds the functionCall. No
+  "thinking" steps: Gemini returns no thought text unless includeThoughts is set, and pi does not set it.
+  Viewer Run tab shows the conversation for a visit (checked: pi_compact rep2 visit 8, turns 24 to 27).
+- Fact survival (analysis/coverage.py, free): pi_compact_seed0_rep2 at the turn-55 compaction.
+  Turn 55 (last call before it, c00063, 99,989 tokens): 27 of 27 facts said so far in view, all verbatim.
+  Turn 56 (c00066, 40,011 tokens): 27 of 27, 9 verbatim and 18 paraphrased (inside pi's compaction
+  summary, which lists each client's currency, term, discount, contacts, dates and concession refs).
+  Facts lost: none. Turn 60: 28 of 28. The 30-turn runs: 100% throughout. coverage.jsonl committed.
+- Runner: after each turn of an AG run, waits while AG has an undecided boundary check
+  (`_boundaries.decided_at is null`) or a running build, at most 300 s. turn_log gets
+  `ag_wait_seconds`, `ag_wait_pending`, `ag_wait_capped`; turns.jsonl `gatherer_seconds` is that wait
+  when recorded (older runs: the Gatherer calls' own time), plus `gatherer_call_seconds`.
+- pi_full condition added (runner, DESIGN.md, CLAUDE.md): compaction disabled in pi settings, model
+  registered with its real window 1,048,576 (models API inputTokenLimit), full session, no 100k ceiling.
+  Not run.
+- granularity.py: records the cuts of every build; for each switch the check missed, the next build and
+  whether it cut there (exact and within one turn); a call that still fails after 10 retries is
+  `api_error`, never a verdict.
+- Step 3 runs: none completed. The stand-in run (gemini-3-flash-preview) and then the 3.8-flash run hit
+  HTTP 429 "Quota exceeded for metric generate_content_free_tier_requests, limit: 20 ... Generate content
+  requests per day limit exceeded on Free Tier", for gemini-3-flash and for gemini-3.8-flash, plus 503
+  "high demand" errors and 90 s hangs. A separate check found the same 429 on 3.7-flash and on streaming;
+  the key itself is accepted (model metadata call 200). Conclusion: this key's project is on the free tier
+  (20 generate requests per day per model), not paid. Both runs stopped; nothing usable. Implication for
+  cost: the USD figures in this log are list prices computed from token counts, not what was billed.
