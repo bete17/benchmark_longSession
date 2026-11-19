@@ -198,3 +198,26 @@ session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197
   files, session, exact request).
 - Removed untracked macOS duplicates left by the aborted first AG launch (`run 2.json`, empty
   `raw 2/`, `deliverables 2/`).
+
+## 2026-11-19: viewer response view, step 3 script
+
+- Pulled 8fc6f7f (viewer: guide tab, side-by-side, response view) and rebased the local rename commit
+  onto it without conflicts.
+- Response view: `parseResponse` in viewer/index.html already matches raw/responses/<call_id>.txt
+  (Gemini SSE `data:` lines). Tested in node on four real files: a reply (text), two write calls
+  (`write(path,content)`), and the compaction call (summary text). In the browser (pi_compact rep2,
+  turn 27) "view the response" shows the reply text. It first showed "not found" only because the
+  viewer server had been started before the pull; restarting it fixed that. No change needed.
+  Limitation for the viewer session: the inspector shows only the last call of a turn, so the call
+  that made a `write` (the one before the final reply) is not reachable from it.
+- `run/granularity.py` (step 3): drives AG's own `boundary.is_new_task` and `segmentation.update`
+  (59ca484) with gemini-3.8-flash and the ag_half config, replaying the policy's gates from
+  `start_due` (min_context_tokens, boundary_cooldown; builds assumed to finish before the next message)
+  and `check`/`build_within` (a yes runs segmentation; >= 2 tasks adopts it, the open task starts at
+  the last task). Placeholder agent replies ("Got it, noted." or "Done, I wrote deliverables/Dxx.md."
+  plus one tool call). Ranking and summaries skipped (they do not move cuts). For switches never
+  checked it also asks the check once off the record (`would_say`). Retries API errors (AG itself would
+  read a failed boundary call as "same task"), counts retries in the report. Hard spend cap.
+- Gemini API outage on 2026-11-19 ~08:38 UTC: 503 "model is currently experiencing high demand" and
+  60 s timeouts on 5 of the first 6 boundary calls of a 12-turn test. Test stopped and discarded
+  (spend < $0.01); waiting for the API before rerunning.
