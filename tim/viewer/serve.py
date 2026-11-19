@@ -174,6 +174,13 @@ class H(BaseHTTPRequestHandler):
             if not os.path.exists(f):
                 return self.send({"error": "request file not captured (raw/ is local only)"}, 404)
             return self.send(open(f, "rb").read())
+        m4 = re.match(r"^response/([\w.\-]+)$", what)
+        if m4:
+            for ext in (".txt", ".json", ".sse"):
+                f = os.path.join(d, "raw", "responses", m4.group(1) + ext)
+                if os.path.exists(f):
+                    return self.send(open(f, "rb").read(), ctype="text/plain")
+            return self.send({"error": "response not captured (raw/ is local only)"}, 404)
         m3 = re.match(r"^deliverable/([\w.\-]+)$", what)
         if m3:
             f = os.path.join(d, "deliverables", m3.group(1) + ".md")

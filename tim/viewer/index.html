@@ -68,6 +68,7 @@ select{font:inherit;border:1px solid var(--line);background:var(--panel);color:v
 </header>
 <main id="main"></main>
 
+<script>/*SNAPSHOT*/</script>
 <script>
 "use strict";
 const $=(s,e=document)=>e.querySelector(s);
@@ -79,15 +80,20 @@ const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
 const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",pi_full:"var(--c4)"};
 const colorOf=c=>COND_COLOR[c]||"var(--c5)";
 const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
-const state={tab:"runs",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
+const state={tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:""},checkSel:null};
 
-async function api(p,opt){const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
+async function api(p,opt){if(window.SNAPSHOT)return snapApi(p);const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
   const t=r.headers.get("content-type")||"";return t.includes("json")?r.json():r.text()}
+function snapApi(p){const S=window.SNAPSHOT;if(p==="/api/runs")return {roots:["snapshot"],runs:S.runs};
+  const m=p.match(/^\/api\/run\/([^/]+)\/(.+)$/);if(!m)throw new Error("not found");const id=decodeURIComponent(m[1]),w=m[2];
+  if(w==="all")return S.data[id];if(w==="session")return S.session;
+  if(w.startsWith("deliverable/")){const x=S.deliv[id]?.[w.slice(12)];if(x==null)throw new Error("deliverable never written");return x}
+  throw new Error("Not in this snapshot: exact requests and responses live in raw/ on the machine that ran it. Run the viewer locally to see them.")}
 async function loadRuns(){const j=await api("/api/runs");state.runs=j.runs;state.roots=j.roots}
 async function getRun(id){if(!state.data[id])state.data[id]=await api("/api/run/"+encodeURIComponent(id)+"/all");return state.data[id]}
 async function getSession(id){if(!(id in state.sessions)){try{state.sessions[id]=await api("/api/run/"+encodeURIComponent(id)+"/session")}catch{state.sessions[id]=null}}return state.sessions[id]}
 
-function nav(){const t=[["runs","Runs"],["run","Run"],["checks","Checks"],["compare","Compare"]];
+function nav(){const t=[["guide","Guide"],["runs","Runs"],["run","Run"],["checks","Checks"],["compare","Compare"],["side","Side by side"]];
   $("#nav").innerHTML=t.map(([k,l])=>`<button data-t="${k}" class="${state.tab===k?"on":""}">${l}</button>`).join("");
   $("#nav").onclick=e=>{const b=e.target.closest("button");if(b){state.tab=b.dataset.t;render()}}}
 $("#reload").onclick=async()=>{state.data={};state.sessions={};await loadRuns();render()};
@@ -235,7 +241,7 @@ async function renderInspector(d,sess,D,A){
     h+=`<div class="bar">${groups.map(g=>`<span style="width:${g.tokens/tot*100}%;background:${g.label==="paged in"?"var(--c2)":colr[g.kind]}" title="${esc(g.label||g.kind)} ${g.tokens}"></span>`).join("")}</div>`;
     h+=`<table>${groups.map(g=>`<tr><td><span class="dot" style="background:${colr[g.kind]}"></span>${g.kind==="message"?(g.n>1?"messages":"message"):esc(g.kind)}</td>
       <td>${esc(g.label||"")}${g.kind==="message"?" from turn"+(g.n>1?"s ":" ")+(g.lo===g.hi?g.lo:g.lo+" to "+g.hi)+(g.n>1?" ("+g.n+")":""):""}</td><td class="n">${fmtTok(g.tokens)}</td></tr>`).join("")}</table>
-    <button class="btn sm" id="viewreq">view the exact request</button><div id="reqbox"></div>`}
+    <div class="row"><button class="btn sm" id="viewreq">view the exact request</button><button class="btn sm" id="viewresp">view the response</button></div><div id="reqbox"></div>`}
   // checks this turn
   const ck=(d.grades||[]).filter(g=>g.turn===t);
   if(ck.length){h+=`<div class="sec">Checks graded on this turn</div><table>${ck.map(g=>{const a=A[g.check_id];return `<tr class="click" data-chk="${esc(g.check_id)}"><td>${esc(g.check_id)}</td><td><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${a?`<span class="chip">${esc(a.verdict)}</span>`:""}</td><td class="muted">${esc(JSON.stringify(g.expected))}${g.outcome!=="pass"?" got "+esc(JSON.stringify(g.got)):""}</td></tr>`}).join("")}</table>
@@ -243,6 +249,7 @@ async function renderInspector(d,sess,D,A){
   el.innerHTML=h;
   $("#prev",el).onclick=()=>{state.turn=Math.max(1,t-1);viewRun()};$("#next",el).onclick=()=>{state.turn=Math.min(D.n,t+1);viewRun()};
   const vr=$("#viewreq",el);if(vr)vr.onclick=()=>showRequest(lastCall.call_id,null,$("#reqbox",el));
+  const vp=$("#viewresp",el);if(vp)vp.onclick=()=>showResponse(lastCall.call_id,$("#reqbox",el));
   el.querySelectorAll("[data-deliv]").forEach(b=>b.onclick=async()=>{try{$("#delivbox",el).innerHTML=`<pre>${esc(await api("/api/run/"+encodeURIComponent(state.cur)+"/deliverable/"+b.dataset.deliv))}</pre>`}catch(e){$("#delivbox",el).innerHTML=`<div class="err">${esc(e.message)}</div>`}});
   el.querySelectorAll("[data-chk]").forEach(r=>r.onclick=()=>{state.checkSel=r.dataset.chk;state.tab="checks";render()});
 }
@@ -255,6 +262,89 @@ async function showRequest(callId,needles,box){
       const hit=needles&&needles.some(n=>n&&norm(m.text).includes(norm(n)));
       return `<div class="${hit?"hl":""}" style="margin:4px 0;padding:2px 4px;border-radius:4px"><span class="chip">${i} ${esc(m.role)}</span>${hit?'<span class="chip pass">contains the fact</span>':""}<pre>${esc(m.text.length>500?m.text.slice(0,500)+" [...]":m.text)}</pre></div>`}).join("")}
   catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}}
+
+function parseResponse(txt){
+  // Gemini stream (SSE "data: {...}" lines) or a single JSON body; pull out text, thoughts, tool calls
+  const out={text:"",thought:"",calls:[]};const chunks=[];
+  txt.split("\n").forEach(l=>{l=l.trim();if(l.startsWith("data:"))l=l.slice(5).trim();if(!l||l==="[DONE]")return;try{chunks.push(JSON.parse(l))}catch{}});
+  if(!chunks.length)try{const j=JSON.parse(txt);Array.isArray(j)?chunks.push(...j):chunks.push(j)}catch{return {raw:txt}}
+  chunks.forEach(c=>(c.candidates||[]).forEach(cd=>(cd.content?.parts||[]).forEach(p=>{
+    if(p.functionCall)out.calls.push(p.functionCall);else if(p.thought&&p.text)out.thought+=p.text;else if(p.text)out.text+=p.text})));
+  return out}
+async function showResponse(callId,box){
+  try{const txt=await api("/api/run/"+encodeURIComponent(state.cur)+"/response/"+callId);const r=parseResponse(typeof txt==="string"?txt:JSON.stringify(txt));
+    if(r.raw!=null){box.innerHTML=`<pre>${esc(r.raw.slice(0,4000))}</pre>`;return}
+    box.innerHTML=(r.thought?`<div class="sec">model thinking</div><pre>${esc(r.thought)}</pre>`:"")+
+      (r.text?`<div class="sec">reply text</div><pre>${esc(r.text)}</pre>`:"")+
+      (r.calls.length?`<div class="sec">tool calls</div>`+r.calls.map(c=>`<pre>${esc(c.name)}(${esc(JSON.stringify(c.args,null,1).slice(0,2500))})</pre>`).join(""):"")||'<span class="muted">empty response</span>'}
+  catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}}
+const KIND_COLOR={system:"var(--c4)",summary:"var(--c3)",message:"var(--c0)"};
+function ctxHtml(d,t){
+  const calls=(d.calls||[]).filter(c=>c.turn===t&&(c.purpose||"agent")==="agent");const last=calls[calls.length-1];
+  const cx=last&&(d.contexts||[]).find(c=>c.call_id===last.call_id);if(!cx)return {html:'<div class="muted">no context recorded</div>',last};
+  const groups=[];cx.items.forEach(it=>{const g=groups[groups.length-1];
+    if(g&&it.kind==="message"&&g.kind==="message"){g.tokens+=it.tokens;g.hi=Math.max(g.hi,it.origin_turn??0);g.lo=Math.min(g.lo,it.origin_turn??1e9);g.n++}
+    else groups.push({kind:it.kind,label:it.label,tokens:it.tokens,lo:it.origin_turn??1e9,hi:it.origin_turn??0,n:1})});
+  const tot=groups.reduce((a,g)=>a+g.tokens,0)||1;
+  let s=`<div class="bar">${groups.map(g=>`<span style="width:${g.tokens/tot*100}%;background:${KIND_COLOR[g.kind]}" title="${esc(g.label||g.kind)} ${g.tokens}"></span>`).join("")}</div><table>`+
+    groups.map(g=>`<tr><td><span class="dot" style="background:${KIND_COLOR[g.kind]}"></span>${g.kind==="message"?"verbatim":g.kind==="summary"?"AG / summary":"system"}</td><td>${g.kind==="message"?"turns "+(g.lo===g.hi?g.lo:g.lo+" to "+g.hi):esc(g.label||"")}</td><td class="n">${fmtTok(g.tokens)}</td></tr>`).join("")+`</table>`;
+  return {html:s,last,total:cx.total_tokens}}
+
+/* ---------- SIDE BY SIDE tab ---------- */
+async function viewSide(){
+  const ids=[...state.sel].filter(i=>state.runs.some(r=>r.id===i));
+  if(ids.length<2){$("#main").innerHTML=`<div class="panel muted">Tick two or more runs on the Runs tab, then come back. This view shows the same turn in each run next to each other: what each context manager decided and what each model saw.</div>`;return}
+  const ds=await Promise.all(ids.map(getRun));const sess=await getSession(ids[0]);
+  const n=Math.max(...ds.map(d=>derive(d).n));if(state.turn==null)state.turn=Math.min(n,24);const t=state.turn;
+  const msg=sess?.session?.[t-1];
+  let h=`<div class="panel"><div class="row"><b>Turn</b><button class="btn sm" id="sp">prev</button><input type="text" id="st" value="${t}" size="4"><button class="btn sm" id="sn">next</button>
+    <span class="muted">${esc(msg?.client||"")} ${msg?"| visit "+msg.visit+" ("+esc(msg.visit_kind)+")":""}</span></div>
+    ${turnChart({id:"sidec",h:120,n,series:ds.map((d,i)=>({vals:derive(d).ctx,color:colorOf(d.run?.condition),dash:i%2?"5 3":null})),fmtY:fmtTok})}
+    ${msg?`<pre style="max-height:120px">${esc(msg.text.slice(0,700))}${msg.text.length>700?" [...]":""}</pre>`:""}</div>`;
+  h+=`<div style="display:grid;grid-template-columns:repeat(${ids.length},minmax(0,1fr));gap:12px">`;
+  ids.forEach((id,i)=>{const d=ds[i];const D=derive(d);const tr=D.tb[t]||{};const c=ctxHtml(d,t);const A=attrBy(d);
+    const dec=(d.decisions||[]).filter(x=>x.turn===t);const ck=(d.grades||[]).filter(g=>g.turn===t);
+    h+=`<div class="panel"><h2 style="text-transform:none"><span class="dot" style="background:${colorOf(d.run?.condition)}"></span>${esc(id)}</h2>
+      <table><tr><td>context</td><td class="n">${fmtTok(tr.context_tokens)}</td><td>latency</td><td class="n">${sec(tr.seconds)}</td></tr>
+      <tr><td>actor $</td><td class="n">${usd(tr.actor_usd)}</td><td>gatherer $</td><td class="n">${usd(tr.gatherer_usd)}</td></tr></table>
+      <div class="sec">Decision</div>${dec.length?dec.map(x=>x.kind==="boundary"?`<div><span class="chip">${x.detail.new_task?"NEW TASK":"same task"}</span> <span class="muted">${esc(x.detail.why||"")}</span></div>`:x.kind==="compaction"?`<div><span class="chip fail">compaction</span> ${fmtTok(x.detail.tokens_before)} to ${fmtTok(x.detail.tokens_after)}</div>`:`<div><span class="chip">${esc(x.kind)}</span></div>`).join(""):'<span class="muted">none this turn</span>'}
+      <div class="sec">What the model saw (${fmtTok(c.total)})</div>${c.html}
+      ${c.last?`<div class="row" style="margin-top:6px"><button class="btn sm" data-req="${i}">request</button><button class="btn sm" data-resp="${i}">response</button></div><div id="sb${i}"></div>`:""}
+      ${ck.length?`<div class="sec">Checks</div>`+ck.map(g=>`<div><span class="chip ${g.outcome==="pass"?"pass":"fail"}">${esc(g.outcome)}</span>${esc(g.check_id)} <span class="muted">${g.outcome!=="pass"?"got "+esc(JSON.stringify(g.got)):""}${A[g.check_id]?" ("+esc(A[g.check_id].verdict)+")":""}</span></div>`).join(""):""}</div>`;
+    ds[i]._last=c.last});
+  h+=`</div>`;$("#main").innerHTML=h;
+  const go=v=>{state.turn=Math.max(1,Math.min(n,v));viewSide()};
+  $("#sp").onclick=()=>go(t-1);$("#sn").onclick=()=>go(t+1);$("#st").onchange=e=>go(+e.target.value||1);wirePick($("#main"),go);
+  $("#main").querySelectorAll("[data-req],[data-resp]").forEach(b=>b.onclick=()=>{const i=+(b.dataset.req??b.dataset.resp);const prev=state.cur;state.cur=ids[i];
+    (b.dataset.req!=null?showRequest(ds[i]._last.call_id,null,$("#sb"+i)):showResponse(ds[i]._last.call_id,$("#sb"+i))).finally(()=>state.cur=prev)})}
+
+/* ---------- GUIDE tab ---------- */
+function viewGuide(){$("#main").innerHTML=`<div class="panel" style="max-width:900px;line-height:1.6">
+<h2>What this experiment asks</h2>
+<p>One long scripted session (145 user messages) where an account manager works across four B2B clients, switching between them. Facts about each client (contact, discount, currency, seats, wording preferences) are said once in conversation, some get changed later, and 32 times the user asks for a deliverable that needs those facts. The question: does Actor-Gatherer keep the right facts in front of the model better than plain Pi with compaction, and at what cost?</p>
+<h2>Conditions</h2>
+<table><tr><td><span class="dot" style="background:var(--c0)"></span>pi_compact</td><td>Pi alone, one thread, compacts (summarizes history) when context passes 100k.</td></tr>
+<tr><td><span class="dot" style="background:var(--c1)"></span>pi_per_client</td><td>One Pi thread per client: the "open a new chat per topic" workaround.</td></tr>
+<tr><td><span class="dot" style="background:var(--c2)"></span>ag_half (was ag_default)</td><td>Pi with Actor-Gatherer; AG's budgets halved so they fit under 100k.</td></tr>
+<tr><td><span class="dot" style="background:var(--c3)"></span>ag_quarter (was ag_tight)</td><td>Same with smaller keep-budgets: cheaper, possibly less accurate. A point on the spend curve.</td></tr></table>
+<h2>What is measured</h2>
+<table>
+<tr><td><b>Pass rate</b></td><td>Each deliverable starts with a JSON header; code compares each field to the true current fact. No model judges.</td></tr>
+<tr><td><b>Tags</b></td><td><b>A</b> fact is 40+ turns old. <b>C</b> returning to a client after 2+ other visits. <b>D</b> the fact was changed later (stale value = fail). <b>CTRL</b> the user restates the value in the request, so failures here are not memory failures. <b>NEAR</b> fact said a few turns earlier.</td></tr>
+<tr><td><b>Placement</b></td><td>home: said during that client's visit. embedded: mentioned in passing during another client's visit (harder for anything that files history by topic).</td></tr>
+<tr><td><b>Made up</b></td><td>Fields asked before the fact was ever said; the right answer is null. Share of those where the agent invented a value.</td></tr>
+<tr><td><b>Retrieval vs usage miss</b></td><td>For each failed check, was the fact in the exact request the model got? Not there = retrieval miss (compaction lost it, AG didn't bring it back). There = usage miss (model saw it and still got it wrong). Needs raw/ requests, so run analysis/attribute.py locally.</td></tr>
+<tr><td><b>Cost</b></td><td>Three numbers: Pi/actor, Gatherer (AG's own model calls: boundary checks, segmenting, ranking, summarizing), combined.</td></tr>
+<tr><td><b>Latency</b></td><td>Wall time per user turn, actor plus gatherer time on top.</td></tr>
+<tr><td><b>Context per turn</b></td><td>Tokens in the largest actor call. Shows compaction drops and whether AG keeps context small.</td></tr></table>
+<h2>How to read each tab</h2>
+<p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: four charts over the session; click any to open the turn inspector (user message, AG verdict and reason, builds and what AG stored, what was in front of the model, exact request and response). <b>Checks</b>: every graded field, filterable; detail shows where the fact was said and highlights it in the request. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
+<h2>What would count as AG helping</h2>
+<p>Proposed: at least 10 points better than pi_compact on A or C checks, no worse on CTRL, clearly fewer retrieval misses, with the cost difference stated next to it.</p>
+<h2>Where the AG items come from</h2>
+<p>In "what the model saw", purple rows are AG-made items: <i>gatherer_guide</i> (how to use AG), <i>requests</i> (the user's asks so far), <i>earlier</i> (summaries of earlier tasks it ranked relevant), <i>previous</i> (the task just before). Blue rows are original messages kept verbatim. The exact text is in the request view.</p>
+${window.SNAPSHOT?`<p class="muted">This is a snapshot of ${window.SNAPSHOT.runs.length} smoke runs (turns 1 to 30 or 60), built ${esc(window.SNAPSHOT.built)}. Exact requests and responses are not included; run <code>python tim/viewer/serve.py</code> on the laptop that ran them to see those.</p>`:""}
+</div>`}
 
 /* ---------- CHECKS tab ---------- */
 async function viewChecks(){
@@ -337,7 +427,7 @@ async function viewCompare(){
   $("#main").innerHTML=h;
   $("#avg").onchange=e=>{state.avgReps=e.target.checked;viewCompare()};const xc=$("#xc");if(xc)xc.onchange=e=>{state.xcost=e.target.value;viewCompare()}}
 
-async function render(){nav();try{if(state.tab==="runs")viewRuns();else if(state.tab==="run")await viewRun();else if(state.tab==="checks")await viewChecks();else await viewCompare()}catch(e){$("#main").innerHTML=`<div class="panel err">${esc(e.stack||e.message)}</div>`}}
+async function render(){nav();try{if(state.tab==="guide")viewGuide();else if(state.tab==="side")await viewSide();else if(state.tab==="runs")viewRuns();else if(state.tab==="run")await viewRun();else if(state.tab==="checks")await viewChecks();else await viewCompare()}catch(e){$("#main").innerHTML=`<div class="panel err">${esc(e.stack||e.message)}</div>`}}
 loadRuns().then(render).catch(e=>{$("#main").innerHTML=`<div class="panel err">${esc(e.message)}</div>`});
 </script>
 </body>
