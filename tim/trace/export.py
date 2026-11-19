@@ -403,10 +403,69 @@ def main():
                                                for p in sorted({g["purpose"] for g in gcalls})}} if conn else None,
             "prices": "run/prices.json", "item_token_counter": COUNTER}
     json.dump(cost, open(os.path.join(run_dir, "cost.json"), "w"), indent=1)
-    json.dump(tool_attempts(raw, run), open(os.path.join(run_dir, "tool_attempts.json"), "w"), indent=1)
+    write_jl(os.path.join(out, "messages.jsonl"), messages_rows(raw, tlog, calls))
+    json.dump(tool_attempts(raw, run),open(os.path.join(run_dir, "tool_attempts.json"), "w"), indent=1)
     print(json.dumps({k: cost[k] for k in ("actor_usd", "gatherer_usd", "total_usd")}),
           f"turns={len(turns)} calls={len(calls)} decisions={len(decisions)} builds={len(builds_out)} "
           f"gatherer_calls={len(gcalls)}")
+
+
+def messages_rows(raw, tlog, calls):
+    """trace/messages.jsonl (TRACE.md): per user turn, the user text and the agent's steps, from the pi
+    session file of the turn's thread. The k-th assistant message of a thread is matched to the k-th
+    agent call of that thread (compaction calls are not in the session file)."""
+    turns_by_thread = defaultdict(list)
+    for r in sorted(tlog, key=lambda r: r["turn"]):
+        turns_by_thread[r.get("thread") or "main"].append(r["turn"])
+    calls_by_thread = defaultdict(list)
+    for c in calls:
+        if c["purpose"] == "agent":
+            calls_by_thread[c.get("thread") or "main"].append(c["call_id"])
+    rows = []
+    for thread, tturns in turns_by_thread.items():
+        files = sorted(glob.glob(os.path.join(raw, "pi", thread, "*.jsonl")))
+        ui, ai, cur = 0, 0, None
+        cids = calls_by_thread.get(thread, [])
+        for f in files:
+            for line in open(f):
+                e = json.loads(line)
+                m = e.get("message") if e.get("type") == "message" else None
+                if not m:
+                    continue
+                content = m.get("content")
+                parts = content if isinstance(content, list) else [{"type": "text", "text": str(content or "")}]
+                if m["role"] == "user":
+                    if cur:
+                        rows.append(cur)
+                    turn = tturns[ui] if ui < len(tturns) else None
+                    ui += 1
+                    cur = {"turn": turn, "thread": thread,
+                           "user": "".join(p.get("text", "") for p in parts if p.get("type") == "text"), "steps": []}
+                elif cur is None:
+                    continue
+                elif m["role"] == "assistant":
+                    cid = cids[ai] if ai < len(cids) else None
+                    ai += 1
+                    for p in parts:
+                        k = p.get("type")
+                        if k == "text" and p.get("text", "").strip():
+                            cur["steps"].append({"call_id": cid, "kind": "text", "name": None, "text": p["text"]})
+                        elif k == "thinking" and (p.get("thinking") or p.get("text")):
+                            cur["steps"].append({"call_id": cid, "kind": "thinking", "name": None,
+                                                 "text": p.get("thinking") or p.get("text")})
+                        elif k == "toolCall":
+                            cur["steps"].append({"call_id": cid, "kind": "tool_call", "name": p.get("name"),
+                                                 "text": json.dumps(p.get("arguments") or {}, ensure_ascii=False)})
+                elif m["role"] == "toolResult":
+                    txt = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
+                    cur["steps"].append({"call_id": None, "kind": "tool_result", "name": m.get("toolName"),
+                                         "text": txt[:2000]})
+        if cur:
+            rows.append(cur)
+        if ai != len(cids):
+            print(f"warning: thread {thread}: {ai} assistant messages vs {len(cids)} agent calls")
+    rows.sort(key=lambda r: (r["turn"] is None, r["turn"] or 0))
+    return rows
 
 
 AG_CMD = re.compile(r"\bag\s+(?:actors|show|status|gatherers|stop|home|config|new|model|dashboard)\b")

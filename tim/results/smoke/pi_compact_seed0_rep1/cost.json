@@ -2,6 +2,7 @@
  "actor_usd": 0.2306,
  "gatherer_usd": 0.0,
  "total_usd": 0.2306,
+ "gatherer_usd_after_session": 0,
  "actor_tokens": {
   "input": 1555555,
   "cached": 1431123,
