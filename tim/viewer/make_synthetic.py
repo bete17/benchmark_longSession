@@ -3,9 +3,11 @@ exist. Numbers are invented; the structure is the real one. Marked "synthetic": 
 
   python viewer/make_synthetic.py --session sessions/pilot_seed0 --out results/_synthetic
 
-Writes four runs: pi_compact rep1/rep2, ag_default rep1, ag_tight rep1. Deliverables are produced by a
+Writes five runs: pi_compact rep1/rep2, pi_per_client rep1, ag_default rep1, ag_tight rep1. Deliverables are produced by a
 simple retrieval model (a fact reaches the model with some probability that depends on the condition
 and the fact's age); grade/grade.py then grades them, so grades.jsonl is real grader output.
+Shared (G) facts (facts.json "_shared") reach the model with the same kind of probability; in the synthetic
+pi_per_client condition a shared fact said during ANOTHER client's visit never reaches the model (separate chats).
 """
 
 import argparse
@@ -29,6 +31,11 @@ def load(session):
     facts = json.load(open(os.path.join(session, "facts.json")))
     visits = json.load(open(os.path.join(session, "visits.json")))
     return sess, checks, facts, visits
+
+
+def fkey(c):
+    """facts.json key of the client (or "_shared") that owns a check's fact"""
+    return "_shared" if c.get("scope") == "shared" else c["client"]
 
 
 def fact_source(facts, client, field, stated_turn):
@@ -134,7 +141,7 @@ def make_run(root, session, cond, rep, seed=0):
                     for fld, vals in fields.items():
                         for fv in vals:
                             if fv["turn"] <= t - 1:
-                                p = (0.6 if fv["placement"] == "home" else 0.3) + (0.2 if fv["turn"] > t - 30 else 0)
+                                p = ({"home": 0.6, "embedded": 0.3}.get(fv["placement"], 0.45)) + (0.2 if fv["turn"] > t - 30 else 0)
                                 if rng.random() < p:
                                     summary_facts.add((cl, fld, fv["turn"]))
                 last_compact_turn = t
@@ -187,16 +194,18 @@ def make_run(root, session, cond, rep, seed=0):
                     st = c["stated_turn"]
                     if st is None or st in shown:
                         continue
-                    f = fact_source(facts, c["client"], c["field"], st) if c["kind"] == "field" else None
+                    f = (fact_source(facts, fkey(c), c["field"], st)
+                         if (c["kind"] == "field" or c.get("scope") == "shared") else None)
                     src = f["sentence"] if f else f"{c['client']} prefers the word '{c['expected']['include']}'."
                     if is_ag:
-                        got = rng.random() < (p_ag if c["placement"] == "home" else p_ag - 0.35)
+                        got = rng.random() < (p_ag if c["placement"] == "home" else
+                                              p_ag - (0.15 if c["placement"] == "shared" else 0.35))
                         if got:
                             items.append({"kind": "message", "origin_turn": st, "role": "user",
                                           "tokens": TOK_PER_TURN // 2, "label": "paged in"})
                             req_msgs.append({"role": "user", "content": sess[st - 1]["text"]})
                     else:
-                        key = (c["client"], c["field"], st)
+                        key = (fkey(c), c["field"], st)
                         if key in summary_facts or (c["field"] == "style_rule" and rng.random() < 0.4):
                             txt = (f"{c['client']}: {c['field']} = {c['expected']}" if c["kind"] == "field"
                                    else f"{c['client']} preferred wording noted ({c['expected']['include']}).")
@@ -221,14 +230,19 @@ def make_run(root, session, cond, rep, seed=0):
                     present = str(c["expected"]) in req_txt
                 else:
                     present = c["expected"]["include"] in req_txt
+                if per_client and c.get("cross_client"):
+                    present = False          # separate chats: a shared fact said in another client's visit never arrives
                 if present and rng.random() > 0.07:
                     val = c["expected"]
                 elif c["superseded_values"] and rng.random() < 0.6:
                     val = c["superseded_values"][0]
                 else:
                     val = "unknown value" if c["kind"] == "field" else None
-                if c["kind"] == "style":
-                    body += f" Let's agree a {c['expected']['include'] if val else c['expected']['exclude']}."
+                if c["kind"] == "style" and c["expected"].get("mode") == "heading":
+                    if val:
+                        body += "\n\n## " + c["expected"]["include"] + "\n\n- Confirm the details."
+                elif c["kind"] == "style":
+                    body += f" Let's agree a {c['expected']['include'] if val else (c['expected']['exclude'] or 'plan')}."
                 else:
                     hdr[c["field"]] = val
             with open(os.path.join(d, "deliverables", did + ".md"), "w") as f:
@@ -284,7 +298,7 @@ def main():
     ap.add_argument("--session", default=os.path.join(TIM, "sessions", "pilot_seed0"))
     ap.add_argument("--out", default=os.path.join(TIM, "results", "_synthetic"))
     a = ap.parse_args()
-    for cond, rep in (("pi_compact", 1), ("pi_compact", 2), ("ag_default", 1), ("ag_tight", 1)):
+    for cond, rep in (("pi_compact", 1), ("pi_compact", 2), ("pi_per_client", 1), ("ag_default", 1), ("ag_tight", 1)):
         print(make_run(a.out, a.session, cond, rep))
 
 

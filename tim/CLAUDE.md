@@ -29,9 +29,11 @@ tim/
                                field x age_bin table, per-deliverable bins); --strict asserts every criterion
   gen/test_generate.py         invariant tests (verbatim sentences, bins, balance criteria on seeds 0 and 1, size)
   sessions/pilot_v2_seed0/     the v2 session (fixed-age check schedule, see DESIGN.md): 150 user messages,
-                               242 checks over 38 deliverables (200 on stated facts: A 73 / C 115 / D 75 /
-                               CTRL 10 / NEAR 18; 42 UNK); checks also carry age_bin, session_bin, form;
-                               field group, placement and form are balanced across age bins
+                               309 checks over 38 deliverables: 242 client scope (200 on stated facts: A 73 / C 115 /
+                               D 75 / CTRL 10 / NEAR 18; 42 UNK) and 67 shared, tag G (59 on stated facts, 78%
+                               cross_client, 8 UNK); checks carry scope, age_bin, session_bin, form; shared checks
+                               also cross_client and placement_client; field group, placement and form are balanced
+                               across age bins on client-scope checks
   sessions/pilot_seed0/        the v1 pilot session (kept for the step 2 smoke runs)
     session.jsonl              145 user messages, in order: {"turn","visit","client","visit_kind","text"}
     checks.jsonl               163 checks over 32 deliverables: 129 on stated facts, tagged A / C / D /
@@ -141,11 +143,16 @@ Conditions (same Actor model, same session, same 100k ceiling, 2 runs each):
 - `ag_half`: `ag pi`, `max_context_tokens = 100000` with every AG budget halved (min_context 7500,
   keep_pinned 2500, all_task 15000, parallel_index 5000, keep_* 7500, keep_so_far 7500). Renamed from
   `ag_default` on 2026-11-19: AG's defaults do not fit under 100k.
+- `pi_per_client_notes` (optional, only if credits allow): as `pi_per_client`, but all client chats run in ONE shared working
+  folder and the system prompt adds one sentence: the agent may keep shared notes in project_notes.md, which all chats for
+  this project can read. The runner needs a small change for it (shared folder plus one extra system prompt sentence, only for
+  this condition); `tim/run/` was not edited when this was specified, so make the change yourself and log it in RUNLOG.md.
 - `ag_quarter`: as ag_half with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 3750
   (renamed from `ag_tight`). run.json records every effective AG option in `ag_effective_options`.
   (One knob variant for the spend curve; more later.)
 - `pi_full`: pi alone, compaction off, model registered with its real window (1,048,576), full
   session, 1 run. Context-rot reference (added 2026-11-19; the session fits, so no truncation).
+Shared facts (tag G, company rules and user standards said once, checked for every client) are the main test of "AG beats separate chats"; read `by_cross_client` in summary.json. `pi_per_client` stays the strict main baseline.
 Grade each run: `python grade/grade.py --session sessions/pilot_v2_seed0 --run results/<run>`.
 ASK TIM before any spend beyond the cap he gives you.
 

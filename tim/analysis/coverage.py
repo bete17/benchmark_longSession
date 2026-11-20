@@ -14,6 +14,10 @@ one row per turn, using the turn's last agent call:
 "Facts said so far" = for each client and field, the latest value stated before this turn (so a
 superseded value is not counted; the current one is). Style rules count as present if the preferred
 word and the client name appear together.
+Shared facts (facts.json "_shared": company-wide rules and the user's standards, scope "shared") are included as
+client "_shared": there is no client name to match, so a fact counts as paraphrased when its value (for a standard:
+the required phrase) appears anywhere in one message of the request, verbatim when its exact sentence does.
+Rows gain "scope_counts": {"client": n, "shared": n} (facts said so far) and "lost" lists "_shared.<field>" entries.
 Prints the coverage just before and just after each compaction (pi) or build (AG).
 """
 
@@ -47,7 +51,17 @@ def current_facts(facts, turn):
     return out
 
 
+SHARED_STD = ("sign_off", "next_steps", "banned_phrase")
+
+
 def as_check(client, field, fv):
+    if client == "_shared":
+        base = {"client": "_shared", "scope": "shared", "field": field}
+        if field in SHARED_STD:
+            v = fv["value"]
+            inc, exc = (v[1], v[0]) if field == "banned_phrase" else (v, "")
+            return {**base, "kind": "style", "expected": {"include": inc, "exclude": exc}}
+        return {**base, "kind": "field", "expected": fv["value"]}
     if field == "style_rule":
         banned, preferred = fv["value"]
         return {"client": client, "kind": "style", "expected": {"include": preferred, "exclude": banned}}
@@ -76,6 +90,8 @@ def run_coverage(run, facts):
                 lost.append(f"{client}.{field}")
         n = sum(tally.values())
         rows.append({"turn": turn, "call_id": c["call_id"], "n": n, **tally,
+                     "scope_counts": {"client": sum(1 for (cl, _) in cur if cl != "_shared"),
+                                      "shared": sum(1 for (cl, _) in cur if cl == "_shared")},
                      "coverage": round((tally["verbatim"] + tally["paraphrased"]) / n, 4) if n else None,
                      "lost": lost})
     if rows:

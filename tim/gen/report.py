@@ -15,11 +15,19 @@ Age bins (age = deliverable turn minus the turn the current value was stated):
   fresh 2 to 10, medium 15 to 45, old 60+, other = everything between (and age 0 or 1).
 CTRL checks (value restated in the request) and UNK checks (answer is null) are listed separately
 and never count toward a bin.
+
+Shared facts (tag G, scope "shared", added Nov 19 2026): company-wide rules (header fields) and the user's own
+standards (body checks) that apply to every client. The facts, balance and per-deliverable sections above cover
+client-scope checks only (the balance criteria are computed on those); the SHARED section prints the G statements,
+the G checks by age bin and by cross_client, and --strict asserts its own criteria (50 to 62 G checks on stated facts,
+cross_client share at least 65%, 3 to 5 shared supersessions, every deliverable from turn 15 on carries a G check,
+every age bin and every shared field covered, every shared statement phrased as company-wide or for every client).
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 
@@ -27,7 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from generate import (MEDIUM_REQUIRED_FROM, OLD_REQUIRED_FROM, age_bin_of, session_bin_of, FIELDS,  # noqa: E402
                       SUPERSEDABLE, BAL_BINS, MAX_GROUP_SPREAD, MAX_PLACE_SPREAD, MAX_FORM_SPREAD,
-                      MIN_SUPERSESSIONS, balance_problems)
+                      MIN_SUPERSESSIONS, balance_problems, SHARED_FIELDS, SHARED_HDR, SHARED_STD, SHARED_MARKERS)
 
 BINS = ["fresh", "medium", "old", "other"]
 
@@ -49,6 +57,10 @@ def main():
     n_turns = len(msgs)
 
     # ---- facts
+    shared_facts = facts.pop("_shared", {})
+    all_checks = checks
+    checks = [c for c in all_checks if c.get("scope", "client") == "client"]
+    g_checks = [c for c in all_checks if c.get("scope", "client") == "shared"]
     stm = [(c, f, i, h) for c, fs in facts.items() for f, hs in fs.items() for i, h in enumerate(hs)]
     n = len(stm)
     sup = sum(1 for _, _, i, _ in stm if i > 0)
@@ -58,7 +70,8 @@ def main():
     th = Counter(third(h["turn"]) for *_, h in stm)
     sup_th = Counter(third(h["turn"]) for _, _, i, h in stm if i > 0)
     print(f"Session {a.session}: {n_turns} user messages, {len(visits)} visits, "
-          f"{len({c['deliverable_id'] for c in checks})} deliverables, {len(checks)} checks")
+          f"{len({c['deliverable_id'] for c in all_checks})} deliverables, {len(all_checks)} checks "
+          f"({len(checks)} client scope, {len(g_checks)} shared)")
     print("\nFACTS")
     print(f"  fact statements      {n}")
     print(f"  supersessions        {sup}  (per third of session: {[sup_th[i] for i in range(3)]})")
@@ -79,7 +92,11 @@ def main():
     # ---- verbatim invariant
     text = {m["turn"]: m["text"] for m in msgs}
     bad = [(c, f, h["turn"]) for c, f, _, h in stm if h["sentence"] not in text.get(h["turn"], "")]
-    print(f"  sentence found verbatim in its turn's message: {n - len(bad)}/{n}")
+    bad += [("shared", f, h["turn"]) for f, hs in shared_facts.items() for h in hs
+            if h["sentence"] not in text.get(h["turn"], "")]
+    n_all = n + sum(len(hs) for hs in shared_facts.values())
+    print(f"  sentence found verbatim in its turn's message: {n_all - len(bad)}/{n_all} (client {n} + shared "
+          f"{n_all - n})")
     if bad:
         problems.append(f"{len(bad)} fact sentences not verbatim in their message")
 
@@ -91,8 +108,8 @@ def main():
     print(f"  visit lengths {dict(sorted(sizes.items()))}")
     if min(sizes) < 2 or max(sizes) > 4:
         problems.append("a visit is not 2 to 4 messages long")
-    if not 140 <= n_turns <= 170:
-        problems.append(f"{n_turns} messages outside 140-170")
+    if not 140 <= n_turns <= 150:
+        problems.append(f"{n_turns} messages outside 140-150 (hard cap 150)")
     if a.baseline:
         b = json.load(open(os.path.join(a.baseline, "meta.json")))
         r = chars / b["user_text_chars"] - 1
@@ -160,12 +177,12 @@ def main():
     for v in visits:
         for t in range(v["first_turn"], v["last_turn"] + 1):
             vis_of_turn[t] = v
-    dels = sorted({c["deliverable_id"] for c in checks})
+    dels = sorted({c["deliverable_id"] for c in all_checks})
     turns = []
     ok_f = ok_m = ok_o = req_m = req_o = 0
     for did in dels:
         cs = [c for c in main_checks if c["deliverable_id"] == did and c["kind"] == "field"]
-        T = next(c["turn"] for c in checks if c["deliverable_id"] == did)
+        T = next(c["turn"] for c in all_checks if c["deliverable_id"] == did)
         turns.append(T)
         cnt = Counter(c["age_bin"] for c in cs)
         need_m, need_o = T >= MEDIUM_REQUIRED_FROM, T >= OLD_REQUIRED_FROM
@@ -205,6 +222,78 @@ def main():
         problems.append(f"CTRL share {ctrl_share:.0%} not about 1 in 4")
     if not unk:
         problems.append("no UNK checks")
+
+    # ---- shared facts (G)
+    print("\nSHARED FACTS (tag G): company-wide rules (header fields) and the user's own standards (body checks)")
+    sh_stm = sorted((h["turn"], f, i, h) for f, hs in shared_facts.items() for i, h in enumerate(hs))
+    sh_sup = sum(1 for _, _, i, _ in sh_stm if i > 0)
+    print(f"  statements {len(sh_stm)} ({sum(1 for _, f, _, _ in sh_stm if f in SHARED_HDR)} rules, "
+          f"{sum(1 for _, f, _, _ in sh_stm if f in SHARED_STD)} standards), supersessions {sh_sup}, "
+          f"buried {sum(1 for *_, h in sh_stm if h['form'] == 'buried')}")
+    vis_client = {}
+    for v in visits:
+        for t in range(v["first_turn"], v["last_turn"] + 1):
+            vis_client[t] = v["client"]
+    for t, f, i, h in sh_stm:
+        mk = [m for m in SHARED_MARKERS if m in h["sentence"].lower()]
+        if h.get("placement_client") != vis_client[t]:
+            problems.append(f"shared {f} turn {t}: placement_client {h.get('placement_client')} != visit client {vis_client[t]}")
+        if not mk:
+            problems.append(f"shared {f} turn {t}: sentence has no company-wide marker phrase")
+        print(f"    turn {t:>3} {f:<18} #{i} {h['form']:<8} during {h['placement_client']} visit: {h['sentence'][:96]}"
+              + ("..." if len(h["sentence"]) > 96 else ""))
+    if not 3 <= sh_sup <= 5:
+        problems.append(f"shared supersessions {sh_sup} outside 3-5")
+    g_st = [c for c in g_checks if c["kind"] != "unknown"]
+    g_unk = [c for c in g_checks if c["kind"] == "unknown"]
+    ncross = sum(c["cross_client"] for c in g_st)
+    print(f"  G checks {len(g_checks)}: on stated facts {len(g_st)} ({sum(1 for c in g_st if c['kind'] == 'field')} header, "
+          f"{sum(1 for c in g_st if c['kind'] == 'style')} body), UNK {len(g_unk)}, D {sum(1 for c in g_st if 'D' in c['tags'])}")
+    print(f"  cross_client share {ncross}/{len(g_st)} = {ncross / max(1, len(g_st)):.1%}; "
+          f"buried share {sum(c['form'] == 'buried' for c in g_st) / max(1, len(g_st)):.1%}")
+    print("  G x age_bin (checks on stated facts): " + "  ".join(f"{b} {sum(1 for c in g_st if c['age_bin'] == b)}" for b in BINS))
+    print("  G x cross_client x age_bin:")
+    print("    " + f"{'':<14}" + "".join(f"{b:>8}" for b in BINS) + f"{'total':>8}")
+    for lab, flag in (("same client", False), ("cross client", True)):
+        xs = [c for c in g_st if c["cross_client"] == flag]
+        print("    " + f"{lab:<14}" + "".join(f"{sum(1 for c in xs if c['age_bin'] == b):>8}" for b in BINS) + f"{len(xs):>8}")
+    print("  field x age_bin (G):" + " " * 8 + "".join(f"{b:>8}" for b in BINS) + f"{'UNK':>6}{'cross':>7}")
+    for f in SHARED_FIELDS:
+        xs = [c for c in g_st if c["field"] == f]
+        row = {b: sum(1 for c in xs if c["age_bin"] == b) for b in BINS}
+        print(f"    {f:<20}" + "".join(f"{row[b]:>8}" for b in BINS) + f"{sum(1 for c in g_unk if c['field'] == f):>6}"
+              f"{sum(c['cross_client'] for c in xs):>7}")
+        if sum(1 for b in BAL_BINS if row[b] > 0) < 2:
+            problems.append(f"shared field {f} appears in fewer than two age bins")
+    keys_n = {}
+    for m in msgs:
+        mm = re.search(r"exactly these keys: ([^(]+) \(", m["text"])
+        if mm:
+            keys_n[m["turn"]] = len(mm.group(1).split(", "))
+    per_d = {}
+    for did in dels:
+        T = next(c["turn"] for c in all_checks if c["deliverable_id"] == did)
+        per_d[did] = (T, [c for c in g_checks if c["deliverable_id"] == did])
+    miss = [d for d, (T, cs) in per_d.items() if T >= 15 and not cs]
+    print(f"  deliverables from turn 15 on with at least one G check: {sum(1 for d, (T, cs) in per_d.items() if T >= 15 and cs)}"
+          f"/{sum(1 for d, (T, cs) in per_d.items() if T >= 15)}; G checks per deliverable min/max "
+          f"{min(len(cs) for _, cs in per_d.values())}/{max(len(cs) for _, cs in per_d.values())}")
+    print(f"  header keys per deliverable (without deliverable_id, client, type): max {max(keys_n.values()) - 3}; "
+          f"shared header fields per deliverable max {max(sum(1 for c in cs if c['field'] in SHARED_HDR) for _, cs in per_d.values())}")
+    if miss:
+        problems.append(f"deliverables without a G check from turn 15: {miss}")
+    if not 50 <= len(g_st) <= 62:
+        problems.append(f"G checks on stated facts {len(g_st)} outside 50-62")
+    if g_st and ncross / len(g_st) < 0.65:
+        problems.append(f"cross_client share {ncross / len(g_st):.1%} < 65%")
+    for b in BAL_BINS:
+        if sum(1 for c in g_st if c["age_bin"] == b) < 10:
+            problems.append(f"fewer than 10 G checks in age bin {b}")
+    for c in g_checks:
+        if c["scope"] != "shared" or "G" not in c["tags"] or "cross_client" not in c:
+            problems.append(f"{c['check_id']}: shared check without scope/G/cross_client")
+        if c["kind"] != "unknown" and c["cross_client"] != (c["placement_client"] != c["client"]):
+            problems.append(f"{c['check_id']}: cross_client inconsistent with placement_client")
 
     print("\nRESULT: " + ("all requirements met" if not problems else "PROBLEMS"))
     for p in problems:

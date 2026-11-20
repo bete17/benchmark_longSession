@@ -15,6 +15,9 @@ presence:
   paraphrased   the expected value and the client name both appear inside ONE message/item of the request
                 (for example in a compaction summary or an AG-made item)
   absent        neither
+Shared (G) checks (scope "shared", source sentences under facts.json "_shared"): there is no client name, so
+"paraphrased" means the expected value (for a standard: the required phrase) appears anywhere in one message/item
+of the request (a number of days must appear as "<n> days" or "<n>-day"); "verbatim" is still the exact sentence.
 verdict (combined with the grade outcome):
   pass + verbatim/paraphrased   ok
   pass + absent                 lucky (guess or leak; inspect)
@@ -101,8 +104,25 @@ def value_forms(v):
     return [f for f in forms if f]
 
 
+def shared_forms(chk):
+    """strings that count as a shared fact's value (or a standard's required phrase) appearing in text"""
+    if chk["kind"] == "style":
+        return [norm(chk["expected"]["include"])]
+    v = chk["expected"]
+    if chk["field"] == "quote_valid_days":
+        return [f"{v} days", f"{v}-day", f"{v} day"]
+    return [norm(v)]
+
+
 def classify(chk, msgs, source_sentence):
     texts = [norm(m) for m in msgs]
+    if chk.get("scope") == "shared":
+        if source_sentence and any(norm(source_sentence) in t for t in texts):
+            return "verbatim"
+        forms = shared_forms(chk)
+        if any(re.search(r"(?<![\w])" + re.escape(f) + r"(?![\w])", t) for t in texts for f in forms):
+            return "paraphrased"
+        return "absent"
     client = norm(chk["client"])
     if chk["kind"] == "style":
         pref = norm(chk["expected"]["include"])
@@ -141,7 +161,8 @@ def attribute_run(session, run, facts, checks):
         call = writing_call(by_turn, g["turn"])
         row = {"check_id": g["check_id"], "turn": g["turn"], "client": g["client"], "field": g["field"],
                "tags": g["tags"], "placement": g["placement"], "age_turns": g["age_turns"],
-               "outcome": g["outcome"], "call_id": call["call_id"] if call else None}
+               "outcome": g["outcome"], "call_id": call["call_id"] if call else None,
+               "scope": chk.get("scope", "client"), "cross_client": chk.get("cross_client")}
         if g["kind"] == "unknown":
             row.update(presence="n/a", verdict=verdict(g["outcome"], "n/a"))
             rows.append(row)
@@ -158,8 +179,9 @@ def attribute_run(session, run, facts, checks):
         if rf not in cache:
             cache[rf] = messages_text(json.load(open(rf)))
         src = None
-        if g["kind"] == "field" and chk.get("stated_turn") is not None:
-            for fv in facts.get(chk["client"], {}).get(chk["field"], []):
+        if (g["kind"] == "field" or chk.get("scope") == "shared") and chk.get("stated_turn") is not None:
+            pool = (facts.get("_shared", {}) if chk.get("scope") == "shared" else facts.get(chk["client"], {}))
+            for fv in pool.get(chk["field"], []):
                 if fv["turn"] == chk["stated_turn"]:
                     src = fv["sentence"]
         presence = classify(chk, cache[rf], src)

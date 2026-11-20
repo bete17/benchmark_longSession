@@ -1,7 +1,7 @@
 """Write synthetic deliverables to sanity-check the grader.
 
   --mode perfect   every header value is the current fact, body follows style rules  -> expect 100%
-  --mode stale     every fact uses its FIRST stated value                             -> D checks fail as "stale"
+  --mode stale     every superseded fact (tag D, client or shared) uses its OLD value -> D checks fail as "stale"
   --mode empty     write nothing                                                      -> all "missing_file"
 
 Usage: python make_oracle.py --session ../sessions/pilot_seed0 --out /tmp/oracle_perfect --mode perfect
@@ -31,7 +31,15 @@ def main():
         body = "Hello,\n\nThanks for a great quarter."
         for c in cs:
             if c["kind"] == "style":
-                body += f" We'd like to talk about the {c['expected']['include']}."
+                inc = c["expected"]["include"]
+                if a.mode == "stale" and c["superseded_values"] and "D" in c["tags"]:
+                    inc = c["superseded_values"][0]       # superseded shared standard (old sign-off phrase)
+                if c["expected"].get("mode") == "heading":
+                    body += f"\n\n## {inc}\n\n- Confirm the details."
+                elif c["field"] == "sign_off":
+                    body += f"\n\nBest regards,\n{inc}"
+                else:
+                    body += f" We'd like to talk about the {inc}."
                 continue
             v = c["expected"]   # None for UNK checks, written as null
             if a.mode == "stale" and c["superseded_values"] and "D" in c["tags"]:

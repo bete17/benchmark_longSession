@@ -7,23 +7,36 @@
  "report_rows": 420,
  "user_messages": 150,
  "deliverables": 38,
- "checks": 242,
+ "checks": 309,
  "checks_by_tag": {
-  "UNK": 42,
+  "UNK": 50,
   "C": 115,
+  "G": 67,
   "CTRL": 10,
-  "D": 75,
+  "D": 89,
   "NEAR": 18,
   "A": 73
  },
  "checks_by_placement": {
-  "none": 42,
+  "none": 50,
   "embedded": 66,
-  "home": 134
+  "home": 134,
+  "shared": 59
  },
- "user_text_chars": 247587,
- "user_text_tokens_est": 61896,
+ "user_text_chars": 252757,
+ "user_text_tokens_est": 63189,
  "plan_attempt": 12,
+ "shared_statements": 11,
+ "shared_supersessions": 4,
+ "shared_checks": 67,
+ "shared_checks_stated": 59,
+ "shared_cross_client_share": 0.78,
+ "shared_checks_by_age_bin": {
+  "fresh": 13,
+  "other": 6,
+  "medium": 20,
+  "old": 20
+ },
  "fact_statements": 84,
  "supersessions": 49,
  "embedded_statements": 25,
@@ -34,17 +47,17 @@
   27
  ],
  "checks_by_age_bin": {
-  "None": 42,
-  "fresh": 52,
-  "medium": 63,
-  "other": 37,
-  "old": 48
+  "None": 50,
+  "fresh": 65,
+  "medium": 83,
+  "other": 43,
+  "old": 68
  },
  "checks_by_session_bin": {
-  "0": 31,
-  "1": 56,
-  "2": 52,
-  "3": 50,
-  "4": 53
+  "0": 38,
+  "1": 71,
+  "2": 66,
+  "3": 66,
+  "4": 68
  }
 }

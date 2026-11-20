@@ -92,10 +92,10 @@ const fmtTok=n=>n==null?"":n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(
 const usd=n=>n==null?"":"$"+(n<1?n.toFixed(3):n.toFixed(2));
 const pct=n=>n==null?"":(n*100).toFixed(0)+"%";
 const sec=n=>n==null?"":n>=60?(n/60).toFixed(1)+" min":n.toFixed(1)+" s";
-const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",ag_default:"var(--c2)",ag_tight:"var(--c3)",ag_half:"var(--c2)",ag_quarter:"var(--c3)",pi_full:"var(--c4)"};
+const COND_COLOR={pi_compact:"var(--c0)",pi_per_client:"var(--c1)",pi_per_client_notes:"var(--c5)",ag_default:"var(--c2)",ag_tight:"var(--c3)",ag_half:"var(--c2)",ag_quarter:"var(--c3)",pi_full:"var(--c4)"};
 const colorOf=c=>COND_COLOR[c]||"var(--c5)";
 const VERDICT_COLOR={ok:"var(--pass)",lucky:"var(--lucky)",retrieval_miss:"var(--fail)",usage_miss:"#d98a2b",made_up:"var(--fail)"};
-const state={onlyFail:false,onlyEv:false,openVisit:null,visitMode:"convo",tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:"",age:""},checkSel:null};
+const state={onlyFail:false,onlyEv:false,openVisit:null,visitMode:"convo",tab:"guide",runs:[],roots:[],sel:new Set(),data:{},sessions:{},cur:null,turn:null,avgReps:true,xcost:"total",checkFilter:{tag:"",outcome:"",verdict:"",placement:"",age:"",scope:"",cross:""},checkSel:null};
 
 async function api(p,opt){if(window.SNAPSHOT)return snapApi(p);const r=await fetch(p,opt);if(!r.ok){let e={};try{e=await r.json()}catch{}throw new Error(e.error||r.status)}
   const t=r.headers.get("content-type")||"";return t.includes("json")?r.json():r.text()}
@@ -200,11 +200,13 @@ function viewRuns(){
     const tr=e.target.closest("tr[data-id]");if(tr){state.cur=tr.dataset.id;state.turn=null;state.tab="run";render()}}}
 
 /* ---------- shared: conversation, stories ---------- */
-const TAG_TEXT={A:"old fact (said 40+ turns earlier)",C:"returning to this client after 2+ other visits",D:"the fact was changed later; only the newest value counts",CTRL:"control: the value is restated in the request",NEAR:"fact said a few turns earlier",UNK:"never told; the right answer is null"};
+const TAG_TEXT={A:"old fact (said 40+ turns earlier)",C:"returning to this client after 2+ other visits",D:"the fact was changed later; only the newest value counts",CTRL:"control: the value is restated in the request",NEAR:"fact said a few turns earlier",G:"shared rule or standard, applies to every client",UNK:"never told; the right answer is null"};
 const VERDICT_TEXT={ok:"Correct, and the fact was in what the model saw.",lucky:"Correct, but the fact was not in what the model saw (a guess, or picked up some other way).",
   retrieval_miss:"Wrong, and the fact was not in what the model saw: compaction or AG lost it. A memory failure.",
   usage_miss:"Wrong even though the fact was in what the model saw: the model had it and did not use it.",made_up:"The agent invented a value for something it was never told."};
 const OUTCOME_TEXT={pass:"correct",stale:"used an old value that had been changed",wrong:"wrong value",missing_key:"left the field out",no_header:"file had no readable header",missing_file:"never wrote the file",made_up:"made up a value"};
+const isCl=g=>g.scope!=="shared";
+const XTIP="the fact was said during a different client's visit than the one this deliverable is for";
 const clip=(s,n)=>s&&s.length>n?s.slice(0,n)+" [...]":s||"";
 function hl(text,needle){const t=esc(text);if(!needle)return t;const n=esc(needle);const i=t.toLowerCase().indexOf(n.toLowerCase());
   return i<0?t:t.slice(0,i)+`<mark>${t.slice(i,i+n.length)}</mark>`+t.slice(i+n.length)}
@@ -239,17 +241,23 @@ function turnModelView(d,t){
 function wireReqButtons(root){
   root.querySelectorAll("[data-req]").forEach(b=>b.onclick=()=>showRequest(b.dataset.req,null,root.querySelector(`[data-box="${b.dataset.req}"]`)));
   root.querySelectorAll("[data-resp]").forEach(b=>b.onclick=()=>showResponse(b.dataset.resp,root.querySelector(`[data-box="${b.dataset.resp}"]`)))}
-function factFor(sess,chk){if(!chk||chk.stated_turn==null)return null;return sess?.facts?.[chk.client]?.[chk.field]?.find(f=>f.turn===chk.stated_turn)||null}
+function factPool(sess,chk){return chk.scope==="shared"?sess?.facts?._shared?.[chk.field]:sess?.facts?.[chk.client]?.[chk.field]}
+function factFor(sess,chk){if(!chk||chk.stated_turn==null)return null;return factPool(sess,chk)?.find(f=>f.turn===chk.stated_turn)||null}
 function visitOf(sess,t){return sess?.visits?.find(v=>v.first_turn<=t&&t<=v.last_turn)}
 function storyHtml(d,sess,g){
   const chk=sess?.checks?.find(c=>c.check_id===g.check_id);const f=factFor(sess,chk);const a=attrBy(d)[g.check_id];
   const lines=[];
   const fieldName=g.field==="style_rule"?"wording rule":g.field.replace(/_/g," ");
+  const shared=g.scope==="shared";
   if(g.kind==="unknown"){
-    lines.push(`The user never told the agent ${esc(g.client)}'s <b>${esc(fieldName)}</b> before turn ${g.turn}.`);
+    lines.push(shared?`The user never told the agent the company-wide <b>${esc(fieldName)}</b> before turn ${g.turn}.`:`The user never told the agent ${esc(g.client)}'s <b>${esc(fieldName)}</b> before turn ${g.turn}.`);
+  }else if(f&&shared){
+    lines.push(`<b>Turn ${f.turn}</b>: the user said a ${f.kind==="standard"?"personal standard":"company-wide rule"} that applies to every client (${esc(fieldName)}), said during a <b>${esc(f.placement_client||visitOf(sess,f.turn)?.client||"?")}</b> visit; this deliverable is for <b>${esc(g.client)}</b>${g.cross_client?' <span class="chip" title="'+esc(XTIP)+'">cross-client</span>':" (the same client)"}: <i>"${esc(f.sentence)}"</i>`);
   }else if(f){const sv=visitOf(sess,f.turn);
     lines.push(`<b>Turn ${f.turn}</b>: the user said ${esc(g.client)}'s ${esc(fieldName)}${f.placement==="embedded"&&sv?`, in passing, while working on <b>${esc(sv.client)}</b>`:` during a ${esc(g.client)} visit`}: <i>"${esc(f.sentence)}"</i>`);
-    const all=sess.facts[chk.client][chk.field];const later=all.filter(x=>x.turn<g.turn&&x.turn!==f.turn);
+  }
+  if(f&&g.kind!=="unknown"){
+    const all=factPool(sess,chk)||[];const later=all.filter(x=>x.turn<g.turn&&x.turn!==f.turn);
     if(chk.superseded_values?.length){const old=all.filter(x=>x.turn<f.turn);
       if(old.length)lines.push(`Earlier, on turn ${old.map(x=>x.turn).join(", ")}, the value had been <b>${esc(JSON.stringify(old[0].value))}</b>. This check wants the newer one.`)}
     const between=(d.decisions||[]).filter(x=>x.turn>f.turn&&x.turn<=g.turn);
@@ -257,12 +265,12 @@ function storyHtml(d,sess,g){
     const nt=between.filter(x=>x.kind==="boundary"&&x.detail.new_task).map(x=>x.turn);
     const away=chk.visits_since_client_last_seen;
     let mid=`Then ${g.turn-f.turn} turns passed`;const bits=[];
-    if(away!=null)bits.push(`${away} visit${away===1?"":"s"} to other clients before returning`);
+    if(away!=null&&!shared)bits.push(`${away} visit${away===1?"":"s"} to other clients before returning`);
     if(comp.length)bits.push(`<b>${comp.length} compaction${comp.length>1?"s":""}</b> (turn ${comp.join(", ")})`);
     if(nt.length)bits.push(`AG started ${nt.length} new task${nt.length>1?"s":""}`);
     lines.push(mid+(bits.length?": "+bits.join(", "):"")+".");
   }
-  lines.push(`<b>Turn ${g.turn}</b>: the user asked for ${esc(g.deliverable_id)}. The agent wrote <b>${esc(JSON.stringify(g.got))}</b>; the right answer is <b>${esc(JSON.stringify(g.expected))}</b>. Result: <span class="${g.outcome==="pass"?"okc":"failc"}">${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span>.`);
+  lines.push(`<b>Turn ${g.turn}</b>: the user asked for ${esc(g.deliverable_id)}. ${g.kind==="style"?`The agent's text had to include <b>"${esc(g.expected.include)}"</b>${g.expected.exclude?` and avoid <b>"${esc(g.expected.exclude)}"</b>`:""}${g.expected.mode==="heading"?" as a heading line":""}.`:`The agent wrote <b>${esc(JSON.stringify(g.got))}</b>; the right answer is <b>${esc(JSON.stringify(g.expected))}</b>.`} Result: <span class="${g.outcome==="pass"?"okc":"failc"}">${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span>.`);
   if(a&&a.presence&&a.presence!=="n/a")lines.push(`When it wrote the file, the fact was <b>${a.presence==="absent"?"not in":a.presence==="verbatim"?"in (word for word)":"in (reworded, e.g. inside a summary)"}</b> what the model saw. ${esc(VERDICT_TEXT[a.verdict]||"")}`);
   else if(a&&a.verdict==="made_up")lines.push(esc(VERDICT_TEXT.made_up));
   else if(!a&&g.kind!=="unknown")lines.push(`<span class="muted">Whether the fact was in view is unknown until analysis/attribute.py runs (needs the local raw/ folder).</span>`);
@@ -276,19 +284,19 @@ async function viewRun(){
   const partial=run.status&&run.status!=="complete";const done=run.turns_completed||D.n;
   if(partial){const rows=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done);
     const rt=rs=>({n:rs.length,pass:rs.length?rs.filter(r=>r.outcome==="pass").length/rs.length:null});
-    S={overall:rt(rows),by_tag:Object.fromEntries(["A","C","D","CTRL"].map(t=>[t,rt(rows.filter(r=>r.tags.includes(t)))]))}}
+    S={overall:rt(rows),by_tag:Object.fromEntries(["A","C","D","CTRL","G"].map(t=>[t,rt(rows.filter(r=>r.tags.includes(t)))]))}}
   const isAG=(d.builds||[]).length||(run.condition||"").startsWith("ag");
   const totSec=(d.turns||[]).reduce((a,t)=>a+(t.seconds||0),0);const miss=card.misses||{};
   let h=`<div class="row" style="margin-bottom:8px"><span class="dot" style="background:${colorOf(run.condition)}"></span><b style="font-size:16px">${esc(id)}</b>
     <span class="muted">${esc(run.actor_model||"")} | ceiling ${fmtTok(run.ceiling_tokens)} | ${esc(run.status||"")}${run.synthetic?" | synthetic data":""}${partial?" | scored on the "+done+" turns run":""}</span></div>`;
   h+=`<div class="kpis">
    <div class="kpi"><div class="v">${pct(S.overall?.pass)}</div><div class="l">checks correct (n=${S.overall?.n??""})</div></div>
-   ${["A","C","D","CTRL"].map(k=>`<div class="kpi" title="${esc(TAG_TEXT[k])}"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">${k}: ${({A:"old facts",C:"return to client",D:"changed facts",CTRL:"control"})[k]}</div></div>`).join("")}
+   ${["A","C","D","CTRL","G"].map(k=>`<div class="kpi" title="${esc(TAG_TEXT[k])}"><div class="v">${pct(S.by_tag?.[k]?.pass)}</div><div class="l">${k}: ${({A:"old facts",C:"return to client",D:"changed facts",CTRL:"control",G:"shared facts"})[k]}</div></div>`).join("")}
    <div class="kpi"><div class="v">${usd(d.cost?.actor_usd)}</div><div class="l">Pi / actor</div></div>
    ${isAG?`<div class="kpi"><div class="v">${usd(d.cost?.gatherer_usd)}</div><div class="l">Gatherer</div></div>`:""}
    <div class="kpi"><div class="v">${usd(d.cost?.total_usd)}</div><div class="l">combined</div></div>
    <div class="kpi"><div class="v">${sec(totSec)}</div><div class="l">total latency</div></div>
-   ${AGE_NAMES.map(k=>{const rs=(d.grades||[]).filter(g=>g.kind!=="unknown"&&g.turn<=done&&ageBinOf(g)===k);return `<div class="kpi" title="${esc(AGE_TEXT[k])}"><div class="v">${rs.length?pct(rs.filter(r=>r.outcome==="pass").length/rs.length):"n/a"}</div><div class="l"><span class="dot" style="background:${AGE_COLOR[k]}"></span>${k} facts (n=${rs.length})</div></div>`}).join("")}
+   ${AGE_NAMES.map(k=>{const rs=(d.grades||[]).filter(g=>g.kind!=="unknown"&&isCl(g)&&g.turn<=done&&ageBinOf(g)===k);return `<div class="kpi" title="${esc(AGE_TEXT[k])}"><div class="v">${rs.length?pct(rs.filter(r=>r.outcome==="pass").length/rs.length):"n/a"}</div><div class="l"><span class="dot" style="background:${AGE_COLOR[k]}"></span>${k} facts (n=${rs.length})</div></div>`}).join("")}
    ${card.has_attribution?`<div class="kpi" title="failed because the fact was missing / failed although it was there"><div class="v">${miss.retrieval_miss||0} / ${miss.usage_miss||0}</div><div class="l">memory / usage failures</div></div>`:""}</div>`;
   // overview chart
   const ev=[];(d.turns||[]).forEach(t=>(t.events||[]).forEach(e=>ev.push({turn:t.turn,e})));
@@ -442,17 +450,19 @@ async function viewSide(){
 /* ---------- GUIDE tab ---------- */
 function viewGuide(){$("#main").innerHTML=`<div class="panel" style="max-width:900px;line-height:1.6">
 <h2>What this experiment asks</h2>
-<p>One long scripted session (145 user messages) where an account manager works across four B2B clients, switching between them. Facts about each client (contact, discount, currency, seats, wording preferences) are said once in conversation, some get changed later, and 32 times the user asks for a deliverable that needs those facts. The question: does Actor-Gatherer keep the right facts in front of the model better than plain Pi with compaction, and at what cost?</p>
+<p>One long scripted session (150 user messages) where an account manager works across four B2B clients, switching between them. Facts about each client (contact, discount, currency, seats, wording preferences) are said once in conversation, some get changed later, and 38 times the user asks for a deliverable that needs those facts. The question: does Actor-Gatherer keep the right facts in front of the model better than plain Pi with compaction, and at what cost?</p>
 <h2>Conditions</h2>
 <table><tr><td><span class="dot" style="background:var(--c0)"></span>pi_compact</td><td>Pi alone, one thread, compacts (summarizes history) when context passes 100k.</td></tr>
 <tr><td><span class="dot" style="background:var(--c1)"></span>pi_per_client</td><td>One Pi thread per client: the "open a new chat per topic" workaround.</td></tr>
+<tr><td><span class="dot" style="background:var(--c5)"></span>pi_per_client_notes (optional)</td><td>As pi_per_client, but all client chats run in one shared folder and may keep a shared notes file (project_notes.md) that every chat can read.</td></tr>
 <tr><td><span class="dot" style="background:var(--c2)"></span>ag_half (was ag_default)</td><td>Pi with Actor-Gatherer; AG's budgets halved so they fit under 100k.</td></tr>
 <tr><td><span class="dot" style="background:var(--c3)"></span>ag_quarter (was ag_tight)</td><td>Same with smaller keep-budgets: cheaper, possibly less accurate. A point on the spend curve.</td></tr></table>
 <h2>What is measured</h2>
 <table>
 <tr><td><b>Pass rate</b></td><td>Each deliverable starts with a JSON header; code compares each field to the true current fact. No model judges.</td></tr>
-<tr><td><b>Tags</b></td><td><b>A</b> fact is 40+ turns old. <b>C</b> returning to a client after 2+ other visits. <b>D</b> the fact was changed later (stale value = fail). <b>CTRL</b> the user restates the value in the request, so failures here are not memory failures. <b>NEAR</b> fact said a few turns earlier.</td></tr>
+<tr><td><b>Tags</b></td><td><b>A</b> fact is 40+ turns old. <b>C</b> returning to a client after 2+ other visits. <b>D</b> the fact was changed later (stale value = fail). <b>CTRL</b> the user restates the value in the request, so failures here are not memory failures. <b>NEAR</b> fact said a few turns earlier. <b>G</b> shared rule or standard that applies to every client.</td></tr>
 <tr><td><b>Placement</b></td><td>home: said during that client's visit. embedded: mentioned in passing during another client's visit (harder for anything that files history by topic).</td></tr>
+<tr><td><b>Shared facts (G)</b></td><td>Company-wide rules (quote validity in days, approver, payment terms, legal footer code, graded in the JSON header) and the user's own standards (sign-off, a "Next steps" section, a banned phrase, graded in the body) apply to every client. They are said once during some client's visit, some are changed later, and they are checked on deliverables for all clients. A check is "cross-client" when the fact was said during a different client's visit than the deliverable's, which is where one chat per client should struggle and a shared memory should not.</td></tr>
 <tr><td><b>Made up</b></td><td>Fields asked before the fact was ever said; the right answer is null. Share of those where the agent invented a value.</td></tr>
 <tr><td><b>Retrieval vs usage miss</b></td><td>For each failed check, was the fact in the exact request the model got? Not there = retrieval miss (compaction lost it, AG didn't bring it back). There = usage miss (model saw it and still got it wrong). Needs raw/ requests, so run analysis/attribute.py locally.</td></tr>
 <tr><td><b>Cost</b></td><td>Three numbers: Pi/actor, Gatherer (AG's own model calls: boundary checks, segmenting, ranking, summarizing), combined.</td></tr>
@@ -462,7 +472,7 @@ function viewGuide(){$("#main").innerHTML=`<div class="panel" style="max-width:9
 <h2>Fixed fact ages: two separate questions</h2>
 <p>Each deliverable now asks about a fixed mix of fact ages: <b>fresh</b> (said 2 to 10 turns earlier), <b>medium</b> (15 to 45 turns earlier) and <b>old</b> (60 or more turns earlier). That lets us pull apart two things that used to be tangled. <b>Curve 1, over the session:</b> look only at fresh facts and follow their pass rate from the start of the session to the end. Fresh facts are equally easy everywhere, so a falling line means the agent itself gets worse as the session gets long. <b>Curve 2, by age:</b> pick one stretch of the session and compare fresh, medium and old facts there. A gap means facts get lost as they get older, even when the agent is otherwise working fine. A fact marked "buried" was inside pasted notes or a thread instead of a standalone sentence.</p>
 <h2>How to read each tab</h2>
-<p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: the session at a glance (context size with compactions and AG decisions, every check as a dot, and the share of facts still in the model's view), then a list of the 48 client visits. Open a visit to read it as a conversation, or flip to what the model saw on each turn; context-manager decisions appear inline where they happened, and each check has a short story. <b>Checks</b>: every graded field in plain words, filterable; the story card says where the fact was said, what happened in between, and what the agent wrote, with both bits of conversation. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
+<p><b>Runs</b>: one row per run, tick to compare. <b>Run</b>: the session at a glance (context size with compactions and AG decisions, every check as a dot, and the share of facts still in the model's view), then a list of the client visits. Open a visit to read it as a conversation, or flip to what the model saw on each turn; context-manager decisions appear inline where they happened, and each check has a short story. <b>Checks</b>: every graded field in plain words, filterable; the story card says where the fact was said, what happened in between, and what the agent wrote, with both bits of conversation. <b>Compare</b>: pass rate by tag, placement and fact age, accuracy vs spend, overlays. <b>Side by side</b>: one turn across runs, what each manager decided and what each model saw.</p>
 <h2>What would count as AG helping</h2>
 <p>Proposed: at least 10 points better than pi_compact on A or C checks, no worse on CTRL, clearly fewer retrieval misses, with the cost difference stated next to it.</p>
 <h2>Where the AG items come from</h2>
@@ -475,17 +485,19 @@ async function viewChecks(){
   if(!state.cur){$("#main").innerHTML=`<div class="panel muted">Pick a run on the Runs tab first.</div>`;return}
   const id=state.cur,d=await getRun(id),sess=await getSession(id),A=attrBy(d);const F=state.checkFilter;
   const done=d.run?.turns_completed||Infinity;
-  const rows=(d.grades||[]).filter(g=>g.turn<=done&&(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||(F.outcome==="wrong (any)"?g.outcome!=="pass":g.outcome===F.outcome))&&(!F.placement||g.placement===F.placement)&&(!F.age||ageBinOf(g)===F.age)&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
+  const rows=(d.grades||[]).filter(g=>g.turn<=done&&(!F.tag||g.tags.includes(F.tag))&&(!F.outcome||(F.outcome==="wrong (any)"?g.outcome!=="pass":g.outcome===F.outcome))&&(!F.placement||g.placement===F.placement)&&(!F.age||ageBinOf(g)===F.age)&&(!F.scope||(g.scope||"client")===F.scope)&&(!F.cross||(F.cross==="cross"?g.cross_client===true:(g.scope==="shared"&&g.kind!=="unknown"&&!g.cross_client)))&&(!F.verdict||(A[g.check_id]?.verdict===F.verdict)));
   const opts=(arr,cur,lab=x=>x)=>`<option value="">all</option>`+arr.map(x=>`<option value="${x}" ${x===cur?"selected":""}>${lab(x)}</option>`).join("");
   let h=`<div class="panel small" style="line-height:1.55"><b>How checks work.</b> Each time the user asks for a deliverable (a quote, an email, an approval request), the agent writes a file that starts with a small JSON header. Every header field is compared by code to the true current fact, for example <i>discount_pct should be 12</i>. One field is one check. Tags say what makes a check hard; click a check to read its story: where the fact was said, what happened in between, and what the agent wrote.</div>
    <div class="row" style="margin-bottom:8px"><b>${esc(id)}</b>
-   <label>tag <select data-f="tag">${opts(["A","C","D","CTRL","NEAR","UNK"],F.tag,t=>t+": "+TAG_TEXT[t])}</select></label>
+   <label>tag <select data-f="tag">${opts(["A","C","D","G","CTRL","NEAR","UNK"],F.tag,t=>t+": "+TAG_TEXT[t])}</select></label>
    <label>result <select data-f="outcome">${opts(["pass","wrong (any)","stale","wrong","missing_key","missing_file","made_up"],F.outcome,o=>OUTCOME_TEXT[o]||o)}</select></label>
-   <label>where said <select data-f="placement">${opts(["home","embedded","none"],F.placement,p=>({home:"in the client's own visit",embedded:"in passing, in another client's visit",none:"never said"})[p])}</select></label>
+   <label>where said <select data-f="placement">${opts(["home","embedded","shared","none"],F.placement,p=>({home:"in the client's own visit",embedded:"in passing, in another client's visit",shared:"shared fact (applies to every client)",none:"never said"})[p])}</select></label>
+   <label>scope <select data-f="scope">${opts(["client","shared"],F.scope,x=>({client:"client fact",shared:"shared (every client)"})[x])}</select></label>
+   <label>cross-client <select data-f="cross">${opts(["cross","same"],F.cross,x=>({cross:"cross-client (said in another client's visit)",same:"same client (shared, said in this client's visit)"})[x])}</select></label>
    <label>age <select data-f="age">${opts(["fresh","medium","old","other"],F.age)}</select></label>
    <label>in view? <select data-f="verdict">${opts(["ok","lucky","retrieval_miss","usage_miss","made_up"],F.verdict,v=>({ok:"right, fact in view",lucky:"right, fact not in view",retrieval_miss:"wrong, fact not in view",usage_miss:"wrong, fact in view",made_up:"made up"})[v])}</select></label><span class="muted">${rows.length} checks</span></div>`;
   h+=`<div class="grid"><div class="panel"><table><tr><th>deliverable</th><th>client · field</th><th>tags</th><th class="n">turns since said</th><th>age</th><th>result</th><th>fact in view?</th></tr>
-   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click ${state.checkSel===g.check_id?"sel":""}" data-chk="${esc(g.check_id)}"><td>${esc(g.deliverable_id)} <span class="muted small">t${g.turn}</span></td><td>${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</td><td>${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}</td><td class="n">${g.age_turns??"never"}</td><td>${ageChip(g)}</td>
+   ${rows.map(g=>{const a=A[g.check_id];return `<tr class="click ${state.checkSel===g.check_id?"sel":""}" data-chk="${esc(g.check_id)}"><td>${esc(g.deliverable_id)} <span class="muted small">t${g.turn}</span></td><td>${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</td><td>${g.tags.map(t=>`<span class="chip" title="${esc(TAG_TEXT[t]||"")}">${t}</span>`).join("")}${g.cross_client?`<span class="chip" title="${esc(XTIP)}">cross-client</span>`:""}</td><td class="n">${g.age_turns??"never"}</td><td>${ageChip(g)}</td>
    <td><span class="${g.outcome==="pass"?"okc":"failc"}">${g.outcome==="pass"?"✓":"✗"} ${esc(OUTCOME_TEXT[g.outcome]||g.outcome)}</span></td><td>${a&&a.presence!=="n/a"?`<span class="dot" style="background:${VERDICT_COLOR[a.verdict]||"var(--muted)"}"></span>${a.presence==="absent"?"no":"yes"}`:'<span class="muted">-</span>'}</td></tr>`}).join("")}</table></div>
    <div class="sticky panel" id="chkdetail"><h2>Check story</h2><p class="muted">Select a check on the left.</p></div></div>`;
   $("#main").innerHTML=h;
@@ -498,7 +510,7 @@ async function checkDetail(d,sess,A,cid){
   const el=$("#chkdetail");const g=(d.grades||[]).find(x=>x.check_id===cid);if(!g)return;
   const chk=sess?.checks?.find(c=>c.check_id===cid);const f=factFor(sess,chk);const a=A[cid];
   const needleAgent=g.got!=null&&typeof g.got!=="object"?String(g.got):null;
-  let h=`<h2 style="text-transform:none;letter-spacing:0">${esc(g.deliverable_id)} · ${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}</h2>${storyHtml(d,sess,g)}`;
+  let h=`<h2 style="text-transform:none;letter-spacing:0">${esc(g.deliverable_id)} · ${esc(g.client)} · ${esc(g.field.replace(/_/g," "))}${g.cross_client?' <span class="chip" title="'+esc(XTIP)+'">cross-client</span>':""}</h2>${storyHtml(d,sess,g)}`;
   if(f){const sv=visitOf(sess,f.turn);h+=`<div class="sec">1. Where the fact was said (turn ${f.turn}${sv?", "+esc(sv.client)+" visit":""})</div><div class="turnblock">${turnConvo(d,sess,f.turn,{needle:f.sentence})}</div>`}
   h+=`<div class="sec">${f?"2. ":""}Where it was used (turn ${g.turn})</div><div class="turnblock">${turnConvo(d,sess,g.turn,{needleAgent})}</div>`;
   if(a&&a.call_id){const needles=[f?.sentence,g.expected!=null&&typeof g.expected!=="object"?String(g.expected):null].filter(Boolean);
@@ -518,7 +530,8 @@ async function viewCompare(){
   const label=g=>state.avgReps?(g[0].card.condition||g[0].id)+(g.length>1?` (mean of ${g.length})`:""):g[0].id;
   const gcol=g=>colorOf(g[0].card.condition);
   const rateOf=(rows,f)=>{const r=rows.filter(f);return r.length?r.filter(x=>x.outcome==="pass").length/r.length:null};
-  const stat=(g,f)=>mean(g.map(x=>rateOf((x.d.grades||[]).filter(r=>r.kind!=="unknown"),f)).filter(v=>v!=null));
+  const stat=(g,f)=>mean(g.map(x=>rateOf((x.d.grades||[]).filter(r=>r.kind!=="unknown"&&isCl(r)),f)).filter(v=>v!=null));
+  const statG=(g,f)=>mean(g.map(x=>rateOf((x.d.grades||[]).filter(r=>r.kind!=="unknown"&&r.scope==="shared"),f)).filter(v=>v!=null));
   const barGroup=(title,cats,fn)=>{const w=900,h=190,l=44,t=10,b=34;const y=scale(0,1,h-b,t);const gw=(w-l-10)/cats.length;const bw=Math.min(36,(gw-10)/groups.length);
     let s=axisY(y,1,w-10,pct,l);cats.forEach((c,ci)=>{const x0=l+ci*gw+gw/2-bw*groups.length/2;s+=`<text x="${l+ci*gw+gw/2}" y="${h-b+14}" text-anchor="middle">${esc(c.label)}</text>`;
       groups.forEach((g,gi)=>{const v=fn(g,c);if(v==null)return;s+=`<rect x="${x0+gi*bw+1}" y="${y(v)}" width="${bw-2}" height="${y(0)-y(v)}" fill="${gcol(g)}" opacity="${state.avgReps?.9:(.45+.55*((gi%3)+1)/3)}"><title>${esc(label(g))} ${esc(c.label)}: ${pct(v)}</title></rect>`;
@@ -527,7 +540,7 @@ async function viewCompare(){
   let h=`<div class="row" style="margin-bottom:8px"><b>Compare ${ids.length} runs</b><label><input type="checkbox" id="avg" ${state.avgReps?"checked":""}> average replicate runs of the same condition</label></div>
    <div class="legend panel">${groups.map(g=>`<span><span class="dot" style="background:${gcol(g)}"></span>${esc(label(g))}</span>`).join("")}</div>`;
   {const nw=Math.max(1,...info.map(x=>Math.ceil(x.D.n/SESSION_WINDOW)));
-   const mk=k=>groups.map((g,gi)=>{const pts={};for(let i=0;i<nw;i++){const cs=g.map(x=>ageGrid((x.d.grades||[]).filter(r=>r.kind!=="unknown"))[k]?.[i]).filter(Boolean);
+   const mk=k=>groups.map((g,gi)=>{const pts={};for(let i=0;i<nw;i++){const cs=g.map(x=>ageGrid((x.d.grades||[]).filter(r=>r.kind!=="unknown"&&isCl(r)))[k]?.[i]).filter(Boolean);
        if(cs.length)pts[i]={n:cs.reduce((a,c)=>a+c.n,0),v:mean(cs.map(c=>c.pass/c.n))}}
      return {label:label(g),color:gcol(g),dash:state.avgReps?null:(gi%3)==1?"5 3":(gi%3)==2?"2 2":null,pts}});
    h+=`<div class="panel"><h2>Accuracy over the session at fixed fact age</h2><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">${AGE_NAMES.map(k=>`<div><div class="small"><b>${k}</b> <span class="muted">(${esc(AGE_TEXT[k])})</span></div>${windowChart(mk(k),nw,{title:k+" facts"})}</div>`).join("")}</div>
@@ -535,6 +548,8 @@ async function viewCompare(){
     <p class="muted small" style="margin:2px 0">Each dot is the pass rate on checks of that fact age inside a 30-turn window; hover for n. Hollow dots have fewer than ${MIN_N} checks and are not joined by the line.${state.avgReps?" Replicates of a condition are averaged (n is the total across them).":""} Older runs without stored age bins are binned here from the turn and age of each check.</p></div>`}
   h+=barGroup("Pass rate by check type",[{label:"overall",f:()=>true},{label:"A: old fact",f:r=>r.tags.includes("A")},{label:"C: return to client",f:r=>r.tags.includes("C")},{label:"D: superseded",f:r=>r.tags.includes("D")},{label:"CTRL",f:r=>r.tags.includes("CTRL")},{label:"NEAR",f:r=>r.tags.includes("NEAR")}],(g,c)=>stat(g,c.f));
   h+=barGroup("Pass rate by where the fact was said",[{label:"home (client's own visit)",f:r=>r.placement==="home"},{label:"embedded (in passing)",f:r=>r.placement==="embedded"}],(g,c)=>stat(g,c.f));
+  h+=barGroup("Shared facts: same client vs cross-client",[{label:"all shared checks",f:()=>true},{label:"same client (said in this client's visit)",f:r=>!r.cross_client},{label:"cross-client (said in another client's visit)",f:r=>!!r.cross_client}],(g,c)=>statG(g,c.f));
+  h+=`<p class="muted small" style="margin:-6px 0 10px">Shared (G) facts apply to every client. Cross-client means the fact was said during a different client's visit than the deliverable's, which is the case one-chat-per-client cannot see. The charts above count client facts only.</p>`;
   h+=barGroup("Pass rate by fact age (turns between the fact and the check): does accuracy degrade?",AGE_BINS_OLD.map(([l,a,b])=>({label:l+" turns",f:r=>r.age_turns!=null&&r.age_turns>=a&&r.age_turns<=b})),(g,c)=>stat(g,c.f));
   // spend vs accuracy
   const xv=g=>mean(g.map(x=>state.xcost==="total"?x.d.cost?.total_usd:state.xcost==="actor"?x.d.cost?.actor_usd:x.d.cost?.gatherer_usd).filter(v=>v!=null));

@@ -757,5 +757,134 @@
     "form": "buried"
    }
   ]
+ },
+ "_shared": {
+  "quote_valid_days": [
+   {
+    "value": 60,
+    "turn": 20,
+    "visit": 7,
+    "placement": "shared",
+    "sentence": "Company-wide: every quote we send to any customer is valid for 60 days from the date it goes out.",
+    "form": "buried",
+    "kind": "rule",
+    "placement_client": "Delta Learning"
+   },
+   {
+    "value": 14,
+    "turn": 105,
+    "visit": 35,
+    "placement": "shared",
+    "sentence": "Company-wide change: from now on every quote is valid for 14 days, not 60.",
+    "form": "sentence",
+    "kind": "rule",
+    "placement_client": "Acme Robotics"
+   }
+  ],
+  "approver": [
+   {
+    "value": "Regional Sales Director",
+    "turn": 16,
+    "visit": 6,
+    "placement": "shared",
+    "sentence": "For all our renewals, the person who has to sign off on pricing is the Regional Sales Director, no matter which account it is.",
+    "form": "sentence",
+    "kind": "rule",
+    "placement_client": "Acme Robotics"
+   },
+   {
+    "value": "CFO",
+    "turn": 121,
+    "visit": 40,
+    "placement": "shared",
+    "sentence": "Finance changed the policy for every account: the approver is now the CFO, not the Regional Sales Director.",
+    "form": "buried",
+    "kind": "rule",
+    "placement_client": "Beta Health"
+   }
+  ],
+  "payment_terms": [
+   {
+    "value": "Net 45",
+    "turn": 26,
+    "visit": 9,
+    "placement": "shared",
+    "sentence": "For all our renewals from now on, we invoice on Net 45 terms, whoever the customer is.",
+    "form": "sentence",
+    "kind": "rule",
+    "placement_client": "Cobalt Freight"
+   },
+   {
+    "value": "Net 30",
+    "turn": 100,
+    "visit": 33,
+    "placement": "shared",
+    "sentence": "Finance changed the policy for every account: payment terms are now Net 30, replacing Net 45.",
+    "form": "sentence",
+    "kind": "rule",
+    "placement_client": "Acme Robotics"
+   }
+  ],
+  "legal_footer_code": [
+   {
+    "value": "LF-2026-B",
+    "turn": 39,
+    "visit": 13,
+    "placement": "shared",
+    "sentence": "Company-wide: legal wants every customer-facing document, for any account, to carry the footer code LF-2026-B.",
+    "form": "buried",
+    "kind": "rule",
+    "placement_client": "Beta Health"
+   }
+  ],
+  "sign_off": [
+   {
+    "value": "The Northwind Accounts Team",
+    "turn": 34,
+    "visit": 11,
+    "placement": "shared",
+    "sentence": "Standing rule for all my clients: end every email, quote and brief with the sign-off \"The Northwind Accounts Team\".",
+    "form": "sentence",
+    "kind": "standard",
+    "placement_client": "Delta Learning"
+   },
+   {
+    "value": "Northwind Customer Success",
+    "turn": 131,
+    "visit": 42,
+    "placement": "shared",
+    "sentence": "Change to my standing sign-off, for all my clients: use \"Northwind Customer Success\" instead of \"The Northwind Accounts Team\".",
+    "form": "sentence",
+    "kind": "standard",
+    "placement_client": "Beta Health"
+   }
+  ],
+  "next_steps": [
+   {
+    "value": "Next steps",
+    "turn": 64,
+    "visit": 21,
+    "placement": "shared",
+    "sentence": "Standing rule for every client: every document I hand over, whatever it is, has a section headed exactly \"Next steps\".",
+    "form": "sentence",
+    "kind": "standard",
+    "placement_client": "Delta Learning"
+   }
+  ],
+  "banned_phrase": [
+   {
+    "value": [
+     "circle back",
+     "pick this up again"
+    ],
+    "turn": 49,
+    "visit": 16,
+    "placement": "shared",
+    "sentence": "For every client, the words \"circle back\" are banned in my documents, use \"pick this up again\" instead.",
+    "form": "sentence",
+    "kind": "standard",
+    "placement_client": "Cobalt Freight"
+   }
+  ]
  }
 }

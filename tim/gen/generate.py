@@ -618,7 +618,8 @@ MIN_SUPERSESSIONS = 30
 def balance_stats(checks):
     """Per age bin: n, share supersedable, share embedded, share buried; and the field x age_bin counts.
     checks: check dicts (kind field or style, CTRL left out)."""
-    main = [c for c in checks if c["kind"] in ("field", "style") and "CTRL" not in c["tags"]]
+    main = [c for c in checks if c["kind"] in ("field", "style") and "CTRL" not in c["tags"]
+            and c.get("scope", "client") == "client"]     # shared (G) checks are reported separately
     out = {"bins": {}, "fields": {f: {b: 0 for b in BAL_BINS} for f in FIELDS}}
     for b in BAL_BINS:
         x = [c for c in main if c["age_bin"] == b]
@@ -732,6 +733,8 @@ class Visit:
     hdr: Optional[list] = None
     facing: bool = False
     ctrl_field: Optional[str] = None
+    shared_hdr: list = field(default_factory=list)   # shared header fields this deliverable carries
+    shared_std: list = field(default_factory=list)   # shared standards checked in its body
 
 
 def build_skeleton(rng, names, n_deliv, n_debriefs, msg_range=(146, 150)):
@@ -1202,6 +1205,287 @@ def choose_buried(plan, rng, stmts, eligible, want, iters=6000):
     return {(t, c, f) for (c, f, t) in inn}
 
 
+# =============================================================================================
+# Shared facts (schedule v2, added Nov 19 2026): knowledge that applies to EVERY client.
+#
+# Two kinds, both said once (some changed later) during some client's visit and checked on deliverables for all
+# clients: company-wide rules (graded as JSON header fields) and the user's own standards (graded in the body,
+# like style rules). Tag G, check fields scope="shared" and cross_client (the current value was said during a visit
+# of a different client than the deliverable's client). The shared layer is planned and inserted AFTER the
+# per-client plan, with its own random stream, so it never changes the per-client facts, checks or balance.
+# =============================================================================================
+
+from itertools import combinations, product
+
+SHARED_HDR = ["quote_valid_days", "approver", "payment_terms", "legal_footer_code"]
+SHARED_STD = ["sign_off", "next_steps", "banned_phrase"]
+SHARED_FIELDS = SHARED_HDR + SHARED_STD
+# Every shared statement contains one of these (lower case) so that it clearly applies to every client.
+SHARED_MARKERS = ["company-wide", "for every account", "for all our renewals", "for all customers",
+                  "for every customer", "for all my clients", "for every client"]
+SHARED_HDR_ALLOWED = {   # header fields a deliverable type may carry, and how many it carries
+    "renewal_quote": (SHARED_HDR, (2,)),
+    "followup_email": (["quote_valid_days", "payment_terms", "legal_footer_code"], (1, 2)),
+    "meeting_brief": (["quote_valid_days", "approver", "payment_terms"], (1, 2)),
+    "discount_approval": (["approver", "payment_terms", "quote_valid_days"], (1, 2)),
+}
+SHARED_STD_TYPES = {     # standards checked on a deliverable type
+    "sign_off": ("renewal_quote", "followup_email", "meeting_brief"),
+    "next_steps": tuple(V2_TYPES),
+    "banned_phrase": ("renewal_quote", "followup_email"),
+}
+NOTE_TO_SELF = ["Book the Friday pipeline review room.", "Submit last month's expense report.",
+                "Ask my manager about the conference budget.", "Update my forecast numbers before Thursday.",
+                "Reply to the recruiting survey.", "Renew the parking pass."]
+SHARED_TRIGGER = ("One more thing for the close: say that we will come back to the open points once their "
+                  "team has had time to review it.")
+# (field, history index, target position in the session as a share of the turns)
+SHARED_TARGETS = [("quote_valid_days", 0, 0.07), ("payment_terms", 0, 0.10), ("approver", 0, 0.14),
+                  ("sign_off", 0, 0.19), ("legal_footer_code", 0, 0.25), ("banned_phrase", 0, 0.31),
+                  ("next_steps", 0, 0.38), ("payment_terms", 1, 0.58), ("quote_valid_days", 1, 0.68),
+                  ("approver", 1, 0.77), ("sign_off", 1, 0.86)]
+MIN_SHARED_GAP = 3          # turns between two shared statements
+MIN_SHARED_SUPERSEDE_GAP = 22
+
+
+def shared_values(rng):
+    """The value history of each shared field (a seeded draw from small pools)."""
+    pay = rng.choice([("Net 45", "Net 30"), ("Net 30", "Net 60"), ("Net 60", "Net 45")])
+    return {
+        "quote_valid_days": [rng.choice([30, 45, 60]), rng.choice([14, 21])],
+        "approver": [rng.choice(["VP Sales", "Head of Deal Desk", "Regional Sales Director"]),
+                     rng.choice(["CFO", "VP Finance", "Chief Revenue Officer"])],
+        "payment_terms": list(pay),
+        "legal_footer_code": [rng.choice(["LF-2026-B", "LF-2026-C", "LF-2027-A"])],
+        "sign_off": ["The Northwind Accounts Team", "Northwind Customer Success"],
+        "next_steps": ["Next steps"],
+        "banned_phrase": [("circle back", "pick this up again")],
+    }
+
+
+def shared_sentence(rng, field, k, v, old=None):
+    """One sentence stating shared field `field` (history index k) with value v. Always says it covers everyone."""
+    if field == "quote_valid_days":
+        if k:
+            return rng.choice([f"Company-wide change: from now on every quote is valid for {v} days, not {old}.",
+                               f"Finance changed the policy for every account: quote validity is now {v} days instead of {old}."])
+        return rng.choice([f"Company-wide: every quote we send to any customer is valid for {v} days from the date it goes out.",
+                           f"For all our renewals from now on, a quote stays valid for {v} days after we send it, whichever customer it is."])
+    if field == "approver":
+        if k:
+            return rng.choice([f"Company-wide change: sign-off on quotes and discounts now goes to the {v} instead of the {old}, for every customer.",
+                               f"Finance changed the policy for every account: the approver is now the {v}, not the {old}."])
+        return rng.choice([f"Company-wide: any quote or discount request, for every customer, needs sign-off from the {v}.",
+                           f"For all our renewals, the person who has to sign off on pricing is the {v}, no matter which account it is."])
+    if field == "payment_terms":
+        if k:
+            return rng.choice([f"Finance changed the policy for every account: payment terms are now {v}, replacing {old}.",
+                               f"Company-wide change: payment terms for all customers move from {old} to {v}."])
+        return rng.choice([f"Company-wide: our standard payment terms for all customers are {v}.",
+                           f"For all our renewals from now on, we invoice on {v} terms, whoever the customer is."])
+    if field == "legal_footer_code":
+        return rng.choice([f"Company-wide: legal wants every customer-facing document, for any account, to carry the footer code {v}.",
+                           f"For all our renewals from now on, the legal footer code is {v}, on every quote and email."])
+    if field == "sign_off":
+        if k:
+            return rng.choice([f"Change to my standing sign-off, for all my clients: use \"{v}\" instead of \"{old}\".",
+                               f"From now on, for every client, I sign off as \"{v}\" and no longer as \"{old}\"."])
+        return rng.choice([f"Standing rule for all my clients: end every email, quote and brief with the sign-off \"{v}\".",
+                           f"For every client, I always sign off as \"{v}\", please do that on anything I send out."])
+    if field == "next_steps":
+        return rng.choice([f"Standing rule for every client: every document I hand over, whatever it is, has a section headed exactly \"{v}\".",
+                           f"For all my clients, always include a section headed exactly \"{v}\" in anything you write for me."])
+    if field == "banned_phrase":
+        bad, good = v
+        return rng.choice([f"Standing rule for all my clients: never write \"{bad}\" in anything you draft, say \"{good}\" instead.",
+                           f"For every client, the words \"{bad}\" are banned in my documents, use \"{good}\" instead."])
+    raise ValueError(field)
+
+
+def shared_cur(stmts, field, T):
+    """(statement, history index) of the value of `field` in force at turn T, or (None, None)."""
+    hist = [s for s in stmts[field] if s["turn"] < T]
+    return (hist[-1], len(hist) - 1) if hist else (None, None)
+
+
+def shared_descriptor(stmts, d, field):
+    """What a check of `field` on deliverable d would look like: None (field not applicable) or a small dict."""
+    cur, idx = shared_cur(stmts, field, d.last)
+    if cur is None:
+        return None if field in SHARED_STD else {"field": field, "unk": True, "bin": None, "cross": False,
+                                                  "buried": False, "d": False, "std": False}
+    age = d.last - cur["turn"]
+    return {"field": field, "unk": False, "bin": age_bin_of(age), "cross": cur["client"] != d.client,
+            "buried": cur["form"] == "buried", "d": idx > 0, "std": field in SHARED_STD}
+
+
+def shared_options(stmts, d):
+    """Every way to pick the shared header fields and standards checked on deliverable d."""
+    allowed, ks = SHARED_HDR_ALLOWED[d.dtype]
+    hdr_opts = [c for k in ks for c in combinations(allowed, k)]
+    std_ok = [f for f in SHARED_STD if d.dtype in SHARED_STD_TYPES[f] and shared_cur(stmts, f, d.last)[0] is not None]
+    std_opts = [c for k in range(len(std_ok) + 1) for c in combinations(std_ok, k)]
+    out = []
+    for h, s in product(hdr_opts, std_opts):
+        ds = [shared_descriptor(stmts, d, f) for f in list(h) + list(s)]
+        out.append((h, s, ds))
+    return out
+
+
+SHARED_LIMITS = {"n": (53, 59), "bin": (13, 20), "other_max": 6, "cross": (0.70, 0.80), "cross_bin_min": 0.55,
+                 "std": (18, 26), "unk": (4, 10), "same_min": 12, "d_min": 8, "field_min": 6, "buried": (0.22, 0.40),
+                 "buried_bin_min": 0.12}
+
+
+def shared_cost(chosen):
+    """0 when the selection of shared checks meets every target; larger otherwise. chosen: list of descriptor lists."""
+    L = SHARED_LIMITS
+    ds = [x for lst in chosen for x in lst]
+    st = [x for x in ds if not x["unk"]]
+    n = len(st)
+    dist = lambda v, lo, hi: max(0, lo - v) + max(0, v - hi)
+    cost = 3.0 * dist(n, *L["n"])
+    cnt = {b: sum(1 for x in st if x["bin"] == b) for b in BAL_BINS}
+    for b in BAL_BINS:
+        cost += 2.0 * dist(cnt[b], *L["bin"])
+    cost += 2.0 * max(0, sum(1 for x in st if x["bin"] == "other") - L["other_max"])
+    if n:
+        cr = sum(x["cross"] for x in st) / n
+        cost += 100 * dist(cr, *L["cross"])
+        for b in BAL_BINS:
+            xb = [x for x in st if x["bin"] == b]
+            if xb:
+                cost += 60 * max(0, L["cross_bin_min"] - sum(x["cross"] for x in xb) / len(xb))
+                cost += 60 * max(0, L["buried_bin_min"] - sum(x["buried"] for x in xb) / len(xb))
+        cost += 60 * dist(sum(x["buried"] for x in st) / n, *L["buried"])
+    cost += 2.0 * dist(sum(1 for x in st if x["std"]), *L["std"])
+    cost += 2.0 * dist(sum(1 for x in ds if x["unk"]), *L["unk"])
+    cost += 2.0 * max(0, L["same_min"] - sum(1 for x in st if not x["cross"]))
+    cost += 2.0 * max(0, L["d_min"] - sum(1 for x in st if x["d"]))
+    for f in SHARED_FIELDS:
+        fx = [x for x in st if x["field"] == f]
+        cost += 3.0 * max(0, L["field_min"] - len(fx))
+        cost += 4.0 * max(0, 2 - sum(1 for b in BAL_BINS if sum(1 for x in fx if x["bin"] == b) >= 2))
+    return cost
+
+
+def select_shared(stmts, delivs, rng, iters=2500):
+    """Annealing over the per-deliverable option of shared checks. Returns (cost, {did: (hdr, std)})."""
+    opts = [shared_options(stmts, d) for d in delivs]
+    pick = [rng.randrange(len(o)) for o in opts]
+    cur = shared_cost([o[p][2] for o, p in zip(opts, pick)])
+    for it in range(iters):
+        if cur == 0:
+            break
+        temp = 4.0 * (0.05 / 4.0) ** (it / iters)
+        i = rng.randrange(len(delivs))
+        old = pick[i]
+        pick[i] = rng.randrange(len(opts[i]))
+        new = shared_cost([o[p][2] for o, p in zip(opts, pick)])
+        if new <= cur or rng.random() < math.exp((cur - new) / temp):
+            cur = new
+        else:
+            pick[i] = old
+    return cur, {d.did: (list(o[p][0]), list(o[p][1])) for d, o, p in zip(delivs, opts, pick)}
+
+
+def plan_shared(rng, visits, names, tries=60):
+    """Place the shared statements in visits and choose which shared checks each deliverable carries.
+    Returns {"stmts": {field: [statement dicts]}, "assign": {did: (hdr fields, standards)}, "cost": float} or None."""
+    n_turns = visits[-1].last
+    vis = {}
+    for v in visits:
+        for t in range(v.first, v.last + 1):
+            vis[t] = v
+    slots = []                       # (turn, position in visit)
+    for v in visits:
+        for t in range(v.first, v.last + 1):
+            p = t - v.first + 1
+            if t >= 8 and not (v.kind == "deliverable" and p == v.n):
+                slots.append((t, p))
+    vals = shared_values(rng)
+    delivs = [v for v in visits if v.kind == "deliverable"]
+    best = None
+    for _ in range(tries):
+        n_bur = rng.choice([3, 4])
+        buried_idx = set(rng.sample(range(len(SHARED_TARGETS)), n_bur))
+        used, chosen, ok = [], [], True
+        order = sorted(range(len(SHARED_TARGETS)), key=lambda i: SHARED_TARGETS[i][2])
+        placed = {}
+        for i in order:
+            field, k, frac = SHARED_TARGETS[i]
+            target = frac * n_turns + rng.uniform(-0.04, 0.04) * n_turns
+            cands, w = [], []
+            for t, p in slots:
+                if any(abs(t - u) < MIN_SHARED_GAP for u in used):
+                    continue
+                if k and t - placed[(field, k - 1)] < MIN_SHARED_SUPERSEDE_GAP:
+                    continue
+                if i in buried_idx and p != 1:
+                    continue
+                cands.append(t)
+                w.append(math.exp(-abs(t - target) / 5.0) * (3.0 if (p >= 2 and i not in buried_idx) else 1.0))
+            if not cands:
+                ok = False
+                break
+            t = rng.choices(cands, weights=w)[0]
+            used.append(t)
+            placed[(field, k)] = t
+            chosen.append((field, k, t, i in buried_idx))
+        if not ok:
+            continue
+        per_client = [sum(1 for (_, _, t, _) in chosen if vis[t].client == c) for c in names]
+        if max(per_client) > 3:             # statements spread over the clients (so cross_client is not decided by one visit)
+            continue
+        stmts = {f: [] for f in SHARED_FIELDS}
+        for field, k, t, bur in sorted(chosen, key=lambda x: (x[0], x[1])):
+            v = vis[t]
+            stmts[field].append({"field": field, "k": k, "value": vals[field][k],
+                                 "old": vals[field][k - 1] if k else None, "turn": t, "visit": v.idx,
+                                 "client": v.client, "pos": t - v.first + 1, "form": "buried" if bur else "sentence",
+                                 "kind": "standard" if field in SHARED_STD else "rule"})
+        cost, assign = select_shared(stmts, delivs, rng)
+        if best is None or cost < best["cost"]:
+            best = {"stmts": stmts, "assign": assign, "cost": cost}
+        if cost == 0:
+            break
+    return best
+
+
+def insert_shared(rng, text, v, p, st):
+    """Return the message text with the shared statement st added (st['sentence'] is inserted verbatim)."""
+    s = st["sentence"]
+    if st["form"] == "buried":
+        if v.kind == "debrief":
+            marker = "\n\nCan you pull out the action items"
+            head, sep, rest = text.partition(marker)
+            lines = head.split("\n")
+            idx = [i for i, l in enumerate(lines) if l.startswith("- ")]
+            if sep and idx:
+                lead = (rng.choice(["Note to self, this is not about this client: ", "For me, not about this client: "])
+                        if st["kind"] == "standard" else
+                        rng.choice(["Internal reminder from this week's team meeting, not about this client: ",
+                                    "From the sales ops update this week, not about this client: "]))
+                lines.insert(rng.randint(idx[0], idx[-1] + 1), "- " + lead + s)
+                return "\n".join(lines) + sep + rest
+            return text + "\n\n- " + s
+        if st["kind"] == "standard":      # the user's own notes, not a forwarded message
+            a_, b_ = rng.sample(NOTE_TO_SELF, 2)
+            return (text + "\n\nPasting a few of my own working notes while I'm at it, not about this account:\n"
+                    f"- {a_}\n- {s}\n- {b_}")
+        who = f"{rng.choice(FIRST)} ({rng.choice(['Finance Ops', 'Sales Ops', 'Legal Ops'])})"
+        pre = " ".join(rng.sample(THREAD_LINES, rng.randint(1, 2)))
+        post = " ".join(rng.sample(THREAD_LINES, rng.randint(1, 2)))
+        return (text + "\n\nAlso pasting an internal note from our own ops channel, not about this account:\n"
+                f"> From: {who}\n> {pre} {s} {post}")
+    if v.kind == "debrief" and p == 1:
+        marker = "\n\nCan you pull out the action items"
+        head, sep, rest = text.partition(marker)
+        if sep:
+            return head + "\n\n" + s + sep + rest
+    return text + "\n\n" + s
+
+
 def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0, report_rows=420,
                 thread_prob=0.5, max_attempts=400):
     names = CLIENTS[:n_clients]
@@ -1222,7 +1506,12 @@ def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0,
         if len(eligible) < want:
             continue
         buried = choose_buried(plan, rng, stmts, eligible, want)
-        out = _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob)
+        srng = random.Random(seed * 7_919 + attempt * 31 + 5)     # separate stream: the shared layer never moves per-client facts
+        shared = plan_shared(srng, visits, names)
+        if shared is None or shared["cost"] > 0:
+            continue
+        out = _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob,
+                         shared, srng)
         if out is None:
             continue
         if balance_problems(out[2], GEN_MARGIN):
@@ -1231,7 +1520,7 @@ def generate_v2(seed=0, n_clients=4, n_deliv=38, n_debriefs=11, notes_scale=1.0,
     raise RuntimeError("generate_v2: no valid plan in %d attempts" % max_attempts)
 
 
-def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob):
+def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows, thread_prob, shared, srng):
     used = set()
     style_pool = rng.sample(STYLE_RULES, len(names))
     init = {}
@@ -1296,6 +1585,16 @@ def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows
             d.ctrl_field = rng.choice(cands)
             ctrl += 1
 
+    # Shared statements: sentences (own random stream) and the shared checks each deliverable carries.
+    sh = shared["stmts"]
+    sh_by_turn = {}
+    for fld in SHARED_FIELDS:
+        for st in sh[fld]:
+            st["sentence"] = shared_sentence(srng, fld, st["k"], st["value"], st["old"])
+            sh_by_turn[st["turn"]] = st
+    for d in plan.delivs:
+        d.shared_hdr, d.shared_std = shared["assign"][d.did]
+
     # Messages.
     messages, checks, visits_meta = [], [], []
     last_visit_of = {}
@@ -1351,6 +1650,7 @@ def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows
                 opener += f" (Reminder: {v.ctrl_field.replace('_', ' ')} is {fmt_value(v.ctrl_field, cv)}.)"
             if facing:
                 opener += f" Please {STYLE_TRIGGERS[clients[c].truth['style_rule'][0]]}."
+                opener += " " + SHARED_TRIGGER
             if rng.random() < thread_prob:
                 opener += "\n\n" + email_thread(rng, c, int(rng.randint(6, 14) * notes_scale))
             for (cc, f, o) in stated[1]:            # always another client's fact (embedded)
@@ -1374,14 +1674,20 @@ def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows
                     else:
                         extra.append(lead_for(o) + o["sentence"])
                 texts.append(r + ("\n\n" + "\n\n".join(extra) if extra else ""))
-            keys = ["deliverable_id", "client", "type"] + hdr
+            keys = ["deliverable_id", "client", "type"] + hdr + v.shared_hdr
+            nums = "discount_pct and seats and term_months" + (" and quote_valid_days" if "quote_valid_days" in v.shared_hdr else "")
             texts.append(
                 f"Good. Write the final version to deliverables/{v.did}.md. The file must start with a "
                 f"```json block containing exactly these keys: {', '.join(keys)} "
-                f"(deliverable_id is \"{v.did}\", type is \"{v.dtype}\", discount_pct and seats and "
-                f"term_months as numbers, dates as YYYY-MM-DD, and null for any value I haven't told you), "
+                f"(deliverable_id is \"{v.did}\", type is \"{v.dtype}\", {nums} as numbers, "
+                f"dates as YYYY-MM-DD, and null for any value I haven't told you), "
                 f"then the body below it.")
         assert len(texts) == v.n, (v.idx, len(texts), v.n)
+        for t in range(v.first, v.last + 1):
+            if t in sh_by_turn:
+                st = sh_by_turn[t]
+                texts[t - v.first] = insert_shared(srng, texts[t - v.first], v, t - v.first + 1, st)
+                planted.append(("(all clients)", st["field"], "shared" + ("-supersede" if st["k"] else ""), st["form"]))
         for k, t in enumerate(texts):
             messages.append({"turn": v.first + k, "visit": v.idx, "client": c, "visit_kind": v.kind, "text": t})
         # verbatim invariant
@@ -1389,6 +1695,9 @@ def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows
             for (cc, f, o) in stated[p]:
                 if o["sentence"] not in texts[p - 1]:
                     return None
+        for t in range(v.first, v.last + 1):
+            if t in sh_by_turn and sh_by_turn[t]["sentence"] not in texts[t - v.first]:
+                return None
         if v.kind == "deliverable":
             T = v.last
             vidx = v.idx
@@ -1429,10 +1738,44 @@ def _render_v2(rng, names, visits, plan, stmts, buried, notes_scale, report_rows
                     "visits_since_client_last_seen": away,
                     "tags": tags_for(False, False, age, away),
                     "session_bin": session_bin_of(T), "age_bin": age_bin_of(age), "form": cur.form})
+            prev_vis = last_visit_of.get(c)
+            away = (v.idx - prev_vis - 1) if prev_vis is not None else None
+            for f in list(v.shared_hdr) + list(v.shared_std):
+                cur, idx = shared_cur(sh, f, T)
+                base = {"check_id": f"{v.did}.{f}", "deliverable_id": v.did, "client": c, "type": v.dtype,
+                        "field": f, "turn": T, "session_bin": session_bin_of(T),
+                        "visits_since_client_last_seen": away, "scope": "shared"}
+                if cur is None:
+                    checks.append({**base, "kind": "unknown", "expected": None, "superseded_values": [],
+                                   "stated_turn": None, "age_turns": None, "placement": "none",
+                                   "other_visits_since_stated": None, "tags": ["G", "UNK"],
+                                   "age_bin": None, "form": None, "cross_client": False, "placement_client": None})
+                    continue
+                age = T - cur["turn"]
+                prior = [x["value"] for x in sh[f] if x["turn"] < T]
+                common = {**base, "stated_turn": cur["turn"], "age_turns": age, "placement": "shared",
+                          "other_visits_since_stated": sum(1 for (cc, _) in seq[cur["visit"] + 1:v.idx] if cc != c),
+                          "tags": ["G"] + (["D"] if idx > 0 else []), "age_bin": age_bin_of(age),
+                          "form": cur["form"], "cross_client": cur["client"] != c,
+                          "placement_client": cur["client"]}
+                if f in SHARED_HDR:
+                    checks.append({**common, "kind": "field", "expected": cur["value"],
+                                   "superseded_values": [x for x in prior[:-1] if x != cur["value"]]})
+                    continue
+                if f == "sign_off":
+                    exp = {"include": cur["value"], "exclude": cur["old"] or ""}
+                    sup = [cur["old"]] if cur["old"] else []
+                elif f == "next_steps":
+                    exp, sup = {"include": cur["value"], "exclude": "", "mode": "heading"}, []
+                else:
+                    exp, sup = {"include": cur["value"][1], "exclude": cur["value"][0]}, []
+                checks.append({**common, "kind": "style", "expected": exp, "superseded_values": sup})
         visits_meta.append({"visit": v.idx, "client": c, "kind": v.kind, "first_turn": v.first,
                             "last_turn": v.last, "deliverable": v.did, "planted": planted})
         last_visit_of[c] = v.idx
-    return clients, messages, checks, visits_meta
+    for chk in checks:
+        chk.setdefault("scope", "client")
+    return clients, messages, checks, visits_meta, sh
 
 
 def readable_v2(messages, visits_meta):
@@ -1452,7 +1795,7 @@ def readable_v2(messages, visits_meta):
     return "\n".join(out)
 
 
-def write_session(out, messages, checks, clients, visits, readable_text, meta):
+def write_session(out, messages, checks, clients, visits, readable_text, meta, shared=None):
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, "session.jsonl"), "w") as f:
         for m in messages:
@@ -1461,8 +1804,15 @@ def write_session(out, messages, checks, clients, visits, readable_text, meta):
         for c in checks:
             f.write(json.dumps(c) + "\n")
     with open(os.path.join(out, "facts.json"), "w") as f:
-        json.dump({c: {k: [vars(h) for h in v] for k, v in cl.history.items()}
-                   for c, cl in clients.items()}, f, indent=1)
+        facts = {c: {k: [vars(h) for h in v] for k, v in cl.history.items()} for c, cl in clients.items()}
+        if shared:
+            # "_shared": statements that apply to every client; placement_client is the client whose visit it was said in
+            facts["_shared"] = {fld: [{"value": list(x["value"]) if isinstance(x["value"], tuple) else x["value"],
+                                       "turn": x["turn"], "visit": x["visit"], "placement": "shared",
+                                       "sentence": x["sentence"], "form": x["form"], "kind": x["kind"],
+                                       "placement_client": x["client"]} for x in xs]
+                                for fld, xs in shared.items()}
+        json.dump(facts, f, indent=1)
     with open(os.path.join(out, "visits.json"), "w") as f:
         json.dump(visits, f, indent=1)
     with open(os.path.join(out, "readable.md"), "w") as f:
@@ -1504,14 +1854,22 @@ def main():
         extra = {}
     else:
         rows = 420 if a.report_rows is None else a.report_rows
-        clients, messages, checks, visits, attempt = generate_v2(
+        clients, messages, checks, visits, shared, attempt = generate_v2(
             a.seed, a.clients, a.deliverables, a.debriefs, a.notes_scale, report_rows=rows)
         readable_text = readable_v2(messages, visits)
         facts = [h for cl in clients.values() for hs in cl.history.values() for h in hs]
         n_turns = len(messages)
         third = lambda t: min(2, (t - 1) * 3 // n_turns)
+        sh_checks = [c for c in checks if c["scope"] == "shared"]
+        sh_stated = [c for c in sh_checks if c["kind"] != "unknown"]
+        sh_stm = [x for xs in shared.values() for x in xs]
         extra = {
             "schedule": "v2", "plan_attempt": attempt,
+            "shared_statements": len(sh_stm),
+            "shared_supersessions": sum(1 for x in sh_stm if x["k"]),
+            "shared_checks": len(sh_checks), "shared_checks_stated": len(sh_stated),
+            "shared_cross_client_share": round(sum(c["cross_client"] for c in sh_stated) / len(sh_stated), 3),
+            "shared_checks_by_age_bin": count_by(sh_stated, "age_bin"),
             "fact_statements": len(facts),
             "supersessions": sum(max(0, len(hs) - 1) for cl in clients.values() for hs in cl.history.values()),
             "embedded_statements": sum(h.placement == "embedded" for h in facts),
@@ -1530,7 +1888,8 @@ def main():
     if a.schedule == "v1":
         meta["visits"] = a.visits
     meta.update(extra)
-    write_session(a.out, messages, checks, clients, visits, readable_text, meta)
+    write_session(a.out, messages, checks, clients, visits, readable_text, meta,
+                  shared if a.schedule == "v2" else None)
     print(json.dumps(meta, indent=1))
 
 

@@ -180,6 +180,12 @@
     "concession_ref",
     "embedded",
     "sentence"
+   ],
+   [
+    "(all clients)",
+    "approver",
+    "shared",
+    "sentence"
    ]
   ]
  },
@@ -190,7 +196,14 @@
   "first_turn": 20,
   "last_turn": 22,
   "deliverable": "D04",
-  "planted": []
+  "planted": [
+   [
+    "(all clients)",
+    "quote_valid_days",
+    "shared",
+    "buried"
+   ]
+  ]
  },
  {
   "visit": 8,
@@ -219,6 +232,12 @@
     "Cobalt Freight",
     "cc_name",
     "home-supersede",
+    "sentence"
+   ],
+   [
+    "(all clients)",
+    "payment_terms",
+    "shared",
     "sentence"
    ]
   ]
@@ -258,6 +277,12 @@
     "contact_name",
     "embedded",
     "buried"
+   ],
+   [
+    "(all clients)",
+    "sign_off",
+    "shared",
+    "sentence"
    ]
   ]
  },
@@ -290,6 +315,12 @@
     "contact_name",
     "home-supersede",
     "sentence"
+   ],
+   [
+    "(all clients)",
+    "legal_footer_code",
+    "shared",
+    "buried"
    ]
   ]
  },
@@ -349,6 +380,12 @@
     "Cobalt Freight",
     "seats",
     "home-supersede",
+    "sentence"
+   ],
+   [
+    "(all clients)",
+    "banned_phrase",
+    "shared",
     "sentence"
    ]
   ]
@@ -434,6 +471,12 @@
     "Delta Learning",
     "renewal_deadline",
     "home-supersede",
+    "sentence"
+   ],
+   [
+    "(all clients)",
+    "next_steps",
+    "shared",
     "sentence"
    ]
   ]
@@ -674,6 +717,12 @@
     "concession_ref",
     "home",
     "sentence"
+   ],
+   [
+    "(all clients)",
+    "payment_terms",
+    "shared-supersede",
+    "sentence"
    ]
   ]
  },
@@ -710,6 +759,12 @@
     "Delta Learning",
     "renewal_deadline",
     "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "(all clients)",
+    "quote_valid_days",
+    "shared-supersede",
     "sentence"
    ]
   ]
@@ -808,6 +863,12 @@
     "cc_name",
     "home-supersede",
     "sentence"
+   ],
+   [
+    "(all clients)",
+    "approver",
+    "shared-supersede",
+    "buried"
    ]
   ]
  },
@@ -863,6 +924,12 @@
     "Cobalt Freight",
     "renewal_deadline",
     "embedded-supersede",
+    "sentence"
+   ],
+   [
+    "(all clients)",
+    "sign_off",
+    "shared-supersede",
     "sentence"
    ]
   ]

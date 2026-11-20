@@ -1,6 +1,6 @@
 # Long-session benchmark: does Actor-Gatherer beat a regular agent?
 
-Status: step 1 done (generator, grader, pilot session). Generator v2 (fixed-age check schedule) added Nov 19 2026. Steps 2 to 4 handed to Claude Code, see CLAUDE.md. Owner: Tim.
+Status: step 1 done (generator, grader, pilot session). Generator v2 (fixed-age check schedule) and shared facts (tag G) added Nov 19 2026. Steps 2 to 4 handed to Claude Code, see CLAUDE.md. Owner: Tim.
 
 ## 1. Question
 
@@ -20,6 +20,7 @@ We test where AG helps, where it hurts, and what it costs, against the same harn
 | D | A superseded fact: old and new versions both survive | Time-aware selection should prefer the latest | The new value appears and the old one does not. Risk test: AG may page the old one back in |
 | E | Context and cost grow until compaction | Context stays bounded | Tokens and dollars per turn |
 | S | The agent degrades as the session gets long (more context, more compactions), independent of how old any fact is | Context stays bounded, so late turns should look like early ones | Accuracy on fresh facts (2 to 10 turns old) by session position: if it falls late in the session, length itself hurts. Fact-age effects are read separately, at a fixed session position |
+| G | Knowledge shared across workstreams (a company rule or the user's own standard) is said once during one client's visit and must be applied in deliverables for every client. Separate chats see it only for the client whose visit it was said in | One session with AG ranks it back in for any client, because ranking follows the current task, not the client | Header field or body check on deliverables of all clients, split by `cross_client` |
 | CTRL | Fact is in the current prompt | Nothing to gain | Regression check: AG must not make these worse |
 | UNK | A field is requested before its fact was ever stated | Nothing to page in | The right answer is null. A value counts as made up. Reported separately, not in the main pass rate |
 
@@ -135,6 +136,44 @@ statements, 49 of them supersessions, 25 embedded, 24 buried; 248k user characte
 Main checks by age bin (CTRL and UNK left out): fresh 50, medium 60, old 47, other 33. Share on supersedable
 fields 74%, 73%, 70% (fresh, medium, old); embedded 36%, 35%, 34%; buried 30%, 32%, 32%.
 
+### Shared facts and hypothesis G (decision, Nov 19 2026)
+
+Hypothesis: when knowledge is shared across workstreams, one session with AG beats separate chats. Today almost every
+fact belongs to one client, which favours one chat per client. Decision by Tim on Nov 19 2026: the main claim is "AG beats
+separate chats"; only two kinds of shared fact (company rules and the user's own standards); the strict `pi_per_client`
+(each client's messages in its own chat, nothing shared) is the main baseline; an optional `pi_per_client_notes` condition
+(section 6) is run only if credits allow.
+
+- Tag `G` on every check of a shared fact. New check fields: `scope` ("client" | "shared") on every check; on shared checks
+  `cross_client` (true when the current value was said during a visit of a different client than the deliverable's client,
+  false otherwise and for UNK) and `placement_client` (the client whose visit it was said in). Shared checks have
+  `placement: "shared"`, tags `["G"]` (plus `D` when the value was changed) or `["G","UNK"]`. A and C are per-client tags and
+  are not set on G checks. facts.json gains a top-level `_shared` entry (field to list of statements with `placement_client`),
+  visits.json lists the statements in `planted` as `["(all clients)", field, "shared", form]` under the visit they were said in.
+- Company rules (graded as JSON header fields, 4): `quote_valid_days` (int, 30 or 45 or 60, later 14 or 21), `approver`
+  (role, later changed), `payment_terms` ("Net 45" then "Net 30" and similar), `legal_footer_code` ("LF-2026-B", said once).
+  Quotes carry 2 of the 4, other types 1 or 2 (the annealed choice per deliverable), so a header has at most 9 fact keys
+  (a quote has 7 per-client fields already; carrying all 4 would give 11).
+- User standards (graded in the body like style rules, 3): `sign_off` (include "The Northwind Accounts Team", changed once to
+  "Northwind Customer Success"; checked on quotes, emails, briefs), `next_steps` (a line that is the heading "Next steps";
+  all types), `banned_phrase` (never "circle back", say "pick this up again"; checked on client-facing types). The request on
+  client-facing deliverables carries a neutral trigger sentence ("say that we will come back to the open points once their team
+  has had time to review it") that never uses either phrase, the same approach as STYLE_TRIGGERS.
+- Every statement says it applies to everyone ("Company-wide: ...", "For all our renewals from now on ...", "Finance changed
+  the policy for every account: ...", "Standing rule for all my clients: ..."); the test checks a marker phrase list
+  (`SHARED_MARKERS`). 11 statements, 4 supersessions (3 rules, 1 standard), 3 to 4 buried (a bullet in call notes, a forwarded
+  ops note, or the user's own notes), the rest headline sentences. They ride inside existing messages (no extra messages).
+- Statements are spread over the session (seed 0: turns 16 to 131, supersessions between turns 100 and 131) so G checks span
+  fresh, medium and old age bins (same definitions). UNK applies: a shared field asked before it was ever said expects null.
+- The shared layer is planned after the per-client plan with its own random stream (`plan_shared`, annealing in
+  `select_shared`), so per-client facts, checks and balance are unchanged. The balance criteria (supersedable, embedded, buried
+  shares, field coverage) are computed on client-scope checks only; report.py and grade.py keep the existing age, session
+  and form tables client-only and print/store the G versions separately (`*_shared`, `by_scope`, `by_cross_client`).
+- Counts (`sessions/pilot_v2_seed0`): 150 messages, 252,757 user characters (v1 +3.5%), 38 deliverables, 309 checks: 242
+  client scope (unchanged) and 67 shared: 59 on stated facts (41 header, 18 body; 14 tagged D) plus 8 UNK. Cross-client share
+  46/59 = 78%. Stated G checks by age bin: fresh 13, medium 20, old 20, other 6; same client 2/5/4/2 and cross client 11/15/16/4
+  (fresh/medium/old/other). Buried share 31%. Every deliverable from turn 15 on has at least one G check.
+
 ## 4. Generation
 
 Python, deterministic, seeded:
@@ -174,14 +213,29 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 | 1 | Pi, full context, no compaction (`pi_full`) | Context-rot reference. The model's real window (1,048,576 tokens for gemini-3.8-flash); the whole session (~150k tokens) fits, so it runs on the full session, 1 run |
 | 2 | Pi with native compaction at 100k | The main baseline |
 | 3 | Pi, one session per client (`pi_per_client`) | The "separate threads" workaround people use. Embedded facts land in the wrong client's thread, as they would for a real user |
+| 3b | Pi, one session per client with a shared notes file (`pi_per_client_notes`), optional | Same routing as `pi_per_client`, but all client chats run in one shared working folder and the system prompt gets one extra sentence: the agent may keep shared notes in project_notes.md, which all chats for this project can read. Run only if credits allow. Tests whether an agent-written notes file closes the gap on G facts |
 | 4 | AG + Pi, `ag_half`: `max_context_tokens = 100000` with every AG budget halved (AG's defaults sum to 105k and do not fit under 100k; halving is AG's own `within_limit` rule) | Main treatment |
 | 5 | AG + Pi, knob variants (`ag_quarter` first: as `ag_half` with `keep_*_relevant_tokens` and `keep_previous_task_tokens` at 3750) | For the accuracy-vs-spend curve: `min_context_tokens`, `keep_*_relevant_tokens`, `summarize` |
 
 2 runs per condition for the pilot.
 
+### Pressure ladder (proposed Nov 19 2026)
+
+The hypothesis is not "run until Pi breaks". It is: a regular agent's accuracy falls as memory
+pressure rises, and AG's falls less. Pressure is set in advance, not tuned after the fact. The cheap
+lever is the context ceiling, not session length: at 100k pi compacts about twice on this session,
+at 50k about four times, at 25k about eight times, each compaction re-summarizing the last one. A
+lower ceiling stands in for a much longer real session and costs less per call. Pilot plan: add
+`pi_compact` and `ag_half` at 50k and 25k (AG budgets scaled with the ceiling the same way as at
+100k), one run each, next to the 100k runs. Report accuracy per condition as a curve over the
+ladder. All outcomes are reportable: Pi degrades and AG less (the hoped-for result); both degrade
+alike; neither degrades (compaction is enough for this kind of work, and AG's case rests on shared
+facts and cost). The shared-fact (G) comparison against separate chats does not depend on the
+ladder.
+
 ## 7. Metrics
 
-- Pass rate overall and by tag (A, C, D, CTRL), and home vs embedded. Style checks as their own slice.
+- Pass rate overall and by tag (A, C, D, CTRL, G), and home vs embedded. For G: same-client vs cross-client pass rate (`by_cross_client`), the main test of the hypothesis. Style checks as their own slice.
 - Made-up rate on UNK fields.
 - Pass rate vs fact age (turns since stated) and vs turn index: the degradation curves.
 - Cost reported as three numbers: Actor (Pi) tokens and dollars, Gatherer tokens and dollars,
@@ -206,5 +260,5 @@ Same Actor model, same scripted session, same 100k context ceiling everywhere.
 - Which Gemini model for the Actor and for the Gatherer (they can differ; using the same is simpler to explain).
 - Spend cap for the pilot.
 - Pi's compaction setting name and whether its summary prompt can be logged.
-- Compaction ceiling (100k now): to be decided after a free "facts still in view" check (analysis/coverage.py) on a short v2 run. If a good summarizer still keeps every fact, lower the ceiling.
+- Compaction ceiling (100k now): to be decided after a free "facts still in view" check (analysis/coverage.py) on a short v2 run. If a good summarizer still keeps every fact, lower the ceiling. See the pressure ladder in section 6: the ladder makes the ceiling a measured variable rather than a single choice.
 - Whether condition 1 is worth including or replaced by reporting where condition 2 first compacts.

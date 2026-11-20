@@ -301,3 +301,28 @@ session; step 3 cap $5, step 4 cap $35 (stop and ask at $30). Tim pushed f339197
 - Not met: embedded level per bin is 34 to 36%, above the 25 to 30% target (spread is 2 points); statements overall are 29.8%.
   Embedded facts are current for more checks than home facts, and the previous-visit fresh facts are embedded by
   construction. Any earlier results on the first v2 build are not comparable to this session.
+
+## 2026-11-19: shared facts (tag G), generator v2 extension
+
+- Why: almost every fact belonged to one client, which favours one chat per client. Tim chose (Nov 19): main claim "AG beats
+  separate chats when knowledge is shared across workstreams"; only company rules and user standards; strict pi_per_client
+  as the main baseline; optional pi_per_client_notes (shared project_notes.md, one extra system prompt sentence) only if
+  credits allow. runner not changed (tim/run/ untouched); the notes condition needs a small runner change, see CLAUDE.md.
+- gen/generate.py: shared layer (`plan_shared`, `select_shared`, `insert_shared`, own random stream, planned after the
+  per-client plan so per-client facts, checks and balance are unchanged). 4 company rules in the header (quote_valid_days,
+  approver, payment_terms, legal_footer_code) and 3 user standards in the body (sign_off, next_steps, banned_phrase), 11
+  statements, 4 supersessions. New check fields scope, cross_client, placement_client; tag G. balance_stats now client scope only.
+  facts.json gains `_shared`. Messages stay 150; user chars 252,757 (+3.5% vs v1). --schedule v1 still byte for byte
+  (session, checks, facts, visits, readable verified).
+- grade/grade.py: heading-mode and empty-exclude style checks, stale for a superseded sign-off, numeric quote_valid_days;
+  summary.json keeps every key (age, session, form tables now client scope only) and adds by_scope, by_cross_client,
+  by_cross_client_x_age_bin, by_age_bin_shared, by_session_bin_shared, by_session_bin_x_age_bin_shared, by_form_shared,
+  unknown_fields_shared, overall_client; by_tag gets G and G+D for shared rows. make_oracle: perfect 1.000 (null on all 50 UNK),
+  stale fails exactly the 89 D checks (75 client + 14 shared) as stale, empty 0.000.
+- analysis/attribute.py and coverage.py: shared facts handled (no client name needed; value or required phrase anywhere is
+  "paraphrased"), rows gain scope. gen/report.py: SHARED section and G strict checks. viewer: tag G, scope and cross-client
+  filters, cross-client chip and story text, Compare bar group, guide text; make_synthetic gains a pi_per_client run in which
+  cross-client shared facts never arrive.
+- Regenerated sessions/pilot_v2_seed0 (overwrites; per-client part identical, attempt 12). Any earlier results on the
+  previous v2 build are not comparable (headers and requests changed). Verified: report --strict, 7 unit tests, oracle, synthetic
+  runs plus attribute and coverage, viewer with Playwright (no page errors), three visits read naturally.
